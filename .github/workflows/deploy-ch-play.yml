@@ -49,7 +49,7 @@ jobs:
       - name: Create Google Services JSON key
         run: |
           mkdir -p secrets
-          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > secrets/service-account-key.json
+          echo "${{ secrets.ENCODED_GOOGLE_SERVICE_ACCOUNT_KEY }}" | base64 -d > secrets/service-account-key.json
         shell: bash
 
       - name: EAS submit
