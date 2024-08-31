@@ -39,17 +39,18 @@ jobs:
           cd android
           ./gradlew bundleRelease
 
-      # Install EAS CLI globally
+      # Setup Expo and EAS
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ secrets.EAS_TOKEN }}
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Create Google Services JSON key
         run: |
           mkdir -p secrets
           echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > secrets/service-account-key.json
+        shell: bash
 
       - name: EAS submit
         run: eas submit -p android --path ./android/app/build/outputs/bundle/release/app-release.aab
