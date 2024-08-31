@@ -1,0 +1,45 @@
+name: Build AAB File And Automation EAS Submit
+
+on:
+  push:
+    branches:
+      - main # Specify the branches that will trigger the workflow
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Use the node version compatible with your project
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Build AAB file
+      - name: Build AAB file
+        run: |
+          cd android
+          ./gradlew bundleRelease
+
+      # Install EAS CLI globally
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      # Authenticate with EAS using a token (store your EAS token as a secret in GitHub)
+      - name: Authenticate with EAS
+        run: eas login --token ${{ secrets.EAS_TOKEN }}
+
+      - name: Create Google Services JSON key
+        run: |
+          mkdir -p secrets
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > secrets/service-account-key.json
+
+      - name: EAS submit
+        run: eas submit -p android --path ./android/app/build/outputs/bundle/release/app-release.aab
