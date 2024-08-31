@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Tech Gadgets",
-    "slug": "Tech Gadgets",
-    "version": "1.0.0",
+    "name": "TechGadgets",
+    "slug": "TechGadgets",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -52,6 +52,7 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -65,6 +66,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "85558772-da3c-4f3a-a368-5ff28abeadf3"
+      }
     }
   }
 }

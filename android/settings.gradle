@@ -1,4 +1,4 @@
-rootProject.name = 'Tech Gadgets'
+rootProject.name = 'TechGadgets'
 
 dependencyResolutionManagement {
   versionCatalogs {
