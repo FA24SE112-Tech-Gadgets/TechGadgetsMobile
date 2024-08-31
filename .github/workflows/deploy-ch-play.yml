@@ -22,6 +22,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Make gradlew executable
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
       # Build AAB file
       - name: Build AAB file
         run: |
