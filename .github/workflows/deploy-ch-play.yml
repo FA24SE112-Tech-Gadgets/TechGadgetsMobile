@@ -40,12 +40,11 @@ jobs:
           ./gradlew bundleRelease
 
       # Install EAS CLI globally
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
-
-      # Authenticate with EAS using a token (store your EAS token as a secret in GitHub)
-      - name: Authenticate with EAS
-        run: eas login --token ${{ secrets.EAS_TOKEN }}
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EAS_TOKEN }}
 
       - name: Create Google Services JSON key
         run: |
