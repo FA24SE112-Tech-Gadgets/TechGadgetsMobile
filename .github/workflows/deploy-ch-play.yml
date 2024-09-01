@@ -29,32 +29,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Setup Expo and EAS
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
       # Make gradlew executable
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
-
-      - name: Load environment variables
-        run: |
-          set -o allexport
-          source .env
-          set +o allexport
-
-      # Prebuild android
-      - name: Prebuild Android
-        run: npx expo prebuild
 
       # Build AAB file
       - name: Build AAB file
         run: |
           cd android
           ./gradlew bundleRelease
+
+      # Setup Expo and EAS
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Create Google Services JSON key
         run: |
