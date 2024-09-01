@@ -3,7 +3,7 @@ name: Build AAB File And Automation EAS Submit
 on:
   push:
     branches:
-      - main # Specify the branches that will trigger the workflow
+      - prod # Specify the branches that will trigger the workflow
 jobs:
   build:
     runs-on: ubuntu-latest
