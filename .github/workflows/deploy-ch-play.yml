@@ -40,6 +40,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
+      - name: Load environment variables
+        run: |
+          set -o allexport
+          source .env
+          set +o allexport
+
       # Prebuild android
       - name: Prebuild Android
         run: npx expo prebuild
