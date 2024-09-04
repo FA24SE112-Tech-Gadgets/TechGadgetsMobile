@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import useAuth from "../../utils/useAuth";
@@ -29,6 +29,13 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import ErrModal from "../CustomComponents/ErrModal";
 import LanguageModal from "../CustomComponents/LanguageModal";
 import { useFocusEffect } from "@react-navigation/native";
+import { Client } from '@stomp/stompjs';
+import 'text-encoding';
+
+const routingKey = "getAllNoti";
+const exchangeName = "test-exchange";
+const webSocketPort = "15674";
+const domainName = "kietpt.online"
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -36,6 +43,7 @@ const LoginScreen = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isRecentPushed, setIsRecentPushed] = useState(false);
+  let client;
 
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
@@ -154,6 +162,46 @@ const LoginScreen = ({ navigation }) => {
       return () => {
         keyboardDidShowListener.remove();
         keyboardDidHideListener.remove();
+      };
+    }, [])
+  );
+
+  const [serverMessages, setServerMessages] = useState([]);
+
+  const connectToRabbitMQ = () => {
+    const headers = {
+      login: 'myadmin', // Replace with your RabbitMQ username
+      passcode: 'mypassword' // Replace with your RabbitMQ password
+    };
+    client = new Client({
+      brokerURL: `ws://${domainName}:${webSocketPort}/ws`,
+      connectHeaders: headers,
+      onConnect: () => {
+        console.log("connect success");
+        client.subscribe(`/exchange/${exchangeName}/${routingKey}`, message => {
+          console.log(`Received: ${message.body}`)
+          setServerMessages(prevNotifications => [
+            ...prevNotifications,
+            message.body
+          ]);
+        }
+        );
+      },
+      appendMissingNULLonIncoming: true,
+      forceBinaryWSFrames: true
+    });
+
+    client.activate();
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      connectToRabbitMQ();
+      return () => {
+        if (client) {
+          console.log("Disconnecting from RabbitMQ");
+          client.deactivate(); // Properly deactivate the client on component unmount
+        }
       };
     }, [])
   );
@@ -286,6 +334,13 @@ const LoginScreen = ({ navigation }) => {
             {t('sign-up-btn')}
           </Text>
         </Pressable>
+
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>STOMP WebSocket Messages:</Text>
+          {serverMessages.map((msg, index) => (
+            <Text key={index}>{msg}</Text>
+          ))}
+        </View>
       </View>
 
       {/* Version control */}
