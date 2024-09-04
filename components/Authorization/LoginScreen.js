@@ -187,6 +187,10 @@ const LoginScreen = ({ navigation }) => {
         }
         );
       },
+      onStompError: (frame) => {
+        const readableString = new TextDecoder().decode(frame.binaryBody);
+        console.log('STOMP error', readableString);
+      },
       appendMissingNULLonIncoming: true,
       forceBinaryWSFrames: true
     });
