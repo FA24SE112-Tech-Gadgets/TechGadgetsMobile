@@ -32,6 +32,8 @@ import TransferInfo from "../components/Payment/TransferInfo";
 import PaymentSuccess from "../components/Payment/PaymentSuccess";
 import PaymentFail from "../components/Payment/PaymentFail";
 import CustomerTransactionHistory from "../components/Customer/CustomerTransactionHistory";
+import BackgroundTask from "../components/Notification/BackgroundTask";
+// import PushNotification from "../components/Notification/PushNotification";
 
 const Stack = createNativeStackNavigator();
 
@@ -50,7 +52,8 @@ const RootNavigator = () => {
             >
               <Stack.Screen
                 name="Login"
-                component={LoginScreen}
+                // component={LoginScreen}
+                component={BackgroundTask}
                 options={{
                   headerShown: false,
                 }}
