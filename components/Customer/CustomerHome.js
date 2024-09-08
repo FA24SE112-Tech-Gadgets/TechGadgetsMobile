@@ -109,17 +109,17 @@ export default function CustomerHome({ navigation }) {
   );
 
   //Scroll banner
-  useFocusEffect(
-    useCallback(() => {
-      const timerId = setInterval(() => {
-        goToNextPage();
-      }, 4000);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const timerId = setInterval(() => {
+  //       goToNextPage();
+  //     }, 4000);
 
-      return () => {
-        clearInterval(timerId);
-      };
-    }, [currentSlide, bannerArr])
-  );
+  //     return () => {
+  //       clearInterval(timerId);
+  //     };
+  //   }, [currentSlide, bannerArr])
+  // );
 
   const handleNavigate = (nameRoute) => {
     navigation.navigate(nameRoute);

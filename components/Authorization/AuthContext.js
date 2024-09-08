@@ -29,7 +29,7 @@ const AuthProvider = ({ children }) => {
   const [currentPackage, setCurrentPackage] = useState(null);
 
   const fetchUser = async () => {
-    const url = "/users/current";
+    const url = "/account";
     try {
       const res = await api.get(url);
       let user = res.data;

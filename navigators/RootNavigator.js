@@ -52,8 +52,7 @@ const RootNavigator = () => {
             >
               <Stack.Screen
                 name="Login"
-                // component={LoginScreen}
-                component={BackgroundTask}
+                component={LoginScreen}
                 options={{
                   headerShown: false,
                 }}

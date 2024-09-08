@@ -11,7 +11,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import CustomerHistory from '../components/Customer/CustomerHistory';
 import CustomerProfile from '../components/Customer/CustomerProfile';
 import CustomCreatePost from '../components/CustomComponents/CustomCreatePost';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import BackgroundTask from '../components/Notification/BackgroundTask';
 
 const Tab = createBottomTabNavigator();
 
@@ -62,7 +63,7 @@ const CustomerNavigator = () => {
 				}}
 			/>
 			<Tab.Screen
-				name='CustomSocial'
+				name='CustomerSocial'
 				component={CustomSocial}
 				options={{
 					tabBarIcon: ({ color, size }) => (
@@ -71,11 +72,11 @@ const CustomerNavigator = () => {
 				}}
 			/>
 			<Tab.Screen
-				name='CustomCreatePost'
-				component={CustomCreatePost}
+				name='BackgroundTask'
+				component={BackgroundTask}
 				options={{
 					tabBarIcon: ({ color, size }) => (
-						<Feather name="plus-square" size={+size} color={color} />
+						<Ionicons name="notifications" size={+size} color={color} />
 					),
 				}}
 			/>

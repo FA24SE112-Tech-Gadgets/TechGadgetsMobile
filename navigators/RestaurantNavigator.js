@@ -61,7 +61,7 @@ const RestaurantNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name='CustomSocial'
+                name='RestaurantSocial'
                 component={CustomSocial}
                 options={{
                     tabBarIcon: ({ color, size }) => (
@@ -70,7 +70,7 @@ const RestaurantNavigator = () => {
                 }}
             />
             <Tab.Screen
-                name='CustomCreatePost'
+                name='RestaurantCreatePost'
                 component={CustomCreatePost}
                 options={{
                     tabBarIcon: ({ color, size }) => (

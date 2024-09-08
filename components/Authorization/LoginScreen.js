@@ -58,14 +58,14 @@ const LoginScreen = ({ navigation }) => {
 
   const url =
     NODE_ENV == "development"
-      ? (DEV_API + "/auth/login")
-      : (PRO_API + "/auth/login");
+      ? (DEV_API + "/account/login")
+      : (PRO_API + "/account/login");
 
   const handleLoginBtn = async () => {
     setIsRecentPushed(true);
     try {
       const res = await axios.post(url, {
-        email: username,
+        userName: username,
         password,
       });
       const { token, refreshToken } = res.data;
