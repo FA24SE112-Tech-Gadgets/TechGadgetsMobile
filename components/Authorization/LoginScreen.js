@@ -28,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import ErrModal from "../CustomComponents/ErrModal";
 import LanguageModal from "../CustomComponents/LanguageModal";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Client } from '@stomp/stompjs';
 import 'text-encoding';
 
@@ -37,7 +37,8 @@ const exchangeName = "test-exchange";
 const webSocketPort = "15674";
 const domainName = "kietpt.online"
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
+  const navigation = useNavigation()
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +55,7 @@ const LoginScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [openChooseLanguage, setOpenChooseLanguage] = useState(false);
 
-  const { login, fetchUser, user } = useAuth();
+  const { login, user, isLoggedIn } = useAuth();
 
   const url =
     NODE_ENV == "development"
@@ -205,6 +206,7 @@ const LoginScreen = ({ navigation }) => {
     client.activate();
   };
 
+  //Connect RabbitMQ
   useFocusEffect(
     useCallback(() => {
       connectToRabbitMQ();
@@ -219,15 +221,14 @@ const LoginScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchFunction = async () => {
-        await fetchUser();
-        if (user?.role == "User" || user?.role == "Student") {
+      const fetchFunction = () => {
+        if ((user?.Role == "User" || user?.Role == "Student") && isLoggedIn) {
           navigation.replace("StackCustomerHome")
           return;
         }
       }
       fetchFunction();
-    }, [])
+    }, [isLoggedIn])
   );
 
   return (

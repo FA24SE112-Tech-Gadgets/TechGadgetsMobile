@@ -19,7 +19,7 @@ const Tab = createBottomTabNavigator();
 
 const CustomerNavigator = () => {
 	const [cart, setCart] = useState([]);
-	const { isChanged, user } = useAuth();
+	const { isChanged, user, isLoggedIn } = useAuth();
 
 	useEffect(() => {
 		const loadCart = async () => {
@@ -41,7 +41,7 @@ const CustomerNavigator = () => {
 			screenOptions={({ route }) => ({
 				headerShown: false,
 				tabBarStyle: {
-					display: route.name === 'BackgroundTask' ? 'none' : 'flex',
+					display: !isLoggedIn ? 'none' : 'flex',
 					borderTopRightRadius: 15,
 					borderTopLeftRadius: 15,
 					backgroundColor: "#FB6562",
@@ -50,7 +50,10 @@ const CustomerNavigator = () => {
 				tabBarActiveTintColor: "white",
 				tabBarInactiveTintColor: "white",
 				tabBarActiveBackgroundColor: "#E25F5C",
-				tabBarHideOnKeyboard: true
+				tabBarHideOnKeyboard: true,
+				// tabBarItemStyle: {
+				// 	display: route.name === 'BackgroundTask' ? 'none' : 'flex',
+				// }
 			})}
 		>
 			<Tab.Screen

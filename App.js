@@ -1,33 +1,36 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { AuthProvider } from "./components/Authorization/AuthContext";
 import RootNavigator from "./navigators/RootNavigator";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { CommentProvider } from "./components/CustomComponents/CommentContext";
 import api from "./components/Authorization/api";
+import LoadingScreen from "./components/LoadingScreen/Loading";
+import useAuth from "./utils/useAuth";
 
 export default function App() {
-  const fetchUser = async () => {
-    const url = "/account";
-    try {
-      const res = await api.get(url);
-      let user = res.data;
+  const { isLoggedIn, fetchUser } = useAuth();
+  // const fetchUser = async () => {
+  //   const url = "/account";
+  //   try {
+  //     const res = await api.get(url);
+  //     let user = res.data;
 
-      console.log("check here", user);
-      if (user) {
-        return user
-      } else {
-        return null
-      }
+  //     console.log("check here", user);
+  //     if (user) {
+  //       return user
+  //     } else {
+  //       return null
+  //     }
 
-    } catch (error) {
-      console.log("Don't have token");
-      return null
-    }
-  };
+  //   } catch (error) {
+  //     console.log("Don't have token");
+  //     return null
+  //   }
+  // };
 
   const linking = {
     prefixes: ["techgadgets://"],
@@ -108,8 +111,8 @@ export default function App() {
 
         // Any custom logic to see whether the URL needs to be handled
         //...
-        const user = await fetchUser();
-        if (user) {
+        await fetchUser();
+        if (isLoggedIn) {
           //Fetch API /api/notification/{notificationId} for update Seen
           try {
             const res = await api.get(`/notification/${notificationId}`);
@@ -134,9 +137,10 @@ export default function App() {
       };
     },
   };
+
   return (
     <SafeAreaProvider>
-      <NavigationContainer linking={linking}>
+      <NavigationContainer linking={linking} fallback={<LoadingScreen />}>
         <AuthProvider>
           <CommentProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>

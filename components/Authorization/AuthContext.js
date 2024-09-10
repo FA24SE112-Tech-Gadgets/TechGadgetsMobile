@@ -79,7 +79,7 @@ const AuthProvider = ({ children }) => {
   }
 
   const login = async () => {
-    fetchUser();
+    await fetchUser();
   };
 
   const logout = async () => {
@@ -89,6 +89,12 @@ const AuthProvider = ({ children }) => {
     await AsyncStorage.removeItem("refreshToken");
     await AsyncStorage.removeItem("token");
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      login();
+    }, [])
+  );
 
   return (
     <AuthContext.Provider
