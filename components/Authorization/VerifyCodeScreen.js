@@ -13,7 +13,7 @@ import ErrModal from "../CustomComponents/ErrModal";
 import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 
-const VerifyCodeScreen = ({ route }) => {
+const VerifyCodeScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { email } = route.params;
   const { login } = useAuth();
@@ -66,8 +66,10 @@ const VerifyCodeScreen = ({ route }) => {
 
         const { token, refreshToken } = response.data;
 
-        const decoded = jwtDecode(token);
-        if (decoded.role == "MANAGER" || decoded.role == "ADMIN") {
+        const decodedToken = jwtDecode(token);
+        const userInfo = JSON.parse(decodedToken.UserInfo);
+
+        if (userInfo.Role == "MANAGER" || userInfo.Role == "ADMIN") {
           setStringErr("Vui lòng sử dụng tài khoản quán ăn hoặc khách hàng");
           setIsError(true);
           return;
@@ -76,8 +78,10 @@ const VerifyCodeScreen = ({ route }) => {
         await AsyncStorage.setItem("token", token);
 
         await login();
-
-        // navigation.navigate("customer-home", { screen: "CustomerHome" });
+        if (userInfo.Role == "User" || userInfo.Role == "Student") {
+          navigation.replace("StackCustomerHome")
+          return;
+        }
       } else if (response.status == 400) {
         const data = await response.json();
         setIsError(true);

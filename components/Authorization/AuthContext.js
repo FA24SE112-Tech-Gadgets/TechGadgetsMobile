@@ -18,6 +18,7 @@ const AuthContext = createContext({
   fetchSubscription: async (status, page, limit) => { },
   currentPackage: {},
   setCurrentPackage: () => { },
+  fetchUser: () => { },
 });
 
 const AuthProvider = ({ children }) => {
@@ -32,7 +33,7 @@ const AuthProvider = ({ children }) => {
     const url = "/account";
     try {
       const res = await api.get(url);
-      let user = res.data;
+      let user = res?.data;
       if (user.role == "RESTAURANT") {
         const urlRestaurant = "/restaurants/current";
         const res = await api.get(urlRestaurant);
@@ -77,12 +78,6 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchUser();
-    }, [])
-  );
-
   const login = async () => {
     fetchUser();
   };
@@ -111,6 +106,7 @@ const AuthProvider = ({ children }) => {
         fetchSubscription,
         currentPackage,
         setCurrentPackage,
+        fetchUser
       }}
     >
       {children}

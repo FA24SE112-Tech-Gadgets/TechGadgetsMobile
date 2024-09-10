@@ -54,7 +54,7 @@ const LoginScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [openChooseLanguage, setOpenChooseLanguage] = useState(false);
 
-  const { login } = useAuth();
+  const { login, fetchUser, user } = useAuth();
 
   const url =
     NODE_ENV == "development"
@@ -70,8 +70,10 @@ const LoginScreen = ({ navigation }) => {
       });
       const { token, refreshToken } = res.data;
 
-      const decoded = jwtDecode(token);
-      if (decoded.role == "MANAGER" || decoded.role == "ADMIN") {
+      const decodedToken = jwtDecode(token);
+      const userInfo = JSON.parse(decodedToken.UserInfo);
+
+      if (userInfo.Role == "MANAGER" || userInfo.Role == "ADMIN") {
         setStringErr(t("role-required"));
         setIsError(true);
         return;
@@ -80,6 +82,11 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem("token", token);
 
       await login();
+
+      if (userInfo.Role == "User" || userInfo.Role == "Student") {
+        navigation.replace("StackCustomerHome")
+        return;
+      }
     } catch (error) {
       if (error.response.data.code === "WEA-0010") {
         //Code user
@@ -207,6 +214,19 @@ const LoginScreen = ({ navigation }) => {
           client.deactivate(); // Properly deactivate the client on component unmount
         }
       };
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchFunction = async () => {
+        await fetchUser();
+        if (user?.role == "User" || user?.role == "Student") {
+          navigation.replace("StackCustomerHome")
+          return;
+        }
+      }
+      fetchFunction();
     }, [])
   );
 

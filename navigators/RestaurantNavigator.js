@@ -50,7 +50,6 @@ const RestaurantNavigator = () => {
         >
             <Tab.Screen
                 name='RestaurantHome'
-                component={RestaurantHome}
                 options={{
                     tabBarIcon: ({ color, size }) => (
                         <Icon name="home" size={+size} color={color} />
@@ -59,25 +58,41 @@ const RestaurantNavigator = () => {
                         borderTopLeftRadius: 15,
                     }
                 }}
-            />
+            >
+                {() => (
+                    <AuthRoute>
+                        <RestaurantHome />
+                    </AuthRoute>
+                )}
+            </Tab.Screen>
             <Tab.Screen
                 name='RestaurantSocial'
-                component={CustomSocial}
                 options={{
                     tabBarIcon: ({ color, size }) => (
                         <FontAwesome name="globe" size={+size} color={color} />
                     ),
                 }}
-            />
+            >
+                {() => (
+                    <AuthRoute>
+                        <CustomSocial />
+                    </AuthRoute>
+                )}
+            </Tab.Screen>
             <Tab.Screen
                 name='RestaurantCreatePost'
-                component={CustomCreatePost}
                 options={{
                     tabBarIcon: ({ color, size }) => (
                         <Feather name="plus-square" size={+size} color={color} />
                     ),
                 }}
-            />
+            >
+                {() => (
+                    <AuthRoute>
+                        <CustomCreatePost />
+                    </AuthRoute>
+                )}
+            </Tab.Screen>
             <Tab.Screen
                 name='RestaurantTransactionHistory'
                 component={RestaurantTransactionHistory}
@@ -86,7 +101,13 @@ const RestaurantNavigator = () => {
                         <IconRneui type="material-community" name="chart-box-outline" size={+size} color={color} />
                     ),
                 }}
-            />
+            >
+                {() => (
+                    <AuthRoute>
+                        <RestaurantTransactionHistory />
+                    </AuthRoute>
+                )}
+            </Tab.Screen>
             <Tab.Screen
                 name='RestaurantProfile'
                 component={RestaurantProfile}
@@ -98,7 +119,13 @@ const RestaurantNavigator = () => {
                         borderTopRightRadius: 15,
                     }
                 }}
-            />
+            >
+                {() => (
+                    <AuthRoute>
+                        <RestaurantProfile />
+                    </AuthRoute>
+                )}
+            </Tab.Screen>
         </Tab.Navigator>
     );
 };

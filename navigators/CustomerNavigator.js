@@ -13,6 +13,7 @@ import CustomerProfile from '../components/Customer/CustomerProfile';
 import CustomCreatePost from '../components/CustomComponents/CustomCreatePost';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundTask from '../components/Notification/BackgroundTask';
+import AuthRoute from '../components/Authorization/AuthRoute';
 
 const Tab = createBottomTabNavigator();
 
@@ -52,7 +53,6 @@ const CustomerNavigator = () => {
 		>
 			<Tab.Screen
 				name='CustomerHome'
-				component={CustomerHome}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<Icon name="home" size={+size} color={color} />
@@ -61,37 +61,57 @@ const CustomerNavigator = () => {
 						borderTopLeftRadius: 15,
 					}
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerHome />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='CustomerSocial'
-				component={CustomSocial}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<FontAwesome name="globe" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomSocial />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='BackgroundTask'
-				component={BackgroundTask}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<Ionicons name="notifications" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<BackgroundTask />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='CustomerHistory'
-				component={CustomerHistory}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<FontAwesome5 name="history" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerHistory />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='CustomerProfile'
-				component={CustomerProfile}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<MaterialIcons name="person" size={+size} color={color} />
@@ -100,7 +120,13 @@ const CustomerNavigator = () => {
 						borderTopRightRadius: 15,
 					}
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerProfile />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 		</Tab.Navigator>
 	);
 };
