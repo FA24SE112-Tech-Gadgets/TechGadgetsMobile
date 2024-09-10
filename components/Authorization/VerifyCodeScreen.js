@@ -79,7 +79,12 @@ const VerifyCodeScreen = ({ navigation, route }) => {
 
         await login();
         if (userInfo.Role == "User" || userInfo.Role == "Student") {
-          navigation.replace("StackCustomerHome")
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,  // Starts at the first screen in the stack
+              routes: [{ name: 'StackCustomerHome' }],
+            })
+          );
           return;
         }
       } else if (response.status == 400) {

@@ -28,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import ErrModal from "../CustomComponents/ErrModal";
 import LanguageModal from "../CustomComponents/LanguageModal";
-import { useFocusEffect } from "@react-navigation/native";
+import { CommonActions, useFocusEffect } from "@react-navigation/native";
 import { Client } from '@stomp/stompjs';
 import 'text-encoding';
 
@@ -84,7 +84,12 @@ const LoginScreen = ({ navigation }) => {
       await login();
 
       if (userInfo.Role == "User" || userInfo.Role == "Student") {
-        navigation.replace("StackCustomerHome")
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,  // Starts at the first screen in the stack
+            routes: [{ name: 'StackCustomerHome' }],
+          })
+        );
         return;
       }
     } catch (error) {
