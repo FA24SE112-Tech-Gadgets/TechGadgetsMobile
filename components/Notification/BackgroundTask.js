@@ -4,6 +4,7 @@ import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 import api from '../Authorization/api';
+import { useNavigation } from '@react-navigation/native';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -83,7 +84,8 @@ async function registerForPushNotificationsAsync() {
     }
 }
 
-export default function BackgroundTask({ navigation }) {
+export default function BackgroundTask() {
+    const navigation = useNavigation();
     const [isRegistered, setIsRegistered] = useState(false);
     const [status, setStatus] = useState(null);
 

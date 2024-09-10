@@ -38,9 +38,10 @@ const CustomerNavigator = () => {
 	return (
 		<Tab.Navigator
 			initialRouteName='CustomerHome'
-			screenOptions={{
+			screenOptions={({ route }) => ({
 				headerShown: false,
 				tabBarStyle: {
+					display: route.name === 'BackgroundTask' ? 'none' : 'flex',
 					borderTopRightRadius: 15,
 					borderTopLeftRadius: 15,
 					backgroundColor: "#FB6562",
@@ -48,8 +49,9 @@ const CustomerNavigator = () => {
 				tabBarShowLabel: false,
 				tabBarActiveTintColor: "white",
 				tabBarInactiveTintColor: "white",
-				tabBarActiveBackgroundColor: "#E25F5C"
-			}}
+				tabBarActiveBackgroundColor: "#E25F5C",
+				tabBarHideOnKeyboard: true
+			})}
 		>
 			<Tab.Screen
 				name='CustomerHome'

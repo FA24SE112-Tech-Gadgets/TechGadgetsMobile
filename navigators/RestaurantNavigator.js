@@ -45,7 +45,8 @@ const RestaurantNavigator = () => {
                 tabBarShowLabel: false,
                 tabBarActiveTintColor: "white",
                 tabBarInactiveTintColor: "white",
-                tabBarActiveBackgroundColor: "#E25F5C"
+                tabBarActiveBackgroundColor: "#E25F5C",
+                tabBarHideOnKeyboard: true
             }}
         >
             <Tab.Screen
