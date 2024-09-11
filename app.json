@@ -54,6 +54,9 @@
           "RNMapboxMapsDownloadToken": "sk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTgzeWNyMDY5ZDJrczllYXFlNGcwayJ9.4ukbF2sMxF2Qmu0_JnlvCw",
           "RNMapboxMapsVersion": "11.0.0"
         }
+      ],
+      [
+        "@react-native-google-signin/google-signin"
       ]
     ],
     "ios": {

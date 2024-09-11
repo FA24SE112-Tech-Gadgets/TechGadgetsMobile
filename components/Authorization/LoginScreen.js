@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Button,
   Keyboard,
   Linking,
   PermissionsAndroid,
@@ -31,6 +32,11 @@ import LanguageModal from "../CustomComponents/LanguageModal";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Client } from '@stomp/stompjs';
 import 'text-encoding';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 const routingKey = "getAllNoti";
 const exchangeName = "test-exchange";
@@ -38,6 +44,10 @@ const webSocketPort = "15674";
 const domainName = "kietpt.online"
 
 const LoginScreen = () => {
+  GoogleSignin.configure({
+    webClientId: '918667179231-suhe212hae2usf0v7o8bcsdj5fd81cto.apps.googleusercontent.com',
+  })
+
   const navigation = useNavigation()
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -222,7 +232,7 @@ const LoginScreen = () => {
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
-        if ((user?.Role == "User" || user?.Role == "Student") && isLoggedIn) {
+        if ((user?.role == "User" || user?.role == "Student") && isLoggedIn) {
           navigation.replace("StackCustomerHome")
           return;
         }
@@ -331,6 +341,42 @@ const LoginScreen = () => {
             <ActivityIndicator color={"white"} />
           }
         </Pressable>
+
+        <GoogleSigninButton
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={async () => {
+            try {
+              await GoogleSignin.hasPlayServices()
+              const userInfo = await GoogleSignin.signIn();
+              console.log(userInfo);
+
+              const token = await GoogleSignin.getTokens();
+              console.log(token.accessToken);
+
+            } catch (error) {
+              if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                // user cancelled the login flow
+                console.log("SIGN_IN_CANCELLED");
+              } else if (error.code === statusCodes.IN_PROGRESS) {
+                // operation (e.g. sign in) is in progress already
+                console.log("IN_PROGRESS");
+              } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                // play services not available or outdated
+                console.log("PLAY_SERVICES_NOT_AVAILABLE");
+              } else {
+                // some other error happened
+                console.log("some other error happened");
+              }
+            }
+          }}
+        />
+
+        <Button title="Sign out" onPress={async () => {
+          await GoogleSignin.hasPlayServices()
+          await GoogleSignin.signOut()
+        }} />
+
         <Text
           style={{
             width: "100%",
