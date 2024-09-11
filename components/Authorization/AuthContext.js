@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useState } from "react";
 import api from "./api";
 import { useFocusEffect } from "@react-navigation/native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const AuthContext = createContext({
   isLoggedIn: false,
@@ -86,6 +87,7 @@ const AuthProvider = ({ children }) => {
     setIsLoggedIn(false);
     setUser(null);
     setIsTimerRunning(false);
+    await GoogleSignin.signOut();
     await AsyncStorage.removeItem("refreshToken");
     await AsyncStorage.removeItem("token");
   };

@@ -83,7 +83,8 @@ const LoginScreen = () => {
 
       const decodedToken = jwtDecode(token);
       const userInfo = JSON.parse(decodedToken.UserInfo);
-
+      
+ 
       if (userInfo.Role == "MANAGER" || userInfo.Role == "ADMIN") {
         setStringErr(t("role-required"));
         setIsError(true);
@@ -118,6 +119,34 @@ const LoginScreen = () => {
       setIsRecentPushed(false);
     }
   };
+
+  const handleLoginGoogle = async (accessToken) => {
+    try {
+      const response = await axios.post(`https://kietpt.online/api/google/signin/${accessToken}`);
+      const { token: apiToken, refreshToken } = response.data; 
+    
+      const decodedToken = jwtDecode(apiToken);
+      console.log('Decoded Token:', decodedToken);
+      const userInfo = JSON.parse(decodedToken.UserInfo);
+      console.log('User Info là:', userInfo);
+      console.log('User Info Role là:', userInfo.Role);
+      await AsyncStorage.setItem("refreshToken", refreshToken);
+      await AsyncStorage.setItem("token", apiToken);
+      
+      await login();
+
+      if (userInfo.Role === 'User' || userInfo.Role === 'Student') {
+      
+        navigation.replace('StackCustomerHome');
+        return;
+      } else {
+        console.log('Other Role:', userInfo.Role);
+      }
+    } catch (error) {
+      console.error('API call error:', error);
+    }
+  };
+
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -343,39 +372,31 @@ const LoginScreen = () => {
         </Pressable>
 
         <GoogleSigninButton
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={async () => {
-            try {
-              await GoogleSignin.hasPlayServices()
-              const userInfo = await GoogleSignin.signIn();
-              console.log(userInfo);
+      size={GoogleSigninButton.Size.Wide}
+      color={GoogleSigninButton.Color.Dark}
+      onPress={async () => {
+        try {
+          await GoogleSignin.hasPlayServices();
+          const userInfo = await GoogleSignin.signIn();
+          console.log(userInfo);
 
-              const token = await GoogleSignin.getTokens();
-              console.log(token.accessToken);
+          const token = await GoogleSignin.getTokens();
+          console.log('Access Token:', token.accessToken);
 
-            } catch (error) {
-              if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-                // user cancelled the login flow
-                console.log("SIGN_IN_CANCELLED");
-              } else if (error.code === statusCodes.IN_PROGRESS) {
-                // operation (e.g. sign in) is in progress already
-                console.log("IN_PROGRESS");
-              } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                // play services not available or outdated
-                console.log("PLAY_SERVICES_NOT_AVAILABLE");
-              } else {
-                // some other error happened
-                console.log("some other error happened");
-              }
-            }
-          }}
-        />
-
-        <Button title="Sign out" onPress={async () => {
-          await GoogleSignin.hasPlayServices()
-          await GoogleSignin.signOut()
-        }} />
+          await handleLoginGoogle(token.accessToken);
+        } catch (error) {
+          if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+            console.log("SIGN_IN_CANCELLED");
+          } else if (error.code === statusCodes.IN_PROGRESS) {
+            console.log("IN_PROGRESS");
+          } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+            console.log("PLAY_SERVICES_NOT_AVAILABLE");
+          } else {
+            console.log("Some other error happened", error);
+          }
+        }
+      }}
+    />
 
         <Text
           style={{
