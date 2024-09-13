@@ -14,6 +14,7 @@ import CustomCreatePost from '../components/CustomComponents/CustomCreatePost';
 import { Ionicons } from '@expo/vector-icons';
 import BackgroundTask from '../components/Notification/BackgroundTask';
 import AuthRoute from '../components/Authorization/AuthRoute';
+import UploadFileDemo from '../components/UploadFile/UploadFileDemo';
 
 const Tab = createBottomTabNavigator();
 
@@ -83,7 +84,7 @@ const CustomerNavigator = () => {
 			>
 				{() => (
 					<AuthRoute>
-						<CustomSocial />
+						<UploadFileDemo />
 					</AuthRoute>
 				)}
 			</Tab.Screen>

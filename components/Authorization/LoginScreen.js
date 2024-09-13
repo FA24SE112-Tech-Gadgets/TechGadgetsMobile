@@ -83,8 +83,8 @@ const LoginScreen = () => {
 
       const decodedToken = jwtDecode(token);
       const userInfo = JSON.parse(decodedToken.UserInfo);
-      
- 
+
+
       if (userInfo.Role == "MANAGER" || userInfo.Role == "ADMIN") {
         setStringErr(t("role-required"));
         setIsError(true);
@@ -123,8 +123,8 @@ const LoginScreen = () => {
   const handleLoginGoogle = async (accessToken) => {
     try {
       const response = await axios.post(`https://kietpt.online/api/google/signin/${accessToken}`);
-      const { token: apiToken, refreshToken } = response.data; 
-    
+      const { token: apiToken, refreshToken } = response.data;
+
       const decodedToken = jwtDecode(apiToken);
       console.log('Decoded Token:', decodedToken);
       const userInfo = JSON.parse(decodedToken.UserInfo);
@@ -132,11 +132,11 @@ const LoginScreen = () => {
       console.log('User Info Role là:', userInfo.Role);
       await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("token", apiToken);
-      
+
       await login();
 
       if (userInfo.Role === 'User' || userInfo.Role === 'Student') {
-      
+
         navigation.replace('StackCustomerHome');
         return;
       } else {
@@ -152,25 +152,62 @@ const LoginScreen = () => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  const getPermissionAndroid = async () => {
+  // const getPermissionAndroid = async () => {
+  //   try {
+  //     let granted;
+  //     if (parseInt(Platform.Version.toString()) >= 32) {
+  //       granted = await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+  //       );
+  //     } else {
+  //       granted = await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+  //       );
+  //     }
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
+  const getPermissionsAndroid = async () => {
     try {
-      let granted;
-      if (parseInt(Platform.Version.toString()) >= 32) {
-        granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        );
+      const permissions = [];
+
+      if (Platform.Version >= 33) {
+        // For Android 13 (API level 33) and later
+        permissions.push(PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES);
+      } else if (Platform.Version >= 30) {
+        // For Android 11 (API level 30) to Android 12 (API level 31)
+        permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+        // Add any other permissions for Android 11 and 12
       } else {
-        granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-        );
+        // For Android 10 and below
+        permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+        // Add any other permissions for Android 10 and below
       }
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+
+      // Request permissions
+      const grantedPermissions = await Promise.all(
+        permissions.map(permission => PermissionsAndroid.request(permission))
+      );
+
+      // Check if all permissions are granted
+      const allGranted = grantedPermissions.every(result => result === PermissionsAndroid.RESULTS.GRANTED);
+
+      if (allGranted) {
+        console.log('All permissions granted');
         return true;
       } else {
+        console.log('Some permissions denied');
         return false;
       }
     } catch (err) {
       console.warn(err);
+      return false;
     }
   };
 
@@ -186,10 +223,12 @@ const LoginScreen = () => {
           return;
         }
         if (Platform.OS === "android") {
-          const granted = await getPermissionAndroid();
+          const granted = await getPermissionsAndroid();
           if (!granted) {
+            console.log('Permissions denied');
             return;
           }
+          console.log('Permissions granted');
         }
       })();
     }, [])
@@ -372,31 +411,31 @@ const LoginScreen = () => {
         </Pressable>
 
         <GoogleSigninButton
-      size={GoogleSigninButton.Size.Wide}
-      color={GoogleSigninButton.Color.Dark}
-      onPress={async () => {
-        try {
-          await GoogleSignin.hasPlayServices();
-          const userInfo = await GoogleSignin.signIn();
-          console.log(userInfo);
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={async () => {
+            try {
+              await GoogleSignin.hasPlayServices();
+              const userInfo = await GoogleSignin.signIn();
+              console.log(userInfo);
 
-          const token = await GoogleSignin.getTokens();
-          console.log('Access Token:', token.accessToken);
+              const token = await GoogleSignin.getTokens();
+              console.log('Access Token:', token.accessToken);
 
-          await handleLoginGoogle(token.accessToken);
-        } catch (error) {
-          if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-            console.log("SIGN_IN_CANCELLED");
-          } else if (error.code === statusCodes.IN_PROGRESS) {
-            console.log("IN_PROGRESS");
-          } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-            console.log("PLAY_SERVICES_NOT_AVAILABLE");
-          } else {
-            console.log("Some other error happened", error);
-          }
-        }
-      }}
-    />
+              await handleLoginGoogle(token.accessToken);
+            } catch (error) {
+              if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                console.log("SIGN_IN_CANCELLED");
+              } else if (error.code === statusCodes.IN_PROGRESS) {
+                console.log("IN_PROGRESS");
+              } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                console.log("PLAY_SERVICES_NOT_AVAILABLE");
+              } else {
+                console.log("Some other error happened", error);
+              }
+            }
+          }}
+        />
 
         <Text
           style={{
