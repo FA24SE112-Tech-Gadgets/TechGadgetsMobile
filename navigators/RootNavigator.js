@@ -1,15 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import useAuth from "../utils/useAuth";
 import CustomerNavigator from "./CustomerNavigator";
 import LoginScreen from "../components/Authorization/LoginScreen";
 import RegisterScreen from "../components/Authorization/RegisterScreen";
 import RestaurantNavigator from "./RestaurantNavigator";
-import LoadingScreen from "../components/LoadingScreen/Loading";
 import CustomerAfterRandom from "../components/Customer/CustomerAfterRandom";
 import CustomerDishDetail from "../components/Customer/CustomerDishDetail";
 import CustomerRating from "../components/Customer/CustomerRating";
 import CustomerAddReview from "../components/Customer/CustomerAddReview";
-import RestaurantTransactionHistory from "../components/Restaurant/RestaurantTransactionHistory";
 import RestaurantDishDetail from "../components/Restaurant/RestaurantDishDetail";
 import RestaurantRating from "../components/Restaurant/RestaurantRating";
 import RestaurantEditDish from "../components/Restaurant/RestaurantEditDish";
@@ -32,106 +29,199 @@ import TransferInfo from "../components/Payment/TransferInfo";
 import PaymentSuccess from "../components/Payment/PaymentSuccess";
 import PaymentFail from "../components/Payment/PaymentFail";
 import CustomerTransactionHistory from "../components/Customer/CustomerTransactionHistory";
+import AuthRoute from "../components/Authorization/AuthRoute";
 
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
-  const { isLoggedIn, user, isLoading } = useAuth();
-
   return (
-    <>
-      {isLoading ? (
-        <LoadingScreen />
-      ) : (
-        <>
-          {!isLoggedIn ? (
-            <Stack.Navigator
-              screenOptions={{ statusBarColor: "black" }}
-            >
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="Register"
-                component={RegisterScreen}
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="VerifyCode"
-                component={VerifyCodeScreen}
-                options={{
-                  headerShown: false,
-                }}
-              />
-            </Stack.Navigator>
-          ) : (
-            <Stack.Navigator
-              screenOptions={{
-                headerShown: false,
-                statusBarColor: "black",
-              }}
-            >
-              {user?.role?.toLowerCase() === "user" ? (
-                <>
-                  <Stack.Screen name="StackCustomerHome" component={CustomerNavigator} options={{ statusBarColor: "black", }} />
-                  <Stack.Screen name="CustomerAfterRandom" component={CustomerAfterRandom} />
-                  <Stack.Screen name="CustomerDishDetail" component={CustomerDishDetail} />
-                  <Stack.Screen name="CustomerRating" component={CustomerRating} />
-                  <Stack.Screen name="CustomerAddReview" component={CustomerAddReview} />
-                  <Stack.Screen name="CustomerHistoryDetail" component={CustomerHistoryDetail} />
-                  <Stack.Screen name="CustomExplore" component={CustomExplore} />
-                  <Stack.Screen name="CustomCreatePost" component={CustomCreatePost} />
-                  <Stack.Screen name="AboutWhatEat" component={AboutWhatEat} />
-                  <Stack.Screen name="CustomProfile" component={CustomProfile} />
-                  <Stack.Screen name="PersonalPage" component={PersonalPage} />
-                  <Stack.Screen name="Policy" component={Policy} />
-                  <Stack.Screen name="PasswordAndSecure" component={PasswordAndSecure} />
-                  <Stack.Screen name="ChangeProfile" component={ChangeProfile} />
-                  <Stack.Screen name="SaveInfoAccounts" component={SaveInfoAccounts} />
-                  <Stack.Screen name="Comment" component={CommentScreen} options={{ animation: "slide_from_bottom" }} />
-                  <Stack.Screen name="EditComment" component={EditComment} />
-                  <Stack.Screen name="TransferInfo" component={TransferInfo} />
-                  <Stack.Screen name="CustomerTransactionHistory" component={CustomerTransactionHistory} />
-                  <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
-                  <Stack.Screen name="PaymentFail" component={PaymentFail} />
-                </>
-              ) : (
-                user?.role?.toLowerCase() === "restaurant" && (
-                  <>
-                    <Stack.Screen name="StackRestaurantHome" component={RestaurantNavigator} />
-                    <Stack.Screen name="CustomExplore" component={CustomExplore} />
-                    <Stack.Screen name="CustomCreatePost" component={CustomCreatePost} />
-                    <Stack.Screen name="RestaurantDishDetail" component={RestaurantDishDetail} />
-                    <Stack.Screen name="RestaurantDishRating" component={RestaurantRating} />
-                    <Stack.Screen name="RestaurantEditDish" component={RestaurantEditDish} />
-                    <Stack.Screen name="RestaurantAddDish" component={RestaurantAddDish} />
-                    <Stack.Screen name="AboutWhatEat" component={AboutWhatEat} />
-                    <Stack.Screen name="CustomProfile" component={CustomProfile} />
-                    <Stack.Screen name="PersonalPage" component={PersonalPage} />
-                    <Stack.Screen name="PasswordAndSecure" component={PasswordAndSecure} />
-                    <Stack.Screen name="ChangeProfile" component={ChangeProfile} />
-                    <Stack.Screen name="SaveInfoAccounts" component={SaveInfoAccounts} />
-                    <Stack.Screen name="Policy" component={Policy} />
-                    <Stack.Screen name="Comment" component={CommentScreen} options={{ animation: "slide_from_bottom" }} />
-                    <Stack.Screen name="EditComment" component={EditComment} />
-                    <Stack.Screen name="AddRequestFood" component={AddRequestFood} />
-                    <Stack.Screen name="TransferInfo" component={TransferInfo} />
-                    <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
-                    <Stack.Screen name="PaymentFail" component={PaymentFail} />
-                  </>
-                )
-              )}
-            </Stack.Navigator>
-          )}
-        </>
-      )}
-    </>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        statusBarColor: "black",
+      }}
+    >
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="StackCustomerHome" component={CustomerNavigator} options={{ statusBarColor: "black", }} />
+      <Stack.Screen name="CustomerAfterRandom">
+        {() => (
+          <AuthRoute>
+            <CustomerAfterRandom />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomerDishDetail">
+        {() => (
+          <AuthRoute>
+            <CustomerDishDetail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomerRating" >
+        {() => (
+          <AuthRoute>
+            <CustomerRating />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomerAddReview" >
+        {() => (
+          <AuthRoute>
+            <CustomerAddReview />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomerHistoryDetail" >
+        {() => (
+          <AuthRoute>
+            <CustomerHistoryDetail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomExplore" >
+        {() => (
+          <AuthRoute>
+            <CustomExplore />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomCreatePost" >
+        {() => (
+          <AuthRoute>
+            <CustomCreatePost />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="AboutWhatEat" >
+        {() => (
+          <AuthRoute>
+            <AboutWhatEat />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomProfile" >
+        {() => (
+          <AuthRoute>
+            <CustomProfile />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PersonalPage" >
+        {() => (
+          <AuthRoute>
+            <PersonalPage />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="Policy" >
+        {() => (
+          <AuthRoute>
+            <Policy />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PasswordAndSecure" >
+        {() => (
+          <AuthRoute>
+            <PasswordAndSecure />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="ChangeProfile" >
+        {() => (
+          <AuthRoute>
+            <ChangeProfile />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SaveInfoAccounts" >
+        {() => (
+          <AuthRoute>
+            <SaveInfoAccounts />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="Comment" options={{ animation: "slide_from_bottom" }} >
+        {() => (
+          <AuthRoute>
+            <CommentScreen />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="EditComment" >
+        {() => (
+          <AuthRoute>
+            <EditComment />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="TransferInfo" >
+        {() => (
+          <AuthRoute>
+            <TransferInfo />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="CustomerTransactionHistory" >
+        {() => (
+          <AuthRoute>
+            <CustomerTransactionHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PaymentSuccess" >
+        {() => (
+          <AuthRoute>
+            <PaymentSuccess />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PaymentFail" >
+        {() => (
+          <AuthRoute>
+            <PaymentFail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="StackRestaurantHome" component={RestaurantNavigator} />
+      <Stack.Screen name="RestaurantDishDetail"  >
+        {() => (
+          <AuthRoute>
+            <RestaurantDishDetail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="RestaurantDishRating" >
+        {() => (
+          <AuthRoute>
+            <RestaurantRating />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="RestaurantEditDish"  >
+        {() => (
+          <AuthRoute>
+            <RestaurantEditDish />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="RestaurantAddDish" >
+        {() => (
+          <AuthRoute>
+            <RestaurantAddDish />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="AddRequestFood" >
+        {() => (
+          <AuthRoute>
+            <AddRequestFood />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+    </Stack.Navigator>
   );
 };
 

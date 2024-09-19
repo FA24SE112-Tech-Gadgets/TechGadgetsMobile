@@ -1,12 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { NODE_ENV, DEV_API, PRO_API } from "@env";
+import { NODE_ENV, DEV_API, PROD_API } from "@env";
 
 const api = axios.create({
   baseURL:
     NODE_ENV == "development"
       ? DEV_API
-      : PRO_API,
+      : PROD_API,
 });
 
 // Add a request interceptor
@@ -29,7 +29,7 @@ api.interceptors.response.use(
     const url =
       NODE_ENV == "development"
         ? (DEV_API + "/auth/refresh")
-        : (PRO_API + "/auth/refresh");
+        : (PROD_API + "/auth/refresh");
 
     // If the error status is 401 and there is no originalRequest._retry flag,
     // it means the token has expired and we need to refresh it

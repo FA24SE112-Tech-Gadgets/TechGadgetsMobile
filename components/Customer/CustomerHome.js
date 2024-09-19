@@ -60,7 +60,7 @@ export default function CustomerHome({ navigation }) {
     setIsTimerRunning,
     isPayToWin,
     setIsPayToWin,
-    fetchSubscription,
+    // fetchSubscription,
   } = useAuth();
 
   const { t } = useTranslation();
@@ -102,24 +102,24 @@ export default function CustomerHome({ navigation }) {
   };
 
   //Get random banner
-  useFocusEffect(
-    useCallback(() => {
-      fetchRandomBanner();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchRandomBanner();
+  //   }, [])
+  // );
 
   //Scroll banner
-  useFocusEffect(
-    useCallback(() => {
-      const timerId = setInterval(() => {
-        goToNextPage();
-      }, 4000);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const timerId = setInterval(() => {
+  //       goToNextPage();
+  //     }, 4000);
 
-      return () => {
-        clearInterval(timerId);
-      };
-    }, [currentSlide, bannerArr])
-  );
+  //     return () => {
+  //       clearInterval(timerId);
+  //     };
+  //   }, [currentSlide, bannerArr])
+  // );
 
   const handleNavigate = (nameRoute) => {
     navigation.navigate(nameRoute);
@@ -197,51 +197,51 @@ export default function CustomerHome({ navigation }) {
   }
 
   //Fetch food random status
-  useFocusEffect(
-    useCallback(() => {
-      let appStateSubscription = null;
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     let appStateSubscription = null;
 
-      const handleAppStateChange = async (nextAppState) => {
-        if (nextAppState === "active") {
-          // App has come to the foreground, fetch data and start timer
-          await fetchDataAndStartTimer();
-        }
-      };
+  //     const handleAppStateChange = async (nextAppState) => {
+  //       if (nextAppState === "active") {
+  //         // App has come to the foreground, fetch data and start timer
+  //         await fetchDataAndStartTimer();
+  //       }
+  //     };
 
-      const fetchDataAndStartTimer = async () => {
-        try {
-          const res = await api.get("/foods/random/status");
-          const { countLeft, timeLeft } = res.data;
-          setTurnNumber(countLeft);
-          setTimeRemaining(timeLeft);
-          if (countLeft != 2 && !isTimerRunning) {
-            setIsTimerRunning(true);
-            startTimer();
-          }
-        } catch (error) {
-          setIsError(true);
-          setStringErr(
-            error.response?.data?.reasons[0]?.message ?
-              error.response.data.reasons[0].message
-              :
-              t("network-error")
-          );
-        }
-      };
+  //     const fetchDataAndStartTimer = async () => {
+  //       try {
+  //         const res = await api.get("/foods/random/status");
+  //         const { countLeft, timeLeft } = res.data;
+  //         setTurnNumber(countLeft);
+  //         setTimeRemaining(timeLeft);
+  //         if (countLeft != 2 && !isTimerRunning) {
+  //           setIsTimerRunning(true);
+  //           startTimer();
+  //         }
+  //       } catch (error) {
+  //         setIsError(true);
+  //         setStringErr(
+  //           error.response?.data?.reasons[0]?.message ?
+  //             error.response.data.reasons[0].message
+  //             :
+  //             t("network-error")
+  //         );
+  //       }
+  //     };
 
-      appStateSubscription = AppState.addEventListener(
-        "change",
-        handleAppStateChange
-      );
-      fetchDataAndStartTimer(); // Initial call to fetch data and start timer
+  //     appStateSubscription = AppState.addEventListener(
+  //       "change",
+  //       handleAppStateChange
+  //     );
+  //     fetchDataAndStartTimer(); // Initial call to fetch data and start timer
 
-      return () => {
-        if (appStateSubscription) {
-          appStateSubscription.remove(); // Cleanup the AppState subscription
-        }
-      };
-    }, [isTimerRunning])
-  );
+  //     return () => {
+  //       if (appStateSubscription) {
+  //         appStateSubscription.remove(); // Cleanup the AppState subscription
+  //       }
+  //     };
+  //   }, [isTimerRunning])
+  // );
 
   const fetchRandomFood = async () => {
     let isErr = true;
@@ -295,19 +295,19 @@ export default function CustomerHome({ navigation }) {
   };
 
   //Check payment
-  useFocusEffect(
-    useCallback(() => {
-      const handleCheckSubscription = async () => {
-        const isSubscription = await fetchSubscription("ACTIVE", 0, 1);
-        if (isSubscription) {
-          setOpenSubscription(false);
-        } else {
-          setOpenSubscription(true);
-        }
-      }
-      handleCheckSubscription();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const handleCheckSubscription = async () => {
+  //       const isSubscription = await fetchSubscription("ACTIVE", 0, 1);
+  //       if (isSubscription) {
+  //         setOpenSubscription(false);
+  //       } else {
+  //         setOpenSubscription(true);
+  //       }
+  //     }
+  //     handleCheckSubscription();
+  //   }, [])
+  // );
 
   return (
     <KeyboardAvoidingView
@@ -318,7 +318,7 @@ export default function CustomerHome({ navigation }) {
       behavior="padding"
     >
       {/* Banner */}
-      <View>
+      {/* <View>
         {
           bannerArr.length > 0 &&
           <FlatList
@@ -338,7 +338,7 @@ export default function CustomerHome({ navigation }) {
             )}
           />
         }
-      </View>
+      </View> */}
 
       <View
         style={{

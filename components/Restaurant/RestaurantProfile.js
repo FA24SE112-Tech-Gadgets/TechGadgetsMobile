@@ -314,7 +314,12 @@ export default function RestaurantProfile({ navigation }) {
         </Pressable>
       </View>
 
-      <Pressable onPress={() => logout()}>
+      <Pressable
+        onPress={() => {
+          logout();
+          navigation.replace("Login")
+        }}
+      >
         <View
           style={{
             paddingVertical: 8,
