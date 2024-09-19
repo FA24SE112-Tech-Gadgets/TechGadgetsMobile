@@ -15,10 +15,11 @@ import { useTranslation } from "react-i18next";
 import LanguageModal from "../CustomComponents/LanguageModal";
 import ErrModal from "../CustomComponents/ErrModal";
 import CustomerSubcription from "./CustomerSubcription";
-import { useFocusEffect } from "@react-navigation/native";
+import { CommonActions, useFocusEffect, useNavigation } from "@react-navigation/native";
 import api from "../Authorization/api";
 
-export default function CustomerProfile({ navigation }) {
+export default function CustomerProfile() {
+  const navigation = useNavigation();
   const { t } = useTranslation();
   const [openChooseLanguage, setOpenChooseLanguage] = useState(false);
   const quotes = [
@@ -163,7 +164,7 @@ export default function CustomerProfile({ navigation }) {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-              {user.fullName.charAt(0)}
+              {user.fullName?.charAt(0)}
             </Text>
           </View>
         )}
@@ -377,7 +378,17 @@ export default function CustomerProfile({ navigation }) {
       </View>
 
       {/* Đăng xuất */}
-      <Pressable onPress={() => logout()}>
+      <Pressable
+        onPress={() => {
+          logout();
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,  // Starts at the first screen in the stack
+              routes: [{ name: 'Login' }],  // Replace 'Login' with the name of your Login screen
+            })
+          );
+        }}
+      >
         <View
           style={{
             paddingVertical: 8,

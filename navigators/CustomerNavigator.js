@@ -11,13 +11,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import CustomerHistory from '../components/Customer/CustomerHistory';
 import CustomerProfile from '../components/Customer/CustomerProfile';
 import CustomCreatePost from '../components/CustomComponents/CustomCreatePost';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import BackgroundTask from '../components/Notification/BackgroundTask';
+import AuthRoute from '../components/Authorization/AuthRoute';
+import UploadFileDemo from '../components/UploadFile/UploadFileDemo';
 
 const Tab = createBottomTabNavigator();
 
 const CustomerNavigator = () => {
 	const [cart, setCart] = useState([]);
-	const { isChanged, user } = useAuth();
+	const { isChanged, user, isLoggedIn } = useAuth();
 
 	useEffect(() => {
 		const loadCart = async () => {
@@ -36,9 +39,10 @@ const CustomerNavigator = () => {
 	return (
 		<Tab.Navigator
 			initialRouteName='CustomerHome'
-			screenOptions={{
+			screenOptions={({ route }) => ({
 				headerShown: false,
 				tabBarStyle: {
+					display: !isLoggedIn ? 'none' : 'flex',
 					borderTopRightRadius: 15,
 					borderTopLeftRadius: 15,
 					backgroundColor: "#FB6562",
@@ -46,12 +50,15 @@ const CustomerNavigator = () => {
 				tabBarShowLabel: false,
 				tabBarActiveTintColor: "white",
 				tabBarInactiveTintColor: "white",
-				tabBarActiveBackgroundColor: "#E25F5C"
-			}}
+				tabBarActiveBackgroundColor: "#E25F5C",
+				tabBarHideOnKeyboard: true,
+				// tabBarItemStyle: {
+				// 	display: route.name === 'BackgroundTask' ? 'none' : 'flex',
+				// }
+			})}
 		>
 			<Tab.Screen
 				name='CustomerHome'
-				component={CustomerHome}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<Icon name="home" size={+size} color={color} />
@@ -60,37 +67,57 @@ const CustomerNavigator = () => {
 						borderTopLeftRadius: 15,
 					}
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerHome />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
-				name='CustomSocial'
-				component={CustomSocial}
+				name='CustomerSocial'
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<FontAwesome name="globe" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<UploadFileDemo />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
-				name='CustomCreatePost'
-				component={CustomCreatePost}
+				name='BackgroundTask'
 				options={{
 					tabBarIcon: ({ color, size }) => (
-						<Feather name="plus-square" size={+size} color={color} />
+						<Ionicons name="notifications" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<BackgroundTask />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='CustomerHistory'
-				component={CustomerHistory}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<FontAwesome5 name="history" size={+size} color={color} />
 					),
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerHistory />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 			<Tab.Screen
 				name='CustomerProfile'
-				component={CustomerProfile}
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<MaterialIcons name="person" size={+size} color={color} />
@@ -99,7 +126,13 @@ const CustomerNavigator = () => {
 						borderTopRightRadius: 15,
 					}
 				}}
-			/>
+			>
+				{() => (
+					<AuthRoute>
+						<CustomerProfile />
+					</AuthRoute>
+				)}
+			</Tab.Screen>
 		</Tab.Navigator>
 	);
 };

@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useState } from "react";
 import api from "./api";
 import { useFocusEffect } from "@react-navigation/native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const AuthContext = createContext({
   isLoggedIn: false,
@@ -18,11 +19,12 @@ const AuthContext = createContext({
   fetchSubscription: async (status, page, limit) => { },
   currentPackage: {},
   setCurrentPackage: () => { },
+  fetchUser: () => { },
 });
 
 const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPayToWin, setIsPayToWin] = useState(false);
@@ -32,19 +34,7 @@ const AuthProvider = ({ children }) => {
     const url = "/users/current";
     try {
       const res = await api.get(url);
-      let user = res.data;
-      if (user.role == "RESTAURANT") {
-        const urlRestaurant = "/restaurants/current";
-        const res = await api.get(urlRestaurant);
-        user = {
-          ...user,
-          address: res.data.address,
-          imageUrl: res.data.image,
-          description: res.data.description,
-          idRestaurant: res.data.id,
-          restaurantName: res.data.name,
-        };
-      }
+      let user = res?.data;
       console.log(user);
       setUser(user);
       setIsLoggedIn(true);
@@ -77,23 +67,24 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchUser();
-    }, [])
-  );
-
   const login = async () => {
-    fetchUser();
+    await fetchUser();
   };
 
   const logout = async () => {
     setIsLoggedIn(false);
-    setUser("");
+    setUser(null);
     setIsTimerRunning(false);
+    await GoogleSignin.signOut();
     await AsyncStorage.removeItem("refreshToken");
     await AsyncStorage.removeItem("token");
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      login();
+    }, [])
+  );
 
   return (
     <AuthContext.Provider
@@ -111,6 +102,7 @@ const AuthProvider = ({ children }) => {
         fetchSubscription,
         currentPackage,
         setCurrentPackage,
+        fetchUser
       }}
     >
       {children}

@@ -20,7 +20,7 @@ Logger.setLogCallback(log => {
   return false;
 })
 Mapbox.setWellKnownTileServer('Mapbox');
-Mapbox.setAccessToken("pk.eyJ1Ijoia2lldHB0MjAwMyIsImEiOiJjbHh4MzVjbnoxM3Z3MmxvZzdqOWRzazJ3In0._eSko2EyAB4hAIs9tgmO2w");
+Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
 
 const CustomerDishDetail = ({ navigation, route }) => {
   const [location, setLocation] = useState(null);

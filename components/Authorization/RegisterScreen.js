@@ -10,46 +10,23 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import LottieView from "lottie-react-native";
-import useAuth from "../../utils/useAuth";
 import Modal from "react-native-modal";
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import { Snackbar } from "react-native-paper";
-import * as ImagePicker from "expo-image-picker";
-import { Image } from "react-native";
-import { NODE_ENV, DEV_API, PRO_API } from "@env";
-import * as Location from "expo-location"
-import RegisterAddress from "../CustomComponents/RegisterAddress";
-import Mapbox, { MapView, Camera, PointAnnotation, Logger, } from "@rnmapbox/maps";
+import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
-Logger.setLogCallback(log => {
-  const { message } = log;
-  if (
-    message.match("Request failed due to a permanent error: Canceled") ||
-    message.match("Request failed due to a permanent error: Socket Closed")
-  ) {
-    return true;
-  }
-  return false;
-})
-Mapbox.setWellKnownTileServer('Mapbox');
-Mapbox.setAccessToken("pk.eyJ1Ijoia2lldHB0MjAwMyIsImEiOiJjbHh4MzVjbnoxM3Z3MmxvZzdqOWRzazJ3In0._eSko2EyAB4hAIs9tgmO2w");
+import axios from "axios";
 
 export default function RegisterScreen({ navigation }) {
-  const { login } = useAuth();
-
-  const [location, setLocation] = useState(null);
-  const [isOpenBigMap, setOpenBigMap] = useState(false);
-
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const [securePassword, setSecurePassword] = useState(true);
   const [secureConfirmPassword, setSecureConfirmPassword] = useState(true);
@@ -72,37 +49,8 @@ export default function RegisterScreen({ navigation }) {
     email: "",
     password: "",
     passwordConfirm: "",
-    image: "",
-    imageBase64: "",
     fullName: "",
-    phone: "",
-    role: "",
-    description: "",
-    address: "",
   });
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const fileSizeInMB = result.assets[0].filesize / (1024 * 1024);
-      const fileExtension = result.assets[0].uri.split(".").pop();
-
-      if (fileSizeInMB <= 3) {
-        const strBase64 =
-          `data:image/${fileExtension};base64,` + result.assets[0].base64;
-        handleChangeData("imageBase64", strBase64);
-        handleChangeData("image", result.assets[0]);
-      } else {
-        setIsError(true);
-        setStringErr(t("img-err-oversize"));
-      }
-    }
-  };
 
   const handleChangeData = (fieldName, data) => {
     setAccount((prev) => ({
@@ -124,13 +72,6 @@ export default function RegisterScreen({ navigation }) {
       return { isError: true, stringErr: t("empty-name") };
     }
 
-    //phone
-    if (account.phone === "") {
-      return { isError: true, stringErr: t("empty-phone-number") };
-    } else if (!handleValidPhone(account.phone)) {
-      return { isError: true, stringErr: t("invalid-phone-number") };
-    }
-
     //password
     if (account.password === "") {
       return { isError: true, stringErr: t("empty-password") };
@@ -150,17 +91,6 @@ export default function RegisterScreen({ navigation }) {
       return { isError: true, stringErr: t("account-type-err") };
     }
 
-    if (account.role == "Quán ăn") {
-      if (account.description == "")
-        return { isError: true, stringErr: t("empty-description") };
-
-      if (account.address == "")
-        return { isError: true, stringErr: t("empty-address") };
-
-      if (account.image == "")
-        return { isError: true, stringErr: t("empty-image") };
-    }
-
     return {
       isError: false,
       stringErr: "",
@@ -169,10 +99,6 @@ export default function RegisterScreen({ navigation }) {
 
   const handleValidEmail = (mail) => {
     return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(mail);
-  };
-
-  const handleValidPhone = (phone) => {
-    return /((^(\+84|84|0){1})(3|5|7|8|9))+([0-9]{8})$/.test(phone);
   };
 
   function delay(ms) {
@@ -185,46 +111,16 @@ export default function RegisterScreen({ navigation }) {
     setIsError(isError);
     setStringErr(stringErr);
     if (!isError) {
-      let createAccountReq = {
-        email: account.email,
-        password: account.password,
-        // fullName: account.fullName,
-        phoneNumber: account.phone,
-      };
-      if (account.role == "Quán ăn") {
-        createAccountReq = {
-          ...createAccountReq,
-          name: account.fullName,
-          address: account.address,
-          description: account.description,
-          image: account.imageBase64,
-        };
-      } else {
-        createAccountReq = {
-          ...createAccountReq,
-          fullName: account.fullName,
-        };
-      }
-
       setIsFetching(true);
-      const response = await registerAccount(createAccountReq);
+      const response = await registerAccount(account);
       setIsFetching(false);
       if (response.status >= 200 && response.status < 300) {
         setSnackbarVisible(true);
-        if (account.role !== "Quán ăn") {
-          setSnackbarMessage(t("check-mail"));
-          await delay(1500);
-          navigation.navigate("VerifyCode", {
-            email: account.email,
-          });
-        } else {
-          setIsError(true);
-          setStringErr(
-            t("account-in-rv")
-          );
-          await delay(1500);
-          navigation.goBack();
-        }
+        setSnackbarMessage(t("check-mail"));
+        await delay(1500);
+        navigation.navigate("VerifyCode", {
+          email: account.email,
+        });
       } else if (response.status == 400) {
         const data = await response.json();
         setIsError(true);
@@ -238,37 +134,13 @@ export default function RegisterScreen({ navigation }) {
   };
 
   async function registerAccount(createAccountReq) {
-    const urlUser =
+    const url =
       NODE_ENV == "development"
-        ? (DEV_API + "/users")
-        : (PRO_API + "/users");
-
-    const urlRestaurant =
-      NODE_ENV == "development"
-        ? (DEV_API + "/restaurants")
-        : (PRO_API + "/restaurants");
+        ? DEV_API
+        : PROD_API;
 
     try {
-      let response;
-      if (createAccountReq.fullName) {
-        response = await fetch(urlUser, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(createAccountReq),
-        });
-      } else {
-        response = await fetch(urlRestaurant, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(createAccountReq),
-        });
-      }
+      const response = await axios.post(`${url}/auth/signup`, createAccountReq);
 
       return response;
     } catch (error) {
@@ -281,49 +153,6 @@ export default function RegisterScreen({ navigation }) {
       );
     }
   }
-
-  const getCurrentPosition = async () => {
-    // let { status } = await Location.requestForegroundPermissionsAsync();
-    // if (status !== "granted") {
-    //   console.log("Please grant location permissions");
-    //   return;
-    // }
-    try {
-      const currentLocation = await Location.getCurrentPositionAsync({})
-      setLocation(currentLocation.coords);
-      // Reverse geocode to get address
-      const reverseGeocodedAddress = await Location.reverseGeocodeAsync({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      });
-
-      if (reverseGeocodedAddress.length > 0) {
-        const currentAddress = reverseGeocodedAddress[0];
-        const addressParts = [];
-
-        addressParts.push(currentAddress.formattedAddress);
-
-        // Join the parts with a comma and space
-        const strAddress = addressParts.join(", ");
-        handleChangeData("address", strAddress);
-      } else {
-        handleChangeData("address", "")
-        setIsError(true);
-        setStringErr(t("current-location-err"));
-      }
-    } catch (error) {
-      handleChangeData("address", "");
-      setIsError(true);
-      setStringErr(t("map-err"));
-    }
-  }
-
-  //Get user current position
-  useFocusEffect(
-    useCallback(() => {
-      getCurrentPosition();
-    }, [])
-  );
 
   //Check keyboard open
   useFocusEffect(
@@ -367,85 +196,14 @@ export default function RegisterScreen({ navigation }) {
         >
           <Text style={styles.title}>{t('register-title')}</Text>
 
-          {/* fullName, phone */}
-          <View style={{
-            flexDirection: "row",
-            justifyContent: "space-between"
-          }}>
-            {/* Restaurant Image */}
-            {account.role == "Quán ăn" && (
-              <Pressable
-                style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginVertical: 12,
-                }}
-                onPress={pickImage}
-              >
-                <View
-                  style={{
-                    height: ScreenWidth / 4.5,
-                    width: ScreenWidth / 4.5,
-                    backgroundColor: "white",
-                    borderRadius: 100,
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {account.image == "" ? (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Icon
-                        type="feather"
-                        name="image"
-                        size={35}
-                        color="#FB6562"
-                      />
-                      <Icon
-                        type="material"
-                        name="add"
-                        size={25}
-                        color="#FB6562"
-                      />
-                    </View>
-                  ) : (
-                    <Image
-                      source={{ uri: account.image.uri }}
-                      style={{
-                        height: ScreenWidth / 4.5,
-                        width: ScreenWidth / 4.5,
-                        borderRadius: 100,
-                      }}
-                    />
-                  )}
-                </View>
-              </Pressable>
-            )}
-
-            {/* fullName, phone */}
-            <View>
-              {/* fullName */}
-              <TextInput
-                style={[account.role == "Quán ăn" ? styles.textInput2 : styles.textInput]}
-                placeholder={t('register-name')}
-                value={account.fullName}
-                onChangeText={(value) => handleChangeData("fullName", value)}
-              />
-              {/* phone */}
-              <TextInput
-                style={[account.role == "Quán ăn" ? styles.textInput2 : styles.textInput]}
-                placeholder={t('register-phone')}
-                value={account.phone}
-                onChangeText={(value) => handleChangeData("phone", value)}
-                keyboardType="numeric"
-              />
-            </View>
+          {/* fullName */}
+          <View>
+            <TextInput
+              style={[account.role == "Quán ăn" ? styles.textInput2 : styles.textInput]}
+              placeholder={t('register-name')}
+              value={account.fullName}
+              onChangeText={(value) => handleChangeData("fullName", value)}
+            />
           </View>
 
           {/* email */}
@@ -506,73 +264,6 @@ export default function RegisterScreen({ navigation }) {
             )}
           </View>
 
-          <RoleModal
-            handleChangeData={handleChangeData}
-            setShowRoleModal={setShowRoleModal}
-            role={account.role}
-            showRoleModal={showRoleModal}
-          />
-
-          {/* Mô tả, địa chỉ, gg map */}
-          {account.role == "Quán ăn" && (
-            <>
-              {/* Mô tả */}
-              <TextInput
-                style={[styles.textInput, { paddingVertical: 12 }]}
-                placeholder={t("register-description")}
-                value={account.description}
-                multiline={true}
-                numberOfLines={3}
-                textAlignVertical="top"
-                onChangeText={(value) => handleChangeData("description", value)}
-              />
-
-              {/* Địa chỉ */}
-              <Pressable
-                style={[styles.textInput]}
-                onPress={() => {
-                  setOpenBigMap(true)
-                }}
-              >
-                <Text>
-                  {account.address}
-                </Text>
-              </Pressable>
-
-              <MapView
-                style={{
-                  height: ScreenHeight / 6,
-                  width: ScreenWidth / 1.1,
-                  marginVertical: 7,
-                }}
-                styleURL="mapbox://styles/mapbox/streets-v12"
-                onPress={() => {
-                  setOpenBigMap(true);
-                }}
-                zoomEnabled={false}
-                attributionEnabled={false} //Ẩn info icon
-                logoEnabled={false} //Ẩn logo
-                rotateEnabled={false}
-                scrollEnabled={false}
-              >
-                <Camera
-                  centerCoordinate={[location?.longitude || 0, location?.latitude || 0]}
-                  zoomLevel={15}
-                  pitch={10}
-                  heading={0}
-                />
-
-                <PointAnnotation
-                  id="marker"
-                  coordinate={[location?.longitude || 0, location?.latitude || 0]}
-                  onSelected={() => {
-                    setOpenBigMap(true);
-                  }}
-                />
-              </MapView>
-            </>
-          )}
-
           {/* ĐĂNG KÝ */}
           <Pressable
             style={styles.registerButton}
@@ -617,16 +308,7 @@ export default function RegisterScreen({ navigation }) {
           </Text>
         </ScrollView>
       </LinearGradient>
-      <RegisterAddress
-        isOpen={isOpenBigMap}
-        setOpen={setOpenBigMap}
-        location={location}
-        setLocation={setLocation}
-        address={account.address}
-        handleChangeData={handleChangeData}
-        setSnackbarVisible={setSnackbarVisible}
-        setSnackbarMessage={setSnackbarMessage}
-      />
+
       {/* Version control */}
       {
         !isOpenKeyboard &&
@@ -660,123 +342,6 @@ export default function RegisterScreen({ navigation }) {
         {snackbarMessage}
       </Snackbar>
     </KeyboardAvoidingView>
-  );
-};
-
-const RoleModal = ({
-  showRoleModal,
-  setShowRoleModal,
-  role,
-  handleChangeData,
-}) => {
-  const { t } = useTranslation();
-  return (
-    <View>
-      <Pressable
-        onPress={() => setShowRoleModal(true)}
-        style={[
-          styles.textInput,
-          {
-            justifyContent: "space-between",
-            flexDirection: "row",
-            alignItems: "center",
-          },
-        ]}
-      >
-        {role == "" ? (
-          <Text style={{ color: "#878787", fontSize: 15 }}>{t('account-type')}</Text>
-        ) : (
-          <Text style={{ fontSize: 15 }}>{role === "Khách hàng" ? t("role-user") : t("role-restaurant")}</Text>
-        )}
-
-        <Icon
-          type="material-community"
-          name="chevron-down"
-          size={24}
-          color={"#FB6562"}
-        />
-      </Pressable>
-
-      <Modal
-        isVisible={showRoleModal}
-        onBackdropPress={() => setShowRoleModal(false)}
-        onSwipeComplete={() => setShowRoleModal(false)}
-        useNativeDriverForBackdrop
-        swipeDirection={"down"}
-        propagateSwipe={true}
-        style={{
-          justifyContent: 'flex-end',
-          margin: 0,
-        }}
-      >
-        <View style={styles.modalContent}>
-          <View
-            style={{
-              alignItems: "center",
-              padding: 12,
-            }}
-          >
-            <View
-              style={{
-                width: ScreenWidth / 7,
-                height: ScreenHeight / 80,
-                backgroundColor: "#FB6562",
-                borderRadius: 30,
-              }}
-            />
-          </View>
-
-          <View >
-            <Pressable
-              style={styles.modalOption}
-              onPress={() => {
-                handleChangeData("role", "Khách hàng"), setShowRoleModal(false);
-              }}
-            >
-              <Text style={styles.modalOptionText}>{t('role-user')}</Text>
-              {role === "Khách hàng" ? (
-                <Icon
-                  type="material-community"
-                  name="check-circle"
-                  size={24}
-                  color="#FB6562"
-                />
-              ) : (
-                <Icon
-                  type="material-community"
-                  name="checkbox-blank-circle-outline"
-                  size={24}
-                  color="#FB6562"
-                />
-              )}
-            </Pressable>
-            <Pressable
-              style={styles.modalOption}
-              onPress={() => {
-                handleChangeData("role", "Quán ăn"), setShowRoleModal(false);
-              }}
-            >
-              <Text style={styles.modalOptionText}>{t("role-restaurant")}</Text>
-              {role === "Quán ăn" ? (
-                <Icon
-                  type="material-community"
-                  name="check-circle"
-                  size={24}
-                  color="#FB6562"
-                />
-              ) : (
-                <Icon
-                  type="material-community"
-                  name="checkbox-blank-circle-outline"
-                  size={24}
-                  color="#FB6562"
-                />
-              )}
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
   );
 };
 

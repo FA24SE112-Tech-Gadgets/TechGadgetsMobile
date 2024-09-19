@@ -8,17 +8,15 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useAuth from "../../utils/useAuth";
 import { jwtDecode } from "jwt-decode";
-import { NODE_ENV, DEV_API, PRO_API } from "@env";
+import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import ErrModal from "../CustomComponents/ErrModal";
 import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 
-const VerifyCodeScreen = ({ route }) => {
+const VerifyCodeScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { email } = route.params;
   const { login } = useAuth();
-
-  const [userId, setUserId] = useState("");
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef([]);
@@ -50,14 +48,14 @@ const VerifyCodeScreen = ({ route }) => {
   const handleVerify = async () => {
     const url =
       NODE_ENV == "development"
-        ? DEV_API + "/auth/verification"
-        : PRO_API + "/auth/verification";
+        ? DEV_API + "/auth/verify"
+        : PROD_API + "/auth/verify";
     try {
       const verificationCode = code.join("").trim();
       setIsFetching(true);
       const response = await axios.post(url, {
         email: email,
-        verificationCode,
+        code: verificationCode,
       });
       setIsFetching(false);
       if (response.status >= 200 && response.status < 300) {
@@ -66,9 +64,12 @@ const VerifyCodeScreen = ({ route }) => {
 
         const { token, refreshToken } = response.data;
 
-        const decoded = jwtDecode(token);
-        if (decoded.role == "MANAGER" || decoded.role == "ADMIN") {
-          setStringErr("Vui lòng sử dụng tài khoản quán ăn hoặc khách hàng");
+        const decodedToken = jwtDecode(token);
+        const userInfo = JSON.parse(decodedToken.UserInfo);
+        console.log(userInfo);
+
+        if (userInfo.Role != "Buyer") {
+          setStringErr("Vui lòng sử dụng tài khoản khách hàng");
           setIsError(true);
           return;
         }
@@ -76,13 +77,11 @@ const VerifyCodeScreen = ({ route }) => {
         await AsyncStorage.setItem("token", token);
 
         await login();
-
-        // navigation.navigate("customer-home", { screen: "CustomerHome" });
-      } else if (response.status == 400) {
-        const data = await response.json();
-        setIsError(true);
-        setStringErr(data.reasons[0].message);
-      } else if (response.status == 500) {
+        if (userInfo.Role == "User" || userInfo.Role == "Student") {
+          navigation.replace("StackCustomerHome")
+          return;
+        }
+      } else if (response.status >= 400 && response.status <= 500) {
         const data = await response.json();
         setIsError(true);
         setStringErr(data.reasons[0].message);
@@ -96,8 +95,8 @@ const VerifyCodeScreen = ({ route }) => {
   const handleSendAgain = async () => {
     const url =
       NODE_ENV == "development"
-        ? DEV_API + "/auth/verification/resend"
-        : PRO_API + "/auth/verification/resend";
+        ? DEV_API + "/auth/resend"
+        : PROD_API + "/auth/resend";
     try {
       setCode(["", "", "", "", "", ""]);
       setIsFetching(true);
