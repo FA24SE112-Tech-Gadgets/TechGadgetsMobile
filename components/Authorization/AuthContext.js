@@ -31,22 +31,10 @@ const AuthProvider = ({ children }) => {
   const [currentPackage, setCurrentPackage] = useState(null);
 
   const fetchUser = async () => {
-    const url = "/account";
+    const url = "/users/current";
     try {
       const res = await api.get(url);
       let user = res?.data;
-      if (user.role == "RESTAURANT") {
-        const urlRestaurant = "/restaurants/current";
-        const res = await api.get(urlRestaurant);
-        user = {
-          ...user,
-          address: res.data.address,
-          imageUrl: res.data.image,
-          description: res.data.description,
-          idRestaurant: res.data.id,
-          restaurantName: res.data.name,
-        };
-      }
       console.log(user);
       setUser(user);
       setIsLoggedIn(true);

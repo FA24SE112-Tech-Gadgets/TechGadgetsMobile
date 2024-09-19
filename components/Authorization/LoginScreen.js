@@ -23,7 +23,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Modal from "react-native-modal";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
 import Hyperlink from "react-native-hyperlink";
-import { NODE_ENV, DEV_API, PRO_API } from "@env";
+import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import * as Location from "expo-location"
 import { useTranslation } from "react-i18next";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -41,7 +41,7 @@ import {
 const routingKey = "getAllNoti";
 const exchangeName = "test-exchange";
 const webSocketPort = "15674";
-const domainName = "kietpt.online"
+const domainName = NODE_ENV == "development" ? "tech-gadgets-dev.xyz" : "tech-gadgets-prod.online"
 
 const LoginScreen = () => {
   GoogleSignin.configure({
@@ -49,7 +49,7 @@ const LoginScreen = () => {
   })
 
   const navigation = useNavigation()
-  const [username, setUsername] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -67,50 +67,37 @@ const LoginScreen = () => {
 
   const { login, user, isLoggedIn } = useAuth();
 
-  const url =
-    NODE_ENV == "development"
-      ? (DEV_API + "/account/login")
-      : (PRO_API + "/account/login");
 
   const handleLoginBtn = async () => {
+    const url =
+      NODE_ENV == "development"
+        ? (DEV_API + "/auth/login")
+        : (PROD_API + "/auth/login");
     setIsRecentPushed(true);
     try {
       const res = await axios.post(url, {
-        userName: username,
+        email: userEmail,
         password,
       });
       const { token, refreshToken } = res.data;
-
-      const decodedToken = jwtDecode(token);
-      const userInfo = JSON.parse(decodedToken.UserInfo);
+      // console.log("tok", token);
 
 
-      if (userInfo.Role == "MANAGER" || userInfo.Role == "ADMIN") {
-        setStringErr(t("role-required"));
-        setIsError(true);
-        return;
-      }
       await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("token", token);
 
       await login();
 
-      if (userInfo.Role == "User" || userInfo.Role == "Student") {
-        navigation.replace("StackCustomerHome")
-        return;
-      }
+      navigation.replace("StackCustomerHome")
     } catch (error) {
-      if (error.response.data.code === "WEA-0010") {
+      if (error.response.data.code === "WEA_0001") {
         //Code user
         setStringErr(error.response.data.reasons[0].message);
         setIsError(true);
         await delay(1500);
         navigation.navigate("VerifyCode", {
-          email: username,
+          email: userEmail,
         });
-      } else if (error.response.data.code === "WEA-0009") {
-        //Code restaurant
-        setIsResError(true);
       } else {
         setStringErr(error.response.data.reasons[0].message);
         setIsError(true);
@@ -122,7 +109,11 @@ const LoginScreen = () => {
 
   const handleLoginGoogle = async (accessToken) => {
     try {
-      const response = await axios.post(`https://kietpt.online/api/google/signin/${accessToken}`);
+      const url =
+        NODE_ENV == "development"
+          ? DEV_API
+          : PROD_API;
+      const response = await axios.post(`${url}/auth/google/${accessToken}`);
       const { token: apiToken, refreshToken } = response.data;
 
       const decodedToken = jwtDecode(apiToken);
@@ -135,13 +126,7 @@ const LoginScreen = () => {
 
       await login();
 
-      if (userInfo.Role === 'User' || userInfo.Role === 'Student') {
-
-        navigation.replace('StackCustomerHome');
-        return;
-      } else {
-        console.log('Other Role:', userInfo.Role);
-      }
+      navigation.replace('StackCustomerHome');
     } catch (error) {
       console.error('API call error:', error);
     }
@@ -152,27 +137,6 @@ const LoginScreen = () => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // const getPermissionAndroid = async () => {
-  //   try {
-  //     let granted;
-  //     if (parseInt(Platform.Version.toString()) >= 32) {
-  //       granted = await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-  //       );
-  //     } else {
-  //       granted = await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-  //       );
-  //     }
-  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   } catch (err) {
-  //     console.warn(err);
-  //   }
-  // };
   const getPermissionsAndroid = async () => {
     try {
       const permissions = [];
@@ -211,7 +175,7 @@ const LoginScreen = () => {
     }
   };
 
-  //Check keyboard open
+  //Android Request Permission
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -352,8 +316,8 @@ const LoginScreen = () => {
           <TextInput
             style={styles.textInput}
             placeholder={t('email-input')}
-            value={username}
-            onChangeText={(text) => setUsername(text)}
+            value={userEmail}
+            onChangeText={(text) => setUserEmail(text)}
           />
           <View style={{ position: "relative" }}>
             <TextInput
