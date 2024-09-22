@@ -173,7 +173,7 @@ export default function FilterModal({ filterModalVisible, handleCloseFilterModal
                 padding: 5,
                 alignItems: 'center'
             }}>
-                <ActivityIndicator color={"#FB6562"} />
+                <ActivityIndicator color={"#ed8900"} />
             </View>
         );
     };

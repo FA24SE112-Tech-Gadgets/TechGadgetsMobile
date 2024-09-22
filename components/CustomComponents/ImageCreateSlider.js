@@ -21,7 +21,7 @@ export default function ImageCreateSlider({ list, handleRemoveImage }) {
                         key={i}
                         name="dot-fill"
                         size={20}
-                        color={"#FB6562"}
+                        color={"#ed8900"}
                     />
                 );
             } else {

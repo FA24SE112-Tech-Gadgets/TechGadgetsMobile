@@ -20,7 +20,7 @@ export default function ImageSlider({ list }) {
             key={i}
             name="dot-fill"
             size={20}
-            color={"#FB6562"}
+            color={"#ed8900"}
           />
         );
       } else {

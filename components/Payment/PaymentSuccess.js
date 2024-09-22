@@ -14,9 +14,9 @@ export default function PaymentSuccess({ navigation }) {
     const { user } = useAuth();
     function handleNavigate() {
         if (user.role === "USER") {
-            navigation.replace("StackCustomerHome", { screen: "CustomerHome" })
+            navigation.replace("StackBuyerHome", { screen: "CustomerHome" })
         } else {
-            navigation.replace("StackRestaurantHome", { screen: "RestaurantHome" })
+            navigation.replace("StackSellerHome", { screen: "SellerHome" })
         }
     }
     useEffect(() => {
@@ -38,13 +38,13 @@ export default function PaymentSuccess({ navigation }) {
         <LinearGradient
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 0.8 }}
-            colors={["#FFFFFF", "#FB6562"]}
+            colors={["#FFFFFF", "#ed8900"]}
             style={{
                 flex: 1,
                 position: "relative"
             }}
         >
-            {/* WhatEat Logo */}
+            {/* TechGadget Logo */}
             <View style={{
                 alignSelf: "center",
                 flexDirection: "row",
@@ -69,7 +69,7 @@ export default function PaymentSuccess({ navigation }) {
                                 fontWeight: "bold",
                             }}
                         >
-                            WhatEat
+                            TechGadget
                         </Text>
                     }
                 >
@@ -79,7 +79,7 @@ export default function PaymentSuccess({ navigation }) {
                         colors={["rgba(250, 164, 147, 0.65)", "#FB5854"]}
                     >
                         <Text style={{ opacity: 0, fontSize: ScreenWidth / 20, fontWeight: "bold" }}>
-                            WhatEat
+                            TechGadget
                         </Text>
                     </LinearGradient>
                 </MaskedView>
@@ -150,9 +150,9 @@ export default function PaymentSuccess({ navigation }) {
                     handleNavigate();
                 }}
             >
-                <Ionicons name="home" size={ScreenWidth / 15} color={"#FB6562"} />
+                <Ionicons name="home" size={ScreenWidth / 15} color={"#ed8900"} />
                 <Text style={{
-                    color: "#FB6562",
+                    color: "#ed8900",
                     fontSize: ScreenWidth / 18,
                     fontWeight: "500"
                 }}>

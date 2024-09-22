@@ -34,7 +34,7 @@ export default function ErrModal({ stringErr, isError, setIsError }) {
                     }}
                 >
                     <LottieView
-                        source={require("../../assets/catRole.json")}
+                        source={require("../../assets/animations/catRole.json")}
                         style={{ width: ScreenWidth / 2, height: ScreenWidth / 2 }}
                         autoPlay
                         loop
@@ -58,7 +58,7 @@ export default function ErrModal({ stringErr, isError, setIsError }) {
                 >
                     <Pressable
                         style={{
-                            backgroundColor: "#FB6562",
+                            backgroundColor: "#ed8900",
                             paddingHorizontal: 15,
                             paddingVertical: 5,
                             borderRadius: 10,
