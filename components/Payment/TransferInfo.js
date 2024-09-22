@@ -49,7 +49,7 @@ const TransferInfo = ({ route }) => {
     try {
       if (viewShotRef.current) {
         const uri = await captureRef(viewShotRef, {
-          fileName: `WhatEat_QrCode.png`,
+          fileName: `TechGadget_QrCode.png`,
           format: "png",
           quality: 1,
         });
@@ -131,7 +131,7 @@ const TransferInfo = ({ route }) => {
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FB6562"]}
+        colors={["#FFFFFF", "#ed8900"]}
         style={styles.container}
         ref={viewShotRef}
       >

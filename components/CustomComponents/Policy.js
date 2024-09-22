@@ -15,7 +15,7 @@ const Policy = () => {
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
       >
-        {/* WhatEat Logo */}
+        {/* TechGadget Logo */}
         <View
           style={{
             flexDirection: "row",
@@ -43,7 +43,7 @@ const Policy = () => {
                   fontWeight: "bold",
                 }}
               >
-                WhatEat
+                TechGadget
               </Text>
             }
           >
@@ -53,7 +53,7 @@ const Policy = () => {
               colors={["rgba(250, 164, 147, 0.65)", "#FB5854"]}
             >
               <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
-                WhatEat
+                TechGadget
               </Text>
             </LinearGradient>
           </MaskedView>
@@ -63,7 +63,7 @@ const Policy = () => {
         <View
           style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
         >
-          <Icon name="users" type="font-awesome" color={"#FB6562"} />
+          <Icon name="users" type="font-awesome" color={"#ed8900"} />
           <Text
             style={{ fontWeight: "bold", fontSize: 18, marginVertical: 10 }}
           >
@@ -76,7 +76,7 @@ const Policy = () => {
           {t("intro-content")}
         </Text>
 
-        {/* KHI NÀO WHATEAT SẼ THU THẬP DỮ LIỆU CÁ NHÂN? */}
+        {/* KHI NÀO TechGadget SẼ THU THẬP DỮ LIỆU CÁ NHÂN? */}
         <View
           style={{
             flexDirection: "row",
@@ -89,7 +89,7 @@ const Policy = () => {
             name="access-time"
             size={28}
             type="material"
-            color={"#FB6562"}
+            color={"#ed8900"}
           />
           <Text
             style={{
@@ -169,7 +169,7 @@ const Policy = () => {
           {t("none-of-above")}
         </Text>
 
-        {/* WHATEAT SẼ THU THẬP NHỮNG DỮ LIỆU GÌ? */}
+        {/* TechGadget SẼ THU THẬP NHỮNG DỮ LIỆU GÌ? */}
         <View
           style={{
             flexDirection: "row",
@@ -182,7 +182,7 @@ const Policy = () => {
             name="database-outline"
             size={28}
             type="material-community"
-            color={"#FB6562"}
+            color={"#ed8900"}
           />
           <Text
             style={{
@@ -292,7 +292,7 @@ const Policy = () => {
             marginTop: 16,
           }}
         >
-          <Icon name="cookie" size={28} type="material" color={"#FB6562"} />
+          <Icon name="cookie" size={28} type="material" color={"#ed8900"} />
           <Text
             style={{
               fontWeight: "bold",
@@ -321,7 +321,7 @@ const Policy = () => {
             name="alert-minus"
             size={28}
             type="material-community"
-            color={"#FB6562"}
+            color={"#ed8900"}
           />
           <Text
             style={{

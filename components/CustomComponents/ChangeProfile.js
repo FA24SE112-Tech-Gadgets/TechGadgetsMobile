@@ -294,7 +294,7 @@ export default function ChangeProfile() {
     <LinearGradient
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 0.8 }}
-      colors={["#FFFFFF", "#FB6562"]}
+      colors={["#FFFFFF", "#ed8900"]}
       style={{ flex: 1 }}
     >
       <ScrollView
@@ -302,7 +302,7 @@ export default function ChangeProfile() {
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
       >
-        {/* WhatEat logo */}
+        {/* TechGadget logo */}
         <View
           style={{
             flexDirection: "row",
@@ -330,7 +330,7 @@ export default function ChangeProfile() {
                   fontWeight: "bold",
                 }}
               >
-                WhatEat
+                TechGadget
               </Text>
             }
           >
@@ -340,7 +340,7 @@ export default function ChangeProfile() {
               colors={["rgba(250, 164, 147, 0.65)", "#FB5854"]}
             >
               <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
-                WhatEat
+                TechGadget
               </Text>
             </LinearGradient>
           </MaskedView>
@@ -377,7 +377,7 @@ export default function ChangeProfile() {
         >
           {
             isFetching ?
-              <ActivityIndicator color={"#FB6562"} size={30} />
+              <ActivityIndicator color={"#ed8900"} size={30} />
               :
               <View
                 style={{
@@ -402,13 +402,13 @@ export default function ChangeProfile() {
                       type="feather"
                       name="image"
                       size={40}
-                      color="#FB6562"
+                      color="#ed8900"
                     />
                     <Icon
                       type="material"
                       name="add"
                       size={30}
-                      color="#FB6562"
+                      color="#ed8900"
                     />
                   </View>
                 ) : (
@@ -459,7 +459,7 @@ export default function ChangeProfile() {
                 {user.email}, {user.role === "RESTAURANT" ? user.restaurantName : user.fullName}
               </Text>
             </View>
-            <Icon type="antdesign" name="right" color={"#FB6562"} size={20} />
+            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
           </Pressable>
           {/* Số điện thoại */}
           <Pressable
@@ -486,7 +486,7 @@ export default function ChangeProfile() {
                 {user.phoneNumber}
               </Text>
             </View>
-            <Icon type="antdesign" name="right" color={"#FB6562"} size={20} />
+            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
           </Pressable>
 
           {/* Mô tả*/}
@@ -513,7 +513,7 @@ export default function ChangeProfile() {
                   {user.description}
                 </Text>
               </View>
-              <Icon type="antdesign" name="right" color={"#FB6562"} size={20} />
+              <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
             </Pressable>
           )}
 
@@ -542,7 +542,7 @@ export default function ChangeProfile() {
                     {user.address}
                   </Text>
                 </View>
-                <Icon type="antdesign" name="right" color={"#FB6562"} size={20} />
+                <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
               </Pressable>
               <MapView
                 style={{
@@ -669,7 +669,7 @@ const DescriptionModal = ({
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FB6562"]}
+        colors={["#FFFFFF", "#ed8900"]}
         style={{
           width: ScreenWidth,
           height: ScreenHeight / 1.5,
@@ -688,7 +688,7 @@ const DescriptionModal = ({
             style={{
               width: ScreenWidth / 5,
               height: ScreenHeight / 80,
-              backgroundColor: "#FB6562",
+              backgroundColor: "#ed8900",
               borderRadius: 30,
             }}
           />
@@ -732,7 +732,7 @@ const DescriptionModal = ({
             />
             <Pressable
               style={{
-                backgroundColor: "#FB6562",
+                backgroundColor: "#ed8900",
                 paddingVertical: 5,
                 paddingHorizontal: 10,
                 borderRadius: 10,
@@ -791,7 +791,7 @@ const NameModel = ({
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FB6562"]}
+        colors={["#FFFFFF", "#ed8900"]}
         style={{
           width: ScreenWidth,
           height: ScreenHeight / 1.5,
@@ -810,7 +810,7 @@ const NameModel = ({
             style={{
               width: ScreenWidth / 5,
               height: ScreenHeight / 80,
-              backgroundColor: "#FB6562",
+              backgroundColor: "#ed8900",
               borderRadius: 30,
             }}
           />
@@ -851,7 +851,7 @@ const NameModel = ({
             />
             <Pressable
               style={{
-                backgroundColor: "#FB6562",
+                backgroundColor: "#ed8900",
                 paddingVertical: 5,
                 paddingHorizontal: 10,
                 borderRadius: 10,
@@ -910,7 +910,7 @@ const PhoneModal = ({
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FB6562"]}
+        colors={["#FFFFFF", "#ed8900"]}
         style={{
           width: ScreenWidth,
           height: ScreenHeight / 1.5,
@@ -929,7 +929,7 @@ const PhoneModal = ({
             style={{
               width: ScreenWidth / 5,
               height: ScreenHeight / 80,
-              backgroundColor: "#FB6562",
+              backgroundColor: "#ed8900",
               borderRadius: 30,
             }}
           />
@@ -970,7 +970,7 @@ const PhoneModal = ({
             />
             <Pressable
               style={{
-                backgroundColor: "#FB6562",
+                backgroundColor: "#ed8900",
                 paddingVertical: 5,
                 paddingHorizontal: 10,
                 borderRadius: 10,
@@ -1043,7 +1043,7 @@ const ImageModal = ({
           style={{
             width: ScreenWidth / 5,
             height: ScreenHeight / 80,
-            backgroundColor: "#FB6562",
+            backgroundColor: "#ed8900",
             borderRadius: 30,
             position: "absolute",
             top: 10,

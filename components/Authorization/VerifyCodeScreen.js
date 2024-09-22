@@ -77,8 +77,8 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         await AsyncStorage.setItem("token", token);
 
         await login();
-        if (userInfo.Role == "User" || userInfo.Role == "Student") {
-          navigation.replace("StackCustomerHome")
+        if (userInfo.Role == "Buyer") {
+          navigation.replace("StackBuyerHome")
           return;
         }
       } else if (response.status >= 400 && response.status <= 500) {
@@ -127,7 +127,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FB6562"]}
+        colors={["#FFFFFF", "#ed8900"]}
         style={[styles.linearGradient, { flex: 1 }]}
       >
         <View style={{ marginTop: ScreenHeight * 0.16 }}>
