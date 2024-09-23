@@ -1,9 +1,7 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { View, Text, Pressable, Modal } from "react-native";
 
 export default ConfirmModal = ({ visible, onClose, onConfirm, textTitle }) => {
-  const { t } = useTranslation();
   return (
     <Modal
       animationType="slide"
@@ -33,7 +31,7 @@ export default ConfirmModal = ({ visible, onClose, onConfirm, textTitle }) => {
             <Pressable
               style={{
                 flex: 0.5,
-                backgroundColor: "#FB6562",
+                backgroundColor: "#ed8900",
                 padding: 10,
                 borderWidth: 1,
                 borderColor: "black",
@@ -50,7 +48,7 @@ export default ConfirmModal = ({ visible, onClose, onConfirm, textTitle }) => {
                   textAlign: "center",
                 }}
               >
-                {t("confirm-yes")}
+                Có
               </Text>
             </Pressable>
             <Pressable
@@ -73,7 +71,7 @@ export default ConfirmModal = ({ visible, onClose, onConfirm, textTitle }) => {
                   textAlign: "center",
                 }}
               >
-                {t("confirm-no")}
+                Không
               </Text>
             </Pressable>
           </View>
