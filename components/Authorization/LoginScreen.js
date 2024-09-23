@@ -411,8 +411,6 @@ const LoginScreen = () => {
         </Pressable>
 
         <GoogleSigninButton
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
           onPress={async () => {
             try {
               await GoogleSignin.hasPlayServices();
@@ -632,7 +630,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
     flexDirection: "row",
     justifyContent: "center",
-    gap: 5
+    gap: 5,
+    marginBottom: 10,
   },
   registerButton: {
     display: "flex",
