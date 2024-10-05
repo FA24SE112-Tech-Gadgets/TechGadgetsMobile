@@ -29,13 +29,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      #Keystore setup v1
+      - name: Decode and save the .jks file
+        run: |
+          echo "$MY_JKS_SECRET" | base64 --decode > $HOME/my-release-key.jks
+
+      #Keystore setup v2
+      - name: Set up environment variables for Gradle
+        run: |
+          echo "MYAPP_UPLOAD_STORE_FILE=$HOME/my-release-key.jks" >> $GITHUB_ENV
+          echo "MYAPP_UPLOAD_STORE_PASSWORD=$MYAPP_UPLOAD_STORE_PASSWORD" >> $GITHUB_ENV
+          echo "MYAPP_UPLOAD_KEY_ALIAS=$MYAPP_UPLOAD_KEY_ALIAS" >> $GITHUB_ENV
+          echo "MYAPP_UPLOAD_KEY_PASSWORD=$MYAPP_UPLOAD_KEY_PASSWORD" >> $GITHUB_ENV
+
       # Make gradlew executable
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
-
-      - name: Decode and save the .jks file
-        run: |
-          echo "${{ secrets.MY_JKS_SECRET }}" | base64 -d > ./app/@kietpt2003__WhatEat.jks
 
       # Build AAB file
       - name: Build AAB file
