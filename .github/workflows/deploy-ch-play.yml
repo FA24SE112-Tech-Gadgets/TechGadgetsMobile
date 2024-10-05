@@ -35,7 +35,7 @@ jobs:
 
       - name: Decode and save the .jks file
         run: |
-          echo "$MY_JKS_SECRET" | base64 --decode > ./app/@kietpt2003__WhatEat.jks.jks
+          echo "${{ secrets.MY_JKS_SECRET }}" | base64 -d > ./app/@kietpt2003__WhatEat.jks
 
       # Build AAB file
       - name: Build AAB file
