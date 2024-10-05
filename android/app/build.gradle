@@ -96,7 +96,7 @@ packagingOptions {
         applicationId 'com.kietpt2003.WhatEat'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 137
+        versionCode 138
         versionName "1.0.3"
 
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
@@ -109,12 +109,10 @@ packagingOptions {
             keyPassword 'android'
         }
         release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(System.getenv("MYAPP_UPLOAD_STORE_FILE")) // Sử dụng biến môi trường
-                storePassword System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
-                keyAlias System.getenv("MYAPP_UPLOAD_KEY_ALIAS")
-                keyPassword System.getenv("MYAPP_UPLOAD_KEY_PASSWORD")
-            }
+            storeFile file(System.getenv("MYAPP_UPLOAD_STORE_FILE")) // Sử dụng biến môi trường
+            storePassword System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
+            keyAlias System.getenv("MYAPP_UPLOAD_KEY_ALIAS")
+            keyPassword System.getenv("MYAPP_UPLOAD_KEY_PASSWORD")
         }
     }
     buildTypes {
