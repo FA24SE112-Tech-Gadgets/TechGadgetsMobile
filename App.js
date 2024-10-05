@@ -1,19 +1,18 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { AuthProvider } from "./components/Authorization/AuthContext";
 import RootNavigator from "./navigators/RootNavigator";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { NavigationContainer, useFocusEffect } from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { CommentProvider } from "./components/CustomComponents/CommentContext";
 import api from "./components/Authorization/api";
-import LoadingScreen from "./components/LoadingScreen/Loading";
+import LoadingScreen from "./components/CustomComponents/LoadingScreen";
 import useAuth from "./utils/useAuth";
+import 'text-encoding';
 
 export default function App() {
   const { isLoggedIn, fetchUser } = useAuth();
-  // const fetchUser = async () => {
   //   const url = "/account";
   //   try {
   //     const res = await api.get(url);
@@ -39,46 +38,28 @@ export default function App() {
         Login: "Login",
         Register: "Register",
         VerifyCode: "VerifyCode",
-        StackCustomerHome: {
+        StackBuyerHome: {
           screens: {
-            CustomerHome: "CustomerHome",
-            CustomerSocial: "CustomerSocial",
-            // CustomerCreatePost: "CustomerCreatePost",
-            CustomerHistory: "CustomerHistory",
-            CustomerProfile: "CustomerProfile",
-            BackgroundTask: "BackgroundTask",
+            BuyerHome: "BuyerHome",
+            FavouriteGagdets: "FavouriteGagdets",
+            OrdersHistory: "OrdersHistory",
+            BuyerProfile: "BuyerProfile",
+            BuyerNotification: "BuyerNotification",
           }
         },
-        CustomCreatePost: "CustomCreatePost",
-        CustomerAfterRandom: "CustomerAfterRandom",
-        CustomerDishDetail: "CustomerDishDetail",
-        CustomerRating: "CustomerRating",
-        CustomerAddReview: "CustomerAddReview",
-        CustomerHistoryDetail: "CustomerHistoryDetail",
-        CustomExplore: "CustomExplore",
-        AboutWhatEat: "AboutWhatEat",
-        CustomProfile: "CustomProfile",
-        PersonalPage: "PersonalPage",
+        AboutTechGadget: "AboutTechGadget",
+        BuyerPersonal: "BuyerPersonal",
         Policy: "Policy",
-        PasswordAndSecure: "PasswordAndSecure",
         ChangeProfile: "ChangeProfile",
-        SaveInfoAccounts: "SaveInfoAccounts",
-        Comment: "Comment",
-        EditComment: "EditComment",
-        StackRestaurantHome: {
+        StackSellerHome: {
           screens: {
-            RestaurantHome: "RestaurantHome",
-            RestaurantSocial: "RestaurantSocial",
-            RestaurantCreatePost: "RestaurantCreatePost",
-            RestaurantTransactionHistory: "RestaurantTransactionHistory",
-            RestaurantProfile: "RestaurantProfile"
+            SellerHome: "SellerHome",
+            SellerVouchers: "SellerVouchers",
+            SellerMarketing: "SellerMarketing",
+            SellerNotification: "SellerNotification",
+            SellerProfile: "SellerProfile"
           }
         },
-        RestaurantDishDetail: "RestaurantDishDetail",
-        RestaurantDishRating: "RestaurantDishRating",
-        RestaurantEditDish: "RestaurantEditDish",
-        RestaurantAddDish: "RestaurantAddDish",
-        AddRequestFood: "AddRequestFood",
         PaymentSuccess: "PaymentSuccess",
         PaymentFail: "PaymentFail",
         NotFound: '*',
@@ -142,11 +123,9 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer linking={linking} fallback={<LoadingScreen />}>
         <AuthProvider>
-          <CommentProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <RootNavigator />
-            </GestureHandlerRootView>
-          </CommentProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <RootNavigator />
+          </GestureHandlerRootView>
         </AuthProvider>
       </NavigationContainer>
     </SafeAreaProvider>

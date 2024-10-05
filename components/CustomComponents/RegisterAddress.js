@@ -270,13 +270,13 @@ export default function RegisterAddress({ isOpen, setOpen, location, setLocation
                         <Pressable style={{
                             height: ScreenHeight / 20,
                             width: ScreenWidth / 2,
-                            backgroundColor: arrAddress.length === 0 || address === arrAddress[0] || isNotFound ? "#cccccc" : "#FB6562",
+                            backgroundColor: arrAddress.length === 0 || address === arrAddress[0] || isNotFound ? "#cccccc" : "#ed8900",
                             bottom: 10,
                             alignItems: "center",
                             justifyContent: "center",
                             borderRadius: 30,
                             borderWidth: 1,
-                            borderColor: arrAddress.length === 0 || address === arrAddress[0] || isNotFound ? "#999999" : "#FB6562",
+                            borderColor: arrAddress.length === 0 || address === arrAddress[0] || isNotFound ? "#999999" : "#ed8900",
                         }}
                             onPress={() => {
                                 handleChooseLocation()

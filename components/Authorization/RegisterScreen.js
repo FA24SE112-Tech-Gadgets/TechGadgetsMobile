@@ -50,6 +50,7 @@ export default function RegisterScreen({ navigation }) {
     password: "",
     passwordConfirm: "",
     fullName: "",
+    role: "Customer"
   });
 
   const handleChangeData = (fieldName, data) => {
@@ -177,11 +178,11 @@ export default function RegisterScreen({ navigation }) {
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#fff72e"]}
+        colors={["#FFFFFF", "#fea92866"]}
         style={[styles.linearGradient]}
       >
         <LottieView
-          source={require("../../assets/background-login.json")}
+          source={require("../../assets/animations/background-login.json")}
           style={styles.background}
           autoPlay
           loop={false}
@@ -328,7 +329,7 @@ export default function RegisterScreen({ navigation }) {
         isError={isError}
         setIsError={setIsError}
       />
-      <ConfirmModal
+      <RegisterConfirmModal
         setShowConfirmModal={setShowConfirmModal}
         showConfirmModal={showConfirmModal}
         handleConfirm={saveChanges}
@@ -345,7 +346,7 @@ export default function RegisterScreen({ navigation }) {
   );
 };
 
-const ConfirmModal = ({
+const RegisterConfirmModal = ({
   showConfirmModal,
   setShowConfirmModal,
   handleConfirm,
@@ -382,14 +383,14 @@ const ConfirmModal = ({
               paddingVertical: 5,
               borderRadius: 10,
               borderWidth: 1,
-              borderColor: "#FB6562",
+              borderColor: "#ed8900",
               width: ScreenWidth * 0.25,
               height: 35,
               alignItems: "center",
               justifyContent: "center"
             }}
           >
-            <Text style={{ fontWeight: "bold", color: "#FB6562" }}>{t("cancel-modal")}</Text>
+            <Text style={{ fontWeight: "bold", color: "#ed8900" }}>{t("cancel-modal")}</Text>
           </Pressable>
           <Pressable
             onPress={() => {
@@ -397,7 +398,7 @@ const ConfirmModal = ({
               handleConfirm();
             }}
             style={{
-              backgroundColor: "#FB6562",
+              backgroundColor: "#ed8900",
               paddingHorizontal: 15,
               paddingVertical: 5,
               borderRadius: 10,

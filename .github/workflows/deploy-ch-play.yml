@@ -33,6 +33,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
+      - name: Decode and save the .jks file
+        run: |
+          echo "$MY_JKS_SECRET" | base64 --decode > ./app/@kietpt2003__WhatEat.jks.jks
+
       # Build AAB file
       - name: Build AAB file
         run: |

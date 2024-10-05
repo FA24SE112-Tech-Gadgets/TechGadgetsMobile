@@ -3,6 +3,8 @@ import React, { createContext, useCallback, useState } from "react";
 import api from "./api";
 import { useFocusEffect } from "@react-navigation/native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { Client } from '@stomp/stompjs';
+import { NODE_ENV } from "@env";
 
 const AuthContext = createContext({
   isLoggedIn: false,
@@ -22,7 +24,13 @@ const AuthContext = createContext({
   fetchUser: () => { },
 });
 
+const routingKey = "getAllNoti";
+const exchangeName = "test-exchange";
+const webSocketPort = "15674";
+const domainName = NODE_ENV == "development" ? "tech-gadgets-dev.xyz" : "tech-gadgets-prod.online"
+
 const AuthProvider = ({ children }) => {
+  let client;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -79,6 +87,49 @@ const AuthProvider = ({ children }) => {
     await AsyncStorage.removeItem("refreshToken");
     await AsyncStorage.removeItem("token");
   };
+
+  const connectToRabbitMQ = () => {
+    const headers = {
+      login: 'myadmin', // Replace with your RabbitMQ username
+      passcode: 'mypassword' // Replace with your RabbitMQ password
+    };
+    client = new Client({
+      brokerURL: `ws://${domainName}:${webSocketPort}/ws`,
+      connectHeaders: headers,
+      onConnect: () => {
+        console.log("connect success");
+        client.subscribe(`/exchange/${exchangeName}/${routingKey}`, message => {
+          console.log(`Received: ${message.body}`)
+          setServerMessages(prevNotifications => [
+            ...prevNotifications,
+            message.body
+          ]);
+        }
+        );
+      },
+      onStompError: (frame) => {
+        const readableString = new TextDecoder().decode(frame.binaryBody);
+        console.log('STOMP error', readableString);
+      },
+      appendMissingNULLonIncoming: true,
+      forceBinaryWSFrames: true
+    });
+
+    client.activate();
+  };
+
+  //Connect RabbitMQ
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     connectToRabbitMQ();
+  //     return () => {
+  //       if (client) {
+  //         console.log("Disconnecting from RabbitMQ");
+  //         client.deactivate(); // Properly deactivate the client on component unmount
+  //       }
+  //     };
+  //   }, [])
+  // );
 
   useFocusEffect(
     useCallback(() => {
