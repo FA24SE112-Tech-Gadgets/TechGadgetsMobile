@@ -1,4 +1,4 @@
-package com.tech_gadgets.TechGadgetsMobile
+package com.kietpt2003.WhatEat
 
 import android.os.Build
 import android.os.Bundle

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "TechGadgets",
-    "slug": "TechGadgets",
+    "name": "WhatEat",
+    "slug": "WhatEat",
     "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -67,7 +67,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tech_gadgets.TechGadgetsMobile"
+      "bundleIdentifier": "com.kietpt2003.WhatEat"
     },
     "android": {
       "versionCode": 137,
@@ -84,14 +84,14 @@
         "android.permission.SCHEDULE_EXACT_ALAR",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "package": "com.tech_gadgets.TechGadgetsMobile"
+      "package": "com.kietpt2003.WhatEat"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "85558772-da3c-4f3a-a368-5ff28abeadf3"
+        "projectId": "6575c55e-fe5d-44e7-82a7-55aef3309922"
       }
     }
   }
