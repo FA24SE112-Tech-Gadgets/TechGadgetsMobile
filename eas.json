@@ -9,11 +9,11 @@
       "distribution": "internal"
     },
     "preview": {
-      "autoIncrement": true,
+      "autoIncrement": false,
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": false
     }
   },
   "submit": {

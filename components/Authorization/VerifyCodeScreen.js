@@ -68,7 +68,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         const userInfo = JSON.parse(decodedToken.UserInfo);
         console.log(userInfo);
 
-        if (userInfo.Role != "Buyer") {
+        if (userInfo.Role != "Customer") {
           setStringErr("Vui lòng sử dụng tài khoản khách hàng");
           setIsError(true);
           return;
@@ -77,7 +77,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         await AsyncStorage.setItem("token", token);
 
         await login();
-        if (userInfo.Role == "Buyer") {
+        if (userInfo.Role == "Customer") {
           navigation.replace("StackBuyerHome")
           return;
         }

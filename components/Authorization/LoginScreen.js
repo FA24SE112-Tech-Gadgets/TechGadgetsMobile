@@ -258,7 +258,7 @@ const LoginScreen = () => {
     useCallback(() => {
       const fetchFunction = () => {
 
-        if (user?.role == "Buyer" && isLoggedIn) {
+        if (user?.role == "Customer" && isLoggedIn) {
           navigation.replace("StackBuyerHome")
           return;
         }
