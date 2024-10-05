@@ -13,7 +13,8 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": false
+      "autoIncrement": false,
+      "versionCode": 137
     }
   },
   "submit": {

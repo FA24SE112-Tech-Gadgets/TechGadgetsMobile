@@ -91,9 +91,9 @@ packagingOptions {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.tech_gadgets.TechGadgetsMobile'
+    namespace 'com.kietpt2003.WhatEat'
     defaultConfig {
-        applicationId 'com.tech_gadgets.TechGadgetsMobile'
+        applicationId 'com.kietpt2003.WhatEat'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 137
