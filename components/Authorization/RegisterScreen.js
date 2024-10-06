@@ -50,6 +50,7 @@ export default function RegisterScreen({ navigation }) {
     password: "",
     passwordConfirm: "",
     fullName: "",
+    role: "Customer"
   });
 
   const handleChangeData = (fieldName, data) => {

@@ -119,17 +119,17 @@ const AuthProvider = ({ children }) => {
   };
 
   //Connect RabbitMQ
-  useFocusEffect(
-    useCallback(() => {
-      connectToRabbitMQ();
-      return () => {
-        if (client) {
-          console.log("Disconnecting from RabbitMQ");
-          client.deactivate(); // Properly deactivate the client on component unmount
-        }
-      };
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     connectToRabbitMQ();
+  //     return () => {
+  //       if (client) {
+  //         console.log("Disconnecting from RabbitMQ");
+  //         client.deactivate(); // Properly deactivate the client on component unmount
+  //       }
+  //     };
+  //   }, [])
+  // );
 
   useFocusEffect(
     useCallback(() => {

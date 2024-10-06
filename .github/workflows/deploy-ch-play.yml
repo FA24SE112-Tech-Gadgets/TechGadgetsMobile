@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      #Keystore setup
+      - name: Decode and save the .jks file
+        run: |
+          cd android/app
+          echo "${{ secrets.MY_JKS_SECRET }}" | base64 --decode > my-release-key.jks
+
       # Make gradlew executable
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew

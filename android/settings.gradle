@@ -1,4 +1,4 @@
-rootProject.name = 'TechGadgets'
+rootProject.name = 'WhatEat'
 
 dependencyResolutionManagement {
   versionCatalogs {
