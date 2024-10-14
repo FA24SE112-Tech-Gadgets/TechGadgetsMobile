@@ -76,7 +76,16 @@ const LoginScreen = () => {
 
       await login();
 
-      navigation.replace("StackBuyerHome")
+      // navigation.replace("StackBuyerHome")
+      if (user?.role === "Customer") {
+        navigation.replace("StackBuyerHome");
+    } else if (user?.role === "Seller") {
+        if (user?.seller === null) { // Checking if seller is actually null
+            navigation.replace("RegisterSeller");
+        } else {
+            navigation.replace("StackSellerHome");
+        }
+    }
     } catch (error) {
       console.log(error.response.data);
 
@@ -258,8 +267,12 @@ const LoginScreen = () => {
     useCallback(() => {
       const fetchFunction = () => {
 
-        if (user?.role == "Customer" && isLoggedIn) {
+        if (user?.Role == "Customer" && isLoggedIn) {
           navigation.replace("StackBuyerHome")
+          return;
+        }
+        else if (user?.Role == "Seller" && isLoggedIn) {
+          navigation.replace("RegisterSeller");
           return;
         }
       }
@@ -388,6 +401,8 @@ const LoginScreen = () => {
         <Pressable
           style={styles.registerButton}
           onPress={() => navigation.push("Register")}
+        // onPress={() => navigation.push("RegisterSeller")}
+
         >
           <Text
             style={{
