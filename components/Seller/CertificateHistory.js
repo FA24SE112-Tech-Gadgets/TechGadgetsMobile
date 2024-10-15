@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import api from '../Authorization/api';
 import CertificateDetail from './CertificateDetail';
+import LottieView from 'lottie-react-native';
+import { LinearGradient } from "expo-linear-gradient";
 
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
@@ -48,9 +50,23 @@ const CertificateHistory = () => {
   );
 
   return (
+    
     <View style={styles.container}>
-      <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
+       <LinearGradient
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+        colors={["#FFFFFF", "#fea92866"]}
+        style={[styles.linearGradient]}
+      >
+       <LottieView
+          source={require("../../assets/animations/background-login.json")}
+          style={styles.background}
+          autoPlay
+          loop={false}
+        />
+      
       <ScrollView style={styles.scrollView}>
+      <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
         {applications.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Bạn chưa có đơn nào chờ xét duyệt</Text>
@@ -86,6 +102,7 @@ const CertificateHistory = () => {
           </View>
         )}
       </ScrollView>
+      </LinearGradient>
       {isPopupOpen && selectedApplication && (
         <CertificateDetail
           application={selectedApplication}
@@ -100,7 +117,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
-    padding: 20,
   },
   title: {
     fontSize: 20,
@@ -110,6 +126,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1,
+    padding:20
   },
   loadingContainer: {
     flex: 1,
@@ -203,6 +220,18 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#888',
+  },
+  linearGradient: {
+    flex: 1,
+  },
+  background: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "85%",
+    zIndex: 0,
+    opacity: 0.4,
   },
 });
 

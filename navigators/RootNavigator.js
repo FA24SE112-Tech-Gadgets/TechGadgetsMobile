@@ -14,7 +14,7 @@ import PaymentFail from "../components/Payment/PaymentFail";
 import AuthRoute from "../components/Authorization/AuthRoute";
 import ApplicationRequest from "../components/Buyer/ApplicationRequest";
 import Details from "../components/Buyer/Detail/Detail";
-
+import { MaterialCommunityIcons,FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BusinessRegistrationCertificate from "../components/Seller/BusinessRegistrationCertificate";
 import CertificateHistory from "../components/Seller/CertificateHistory";
@@ -36,9 +36,31 @@ const SellerStack = () => {
 
 const SellerTabNavigator = () => {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="RegisterSeller" component={BusinessRegistrationCertificate} options={{ headerShown: false }} />
-      <Tab.Screen name="RegisterSellerHistory" component={CertificateHistory} options={{ headerShown: false }} />
+    <Tab.Navigator
+      initialRouteName="RegisterSeller"
+      barStyle={{ backgroundColor: '#694fad' }} 
+      screenOptions={{ headerShown: false }}
+    >
+      <Tab.Screen
+        name="RegisterSeller"
+        component={BusinessRegistrationCertificate}
+        options={{
+          tabBarIcon: () => (
+            <MaterialCommunityIcons name="application" size={24} color="black" />
+          ),
+          tabBarLabel: "Đơn",
+        }}
+      />
+      <Tab.Screen
+        name="RegisterSellerHistory"
+        component={CertificateHistory}
+        options={{
+          tabBarIcon: () => (
+            <FontAwesome name="history" size={24} color="black" />
+          ),
+          tabBarLabel: "Lịch sử",
+        }}
+      />
     </Tab.Navigator>
   );
 };

@@ -1,8 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-// import { X } from 'react-native-vector-icons/Ionicons'; // Use your preferred icon library
-// import { User, Briefcase, Phone, Mail, FileText } from 'react-native-vector-icons/Ionicons'; // Use appropriate icons from your library
-
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { FontAwesome, Ionicons,FontAwesome6  } from '@expo/vector-icons';
 const CertificateDetail = ({ application, onClose }) => {
   const StatusBadge = ({ status }) => {
     const statusStyles = {
@@ -28,18 +26,18 @@ const CertificateDetail = ({ application, onClose }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.modalContainer}>
+    <View style={styles.overlay}>
+      <ScrollView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Chi Tiết Đơn Đăng Ký</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            {/* <X style={styles.closeIcon} /> */}<Text>X</Text>
+          <Ionicons name="close"  size={24} color="black"  />
           </TouchableOpacity>
         </View>
         <View style={styles.modalContent}>
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-              {/* <User style={styles.sectionIcon} /> */}
+            <Ionicons name="pricetags"  size={24} color="black"  />
               <Text style={styles.sectionTitle}>Thông Tin Cửa Hàng</Text>
             </View>
             <View style={styles.sectionContent}>
@@ -49,7 +47,7 @@ const CertificateDetail = ({ application, onClose }) => {
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-              {/* <Briefcase style={styles.sectionIcon} /> */}
+            <Ionicons name="business"  size={24} color="black" />
               <Text style={styles.sectionTitle}>Thông Tin Doanh Nghiệp</Text>
             </View>
             <View style={styles.sectionContent}>
@@ -60,7 +58,7 @@ const CertificateDetail = ({ application, onClose }) => {
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-              {/* <Phone style={styles.sectionIcon} /> */}
+            <Ionicons name="accessibility" size={24} color="black"  />
               <Text style={styles.sectionTitle}>Thông Tin Liên Hệ</Text>
             </View>
             <View style={styles.sectionContent}>
@@ -70,7 +68,6 @@ const CertificateDetail = ({ application, onClose }) => {
                   <Text style={styles.sectionText}>Email Thanh Toán:</Text>
                   {application.billingMailApplications.map((email, index) => (
                     <View key={index} style={styles.emailContainer}>
-                      {/* <Mail style={styles.emailIcon} /> */}
                       <Text style={styles.emailText}>{email.mail}</Text>
                     </View>
                   ))}
@@ -80,7 +77,7 @@ const CertificateDetail = ({ application, onClose }) => {
           </View>
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-              {/* <FileText style={styles.sectionIcon} /> */}
+            <FontAwesome name="registered"  size={24} color="black"  />
               <Text style={styles.sectionTitle}>Trạng Thái Đơn Đăng Ký</Text>
             </View>
             <View style={styles.sectionContent}>
@@ -95,7 +92,7 @@ const CertificateDetail = ({ application, onClose }) => {
           {application.businessRegistrationCertificateUrl && (
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeader}>
-                {/* <FileText style={styles.sectionIcon} /> */}
+              <FontAwesome6 name="newspaper" size={24} color="black" />
                 <Text style={styles.sectionTitle}>Giấy Đăng Ký Kinh Doanh</Text>
               </View>
               <View style={styles.sectionContent}>
@@ -107,23 +104,31 @@ const CertificateDetail = ({ application, onClose }) => {
             </View>
           )}
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
   modalContainer: {
-    width: '100%',
+    width: '90%', // You can adjust this width as needed
+    maxHeight: '80%', // To avoid overflow
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
     elevation: 5,
+    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -137,10 +142,6 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 5,
   },
-  closeIcon: {
-    fontSize: 24,
-    color: 'gray',
-  },
   modalContent: {
     marginTop: 20,
   },
@@ -151,10 +152,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
-  },
-  sectionIcon: {
-    marginRight: 10,
-    fontSize: 20,
   },
   sectionTitle: {
     fontWeight: 'bold',
@@ -182,15 +179,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  emailIcon: {
-    marginRight: 10,
-  },
   emailText: {
     fontSize: 14,
   },
   image: {
     width: '100%',
-    height: 200,
+    height: 100,
     resizeMode: 'contain',
     borderRadius: 5,
     marginTop: 10,
