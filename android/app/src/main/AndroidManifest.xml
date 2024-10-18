@@ -36,7 +36,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="com.tech_gadgets.TechGadgetsMobile"/>
         <data android:scheme="com.kietpt2003.WhatEat"/>
       </intent-filter>
     </activity>
