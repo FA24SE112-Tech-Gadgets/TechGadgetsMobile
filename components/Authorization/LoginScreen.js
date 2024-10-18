@@ -80,7 +80,9 @@ const LoginScreen = () => {
       if (user?.role === "Customer") {
         navigation.replace("StackBuyerHome");
     } else if (user?.role === "Seller") {
-        if (user?.seller === null) { // Checking if seller is actually null
+
+      
+        if (!user?.seller) { //fix  
             navigation.replace("RegisterSeller");
         } else {
             navigation.replace("StackSellerHome");
@@ -263,17 +265,28 @@ const LoginScreen = () => {
   //   }, [])
   // );
 
+
+// if (user?.role == "Customer" ) {
+//   navigation.replace("StackBuyerHome")
+//   return;
+// }
+// else if (user?.role == "Seller") {
+//   navigation.replace("StackSellerHome");
+//   return;
+// }
+
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
 
-        if (user?.Role == "Customer" && isLoggedIn) {
-          navigation.replace("StackBuyerHome")
-          return;
-        }
-        else if (user?.Role == "Seller" && isLoggedIn) {
-          navigation.replace("RegisterSeller");
-          return;
+        if (user?.role === "Customer") {
+          navigation.replace("StackBuyerHome");
+        } else if (user?.role === "Seller") {
+          if (!user?.seller) { //fix  
+            navigation.replace("RegisterSeller");
+          } else {
+            navigation.replace("StackSellerHome");
+          }
         }
       }
       fetchFunction();

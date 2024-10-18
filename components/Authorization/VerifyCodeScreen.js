@@ -84,7 +84,7 @@ const VerifyCodeScreen = ({ navigation, route }) => {
 
         //login seller
         if (userInfo.Role == "Seller") {
-          navigation.replace("StackBuyerHome")
+          navigation.replace("RegisterSeller")
           return;
         }
 

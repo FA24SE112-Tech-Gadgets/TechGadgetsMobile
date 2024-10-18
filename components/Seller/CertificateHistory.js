@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import api from '../Authorization/api';
 import CertificateDetail from './CertificateDetail';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from '@react-navigation/native';
 
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
@@ -12,20 +13,35 @@ const CertificateHistory = () => {
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const response = await api.get("/seller-applications");
-        setApplications(response.data.items);
-        setLoading(false);
-      } catch (err) {
-        setError('Không thể lấy danh sách đơn đăng ký');
-        setLoading(false);
-      }
-    };
-    fetchApplications();
-  }, []);
+  // useEffect(() => {
+  //   const fetchApplications = async () => {
+  //     try {
+  //       const response = await api.get("/seller-applications");
+  //       setApplications(response.data.items);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError('Không thể lấy danh sách đơn đăng ký');
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchApplications();
+  // }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchApplications = async () => {
+        try {
+          const response = await api.get("/seller-applications");
+          setApplications(response.data.items);
+          setLoading(false);
+        } catch (err) {
+          setError('Không thể lấy danh sách đơn đăng ký');
+          setLoading(false);
+        }
+      };
+      fetchApplications();
+    }, [])
+  );
   const handleViewDetails = async (id) => {
     try {
       const response = await api.get(`${"/seller-applications"}/${id}`);

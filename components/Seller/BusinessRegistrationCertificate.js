@@ -84,14 +84,14 @@ export default function BusinessRegistrationCertificate() {
     } else {
       setIsShopAddressValid(true);
     }
-    if (!companyName.trim()) {
-      setIsCompanyNameValid(false);
-      valid = false;
-      Alert.alert("Validation Error", "Vui lòng nhập tên công ty");
-      return;
-    } else {
-      setIsCompanyNameValid(true);
-    }
+    // if (!companyName.trim()) {
+    //   setIsCompanyNameValid(false);
+    //   valid = false;
+    //   Alert.alert("Validation Error", "Vui lòng nhập tên công ty");
+    //   return;
+    // } else {
+    //   setIsCompanyNameValid(true);
+    // }
     if (!taxCode.trim()) {
       setIsTaxCodeValid(false);
       valid = false;
@@ -234,7 +234,6 @@ export default function BusinessRegistrationCertificate() {
             <TextInput
               style={[
                 styles.input,
-                !isCompanyNameValid && { borderColor: 'red' }
               ]}
               value={companyName}
               onChangeText={setCompanyName}
