@@ -68,7 +68,7 @@ const SellerNavigator = () => {
                 {() => (
                     <AuthRoute>
                         <SellerHome />
-                    </AuthRoute>
+                     </AuthRoute>
                 )}
             </Tab.Screen>
             <Tab.Screen
