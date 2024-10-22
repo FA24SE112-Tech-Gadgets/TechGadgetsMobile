@@ -1,17 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Pressable, Modal, TouchableWithoutFeedback } from 'react-native';
 import api from '../Authorization/api';
 import CertificateDetail from './CertificateDetail';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from '@react-navigation/native';
-
+import useAuth from "../../utils/useAuth";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isPopupNotiOpen, setIsPopupNotiOpen] = useState(false);
+  const {
+    logout
+  } = useAuth();
+  const navigation = useNavigation();
 
   // useEffect(() => {
   //   const fetchApplications = async () => {
@@ -32,8 +38,15 @@ const CertificateHistory = () => {
       const fetchApplications = async () => {
         try {
           const response = await api.get("/seller-applications");
+          const newApplications = response.data.items;
           setApplications(response.data.items);
+          setApplications(newApplications);
           setLoading(false);
+          const approvedApp = newApplications.find(app => app.status === 'Approved');
+          if (approvedApp) {
+            setIsPopupNotiOpen(true);
+          }
+
         } catch (err) {
           setError('Không thể lấy danh sách đơn đăng ký');
           setLoading(false);
@@ -42,6 +55,10 @@ const CertificateHistory = () => {
       fetchApplications();
     }, [])
   );
+  const handleLogout = () => {
+    logout();
+    navigation.navigate('Login');
+  };
   const handleViewDetails = async (id) => {
     try {
       const response = await api.get(`${"/seller-applications"}/${id}`);
@@ -66,59 +83,79 @@ const CertificateHistory = () => {
   );
 
   return (
-    
+
     <View style={styles.container}>
-       <LinearGradient
+      <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 0.8 }}
         colors={["#FFFFFF", "#fea92866"]}
         style={[styles.linearGradient]}
       >
-       <LottieView
+        <LottieView
           source={require("../../assets/animations/background-login.json")}
           style={styles.background}
           autoPlay
           loop={false}
         />
-      
-      <ScrollView style={styles.scrollView}>
-      <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
-        {applications.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Bạn chưa có đơn nào chờ xét duyệt</Text>
-          </View>
-        ) : (
-          <View style={styles.tableContainer}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableHeaderText}>Tên Cửa Hàng</Text>
-              <Text style={styles.tableHeaderText}>Mô Hình Kinh Doanh</Text>
-              <Text style={styles.tableHeaderText}>Trạng Thái</Text>
-              <Text style={styles.tableHeaderText}>Ngày Tạo</Text>
-              <Text style={styles.tableHeaderText}>Hành Động</Text>
+
+        <ScrollView style={styles.scrollView}>
+          <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
+          {applications.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Bạn chưa có đơn nào chờ xét duyệt</Text>
             </View>
-            {applications.map((app) => (
-              <View key={app.id} style={styles.tableRow}>
-                <Text style={styles.tableCellText}>{app.shopName}</Text>
-                <Text style={styles.tableCellText}>
-                  {app.businessModel === 'BusinessHousehold' ? 'Hộ Kinh Doanh' :
-                    app.businessModel === 'Personal' ? 'Cá Nhân' :
-                      app.businessModel === 'Company' ? 'Công Ty' : app.businessModel}
-                </Text>
-                <View style={[styles.statusContainer, app.status === 'Pending' ? styles.pendingStatus : app.status === 'Approved' ? styles.approvedStatus : styles.rejectedStatus]}>
-                  <Text style={styles.statusText}>
-                    {app.status === 'Pending' ? 'Đang Chờ' : app.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}
-                  </Text>
-                </View>
-                <Text style={styles.tableCellText}>{new Date(app.createdAt).toLocaleString()}</Text>
-                <TouchableOpacity onPress={() => handleViewDetails(app.id)} style={styles.actionButton}>
-                  <Text style={styles.actionButtonText}>Xem</Text>
-                </TouchableOpacity>
+          ) : (
+            <View style={styles.tableContainer}>
+              <View style={styles.tableHeader}>
+                <Text style={styles.tableHeaderText}>Tên Cửa Hàng</Text>
+                <Text style={styles.tableHeaderText}>Mô Hình Kinh Doanh</Text>
+                <Text style={styles.tableHeaderText}>Trạng Thái</Text>
+                <Text style={styles.tableHeaderText}>Ngày Tạo</Text>
+                <Text style={styles.tableHeaderText}>Hành Động</Text>
               </View>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+              {applications.map((app) => (
+                <View key={app.id} style={styles.tableRow}>
+                  <Text style={styles.tableCellText}>{app.shopName}</Text>
+                  <Text style={styles.tableCellText}>
+                    {app.businessModel === 'BusinessHousehold' ? 'Hộ Kinh Doanh' :
+                      app.businessModel === 'Personal' ? 'Cá Nhân' :
+                        app.businessModel === 'Company' ? 'Công Ty' : app.businessModel}
+                  </Text>
+                  <View style={[styles.statusContainer, app.status === 'Pending' ? styles.pendingStatus : app.status === 'Approved' ? styles.approvedStatus : styles.rejectedStatus]}>
+                    <Text style={styles.statusText}>
+                      {app.status === 'Pending' ? 'Đang Chờ' : app.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}
+                    </Text>
+                  </View>
+                  <Text style={styles.tableCellText}>{new Date(app.createdAt).toLocaleString()}</Text>
+                  <TouchableOpacity onPress={() => handleViewDetails(app.id)} style={styles.actionButton}>
+                    <Text style={styles.actionButtonText}>Xem</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
       </LinearGradient>
+      <Modal
+        visible={isPopupNotiOpen}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsPopupNotiOpen(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsPopupNotiOpen(false)}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Thông Báo</Text>
+              <Text style={styles.modalMessage}>Đơn của bạn đã được duyệt, vui lòng đăng nhập lại.</Text>
+              <Pressable style={styles.actionButton} onPress={handleLogout}>
+                <Text style={styles.actionButtonText}>Đăng Xuất</Text>
+              </Pressable>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+
       {isPopupOpen && selectedApplication && (
         <CertificateDetail
           application={selectedApplication}
@@ -142,7 +179,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1,
-    padding:20
+    padding: 20
   },
   loadingContainer: {
     flex: 1,
@@ -249,6 +286,30 @@ const styles = StyleSheet.create({
     zIndex: 0,
     opacity: 0.4,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Tối màn hình khi hiển thị popup
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+
 });
 
 export default CertificateHistory;

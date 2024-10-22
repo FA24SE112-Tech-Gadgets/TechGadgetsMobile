@@ -127,7 +127,7 @@ export default function BuyerProfile() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-              {user.fullName?.charAt(0)}
+              {/* {user.fullName?.charAt(0)} */}
             </Text>
           </View>
         )}
