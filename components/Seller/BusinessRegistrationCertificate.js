@@ -21,7 +21,8 @@ export default function BusinessRegistrationCertificate() {
   const [isShopAddressValid, setIsShopAddressValid] = useState(true);
   const [isTaxCodeValid, setIsTaxCodeValid] = useState(true);
   const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
-  const [isCompanyNameValid, setIsCompanyNameValid] = useState(true);
+  const [isCompanyNameValid, setIsCompanyNameValid] = useState(true); // For company name validation
+  const [isCertificateUploaded, setIsCertificateUploaded] = useState(true);
   // File picker logic (for file uploads)
   const pickBusinessRegistrationCertificate = async () => {
     try {
@@ -63,7 +64,25 @@ export default function BusinessRegistrationCertificate() {
     setBillingMails(updatedMails);
   };
 
+  const validateCompanyName = () => {
+    if (businessModel !== 'Personal' && companyName.trim() === '') {
+      setIsCompanyNameValid(false);
+      Alert.alert('Validation Error', 'Company name is required.');
+      return false;
+    }
+    setIsCompanyNameValid(true);
+    return true;
+  };
 
+  const validateCertificate = () => {
+    if (businessModel !== 'Personal' && assets.length === 0) {
+      setIsCertificateUploaded(false);
+      Alert.alert('Validation Error', 'Business registration certificate is required.');
+      return false;
+    }
+    setIsCertificateUploaded(true);
+    return true;
+  };
   // Form submission logic
   const handleSubmit = async () => {
     let valid = true;
@@ -84,14 +103,6 @@ export default function BusinessRegistrationCertificate() {
     } else {
       setIsShopAddressValid(true);
     }
-    // if (!companyName.trim()) {
-    //   setIsCompanyNameValid(false);
-    //   valid = false;
-    //   Alert.alert("Validation Error", "Vui lòng nhập tên công ty");
-    //   return;
-    // } else {
-    //   setIsCompanyNameValid(true);
-    // }
     if (!taxCode.trim()) {
       setIsTaxCodeValid(false);
       valid = false;
@@ -108,25 +119,13 @@ export default function BusinessRegistrationCertificate() {
     } else {
       setIsPhoneNumberValid(true);
     }
-   
-    // if (!shopAddress.trim()) {
-    //   Alert.alert("Validation Error", "Vui lòng nhập địa chỉ shop");
-    //   return;
-    // }
-    // if (!taxCode.trim()) {
-    //   Alert.alert("Validation Error", "Vui lòng nhập mã số thuế");
-    //   return;
-    // }
-    // if (!phoneNumber.trim()) {
-    //   Alert.alert("Validation Error", "Vui lòng nhập số điện thoại");
-    //   return;
-    // }
-    
-    // if (!companyName.trim()) {
-    //   Alert.alert("Validation Error", "Vui lòng nhập tên công ty");
-    //   return;
-    // }
+    const isCompanyNameValid = validateCompanyName();
+    const isCertificateValid = validateCertificate();
 
+    if (!isCompanyNameValid || !isCertificateValid) {
+      valid = false;
+      return;
+    }
     const formData = new FormData();
     // Append company information
     if (businessModel !== 'Personal') {
@@ -153,7 +152,6 @@ export default function BusinessRegistrationCertificate() {
         });
       });
     }
-
     try {
       const response = await api.post('/seller-applications', formData, {
         headers: {
@@ -161,19 +159,36 @@ export default function BusinessRegistrationCertificate() {
         },
       });
 
-      console.log('Submission successful:', response.data.formData);
-      console.log('Submission successful:', response.formData);
-      Alert.alert("Upload Success");
-      return;
+      // Check for response status before returning
+      if (response.status >= 400 && response.status < 500) {
+        const errorMessage = response.data.reasons?.[0]?.message || 'Vui lòng thử lại.';
+        Alert.alert(`${errorMessage}`); // Show the error message in an alert
+      } else {
+        // If response is successful
+        Alert.alert("Đơn đăng kí đã được gửi thành công");
+        setShopName('');
+        setShopAddress('');
+        setTaxCode('');
+        setPhoneNumber('');
+        setCompanyName('');
+        setBillingMails([]);
+        setAssets([]);
+        setBusinessModel('Personal');
+      }
     } catch (error) {
       if (error.response) {
-        console.error('Response error:', error.response.data);
+        // Extract and show the error message from the server response
+        const errorMessage = error.response.data.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
+        Alert.alert('Lỗi', errorMessage);
       } else if (error.request) {
         console.error('Request error:', error.request);
+        Alert.alert('Lỗi', 'Không thể kết nối với máy chủ.');
       } else {
         console.error('Error:', error.message);
+        Alert.alert('Lỗi', 'Đã xảy ra lỗi.');
       }
     }
+
   };
 
   return (
@@ -189,17 +204,17 @@ export default function BusinessRegistrationCertificate() {
         autoPlay
         loop={false}
       />
-      <ScrollView style={styles.container }contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
 
 
         <Text style={styles.title}>Đơn Đăng Ký</Text>
 
         <Text style={styles.label}>Tên Shop</Text>
         <TextInput
-         style={[
-          styles.input,
-          !isShopNameValid && { borderColor: 'red' } // Change border color to red if invalid
-        ]}
+          style={[
+            styles.input,
+            !isShopNameValid && { borderColor: 'red' } // Change border color to red if invalid
+          ]}
           value={shopName}
           onChangeText={setShopName}
           placeholder="Nhập tên shop"
@@ -208,7 +223,7 @@ export default function BusinessRegistrationCertificate() {
 
         <Text style={styles.label}>Địa chỉ</Text>
         <TextInput
-           style={[
+          style={[
             styles.input,
             !isShopAddressValid && { borderColor: 'red' }
           ]}
@@ -233,12 +248,12 @@ export default function BusinessRegistrationCertificate() {
             <Text style={styles.label}>Tên công ty</Text>
             <TextInput
               style={[
-                styles.input,
+                styles.input, !isCompanyNameValid && { borderColor: 'red' }
               ]}
               value={companyName}
               onChangeText={setCompanyName}
               placeholder="Nhập tên công ty"
-              onFocus={() =>  setIsCompanyNameValid(true)}
+              onFocus={() => setIsCompanyNameValid(true)}
             />
           </>
         )}
@@ -271,7 +286,7 @@ export default function BusinessRegistrationCertificate() {
 
         <Text style={styles.label}>Số điện thoại</Text>
         < TextInput
-           style={[
+          style={[
             styles.input,
             !isPhoneNumberValid && { borderColor: 'red' }
           ]}
