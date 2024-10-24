@@ -50,6 +50,7 @@ export default function App() {
         AboutTechGadget: "AboutTechGadget",
         BuyerPersonal: "BuyerPersonal",
         Policy: "Policy",
+        PasswordAndSecure: "PasswordAndSecure",
         ChangeProfile: "ChangeProfile",
         StackSellerHome: {
           screens: {

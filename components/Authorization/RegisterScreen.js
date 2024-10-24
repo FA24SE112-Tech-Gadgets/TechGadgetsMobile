@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
+import { Checkbox } from 'react-native-paper';
 
 export default function RegisterScreen({ navigation }) {
   const [stringErr, setStringErr] = useState("");
@@ -64,9 +65,10 @@ export default function RegisterScreen({ navigation }) {
     //email
     if (account.email === "") {
       return { isError: true, stringErr: t("empty-email") };
-    } else if (!handleValidEmail(account.email)) {
-      return { isError: true, stringErr: t("email-wrong-format") };
-    }
+    } 
+    // else if (!handleValidEmail(account.email)) {
+    //   return { isError: true, stringErr: t("email-wrong-format") };
+    // }
 
     //fullName
     if (account.fullName === "") {
@@ -98,9 +100,9 @@ export default function RegisterScreen({ navigation }) {
     };
   };
 
-  const handleValidEmail = (mail) => {
-    return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(mail);
-  };
+  // const handleValidEmail = (mail) => {
+  //   return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(mail);
+  // };
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -263,6 +265,25 @@ export default function RegisterScreen({ navigation }) {
                 />
               </Pressable>
             )}
+          </View>
+
+          {/* role */}
+          <Text style={styles.roleText}>Bạn là: </Text>
+          <View style={styles.roleSelectionContainer}>
+            <Pressable
+              style={styles.checkboxContainer}
+              onPress={() => handleChangeData("role", "Customer")}
+            >
+              <Checkbox status={account.role === "Customer" ? 'checked' : 'unchecked'} />
+              <Text>customer</Text>
+            </Pressable>
+            <Pressable
+              style={styles.checkboxContainer}
+              onPress={() => handleChangeData("role", "Seller")}
+            >
+              <Checkbox status={account.role === "Seller" ? 'checked' : 'unchecked'} />
+              <Text>seller</Text>
+            </Pressable>
           </View>
 
           {/* ĐĂNG KÝ */}
@@ -583,5 +604,20 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 16,
+  },
+  roleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,  // Space between text and checkboxes
+    
+  },
+  roleSelectionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

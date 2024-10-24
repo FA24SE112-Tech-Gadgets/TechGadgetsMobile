@@ -13,8 +13,59 @@ import PaymentSuccess from "../components/Payment/PaymentSuccess";
 import PaymentFail from "../components/Payment/PaymentFail";
 import AuthRoute from "../components/Authorization/AuthRoute";
 import ApplicationRequest from "../components/Buyer/ApplicationRequest";
+import Details from "../components/Buyer/Detail/Detail";
+import { MaterialCommunityIcons,FontAwesome } from '@expo/vector-icons';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import BusinessRegistrationCertificate from "../components/Seller/BusinessRegistrationCertificate";
+import CertificateHistory from "../components/Seller/CertificateHistory";
+import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+const SellerStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="SellerTab" component={SellerTabNavigator} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+};
+
+const SellerTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      initialRouteName="RegisterSeller"
+      barStyle={{ backgroundColor: '#694fad' }} 
+      screenOptions={{ headerShown: false }}
+    >
+      <Tab.Screen
+        name="RegisterSeller"
+        component={BusinessRegistrationCertificate}
+        options={{
+          tabBarIcon: () => (
+            <MaterialCommunityIcons name="application" size={24} color="black" />
+          ),
+          tabBarLabel: "Đơn",
+        }}
+      />
+      <Tab.Screen
+        name="RegisterSellerHistory"
+        component={CertificateHistory}
+        options={{
+          tabBarIcon: () => (
+            <FontAwesome name="history" size={24} color="black" />
+          ),
+          tabBarLabel: "Lịch sử",
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
 
 const RootNavigator = () => {
   return (
@@ -28,6 +79,16 @@ const RootNavigator = () => {
       <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
       <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="StackBuyerHome" component={BuyerNavigator} options={{ statusBarColor: "black", }} />
+      <Stack.Screen name="RegisterSeller" component={SellerStack} options={{ headerShown: false }} />
+      {/* <Stack.Screen name="RegisterSeller" component={BusinessRegistrationCertificate} options={{ headerShown: false }}/>
+      <Stack.Screen name="RegisterSellerHistory" component={CertificateHistory} options={{ headerShown: false }}/> */}
+ {/* Detail */}
+      <Stack.Screen
+        name="Details"
+        component={Details} 
+        options={{ title: 'Chi tiết sản phẩm' }}
+      />
+
       <Stack.Screen name="AboutTechGadget" >
         {() => (
           <AuthRoute>
@@ -53,6 +114,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <ChangeProfile />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PasswordAndSecure" >
+        {() => (
+          <AuthRoute>
+            <PasswordAndSecure />
           </AuthRoute>
         )}
       </Stack.Screen>
@@ -86,6 +154,7 @@ const RootNavigator = () => {
       </Stack.Screen>
       <Stack.Screen name="StackSellerHome" component={SellerNavigator} />
     </Stack.Navigator>
+    
   );
 };
 

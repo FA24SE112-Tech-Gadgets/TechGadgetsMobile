@@ -68,11 +68,11 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         const userInfo = JSON.parse(decodedToken.UserInfo);
         console.log(userInfo);
 
-        if (userInfo.Role != "Customer") {
-          setStringErr("Vui lòng sử dụng tài khoản khách hàng");
-          setIsError(true);
-          return;
-        }
+        // if (userInfo.Role != "Customer") {
+        //   setStringErr("Vui lòng sử dụng tài khoản khách hàng");
+        //   setIsError(true);
+        //   return;
+        // }
         await AsyncStorage.setItem("refreshToken", refreshToken);
         await AsyncStorage.setItem("token", token);
 
@@ -81,6 +81,14 @@ const VerifyCodeScreen = ({ navigation, route }) => {
           navigation.replace("StackBuyerHome")
           return;
         }
+
+        //login seller
+        if (userInfo.Role == "Seller") {
+          navigation.replace("RegisterSeller")
+          return;
+        }
+
+
       } else if (response.status >= 400 && response.status <= 500) {
         const data = await response.json();
         setIsError(true);
