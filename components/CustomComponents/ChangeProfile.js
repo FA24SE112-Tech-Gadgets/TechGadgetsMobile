@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,625 +7,270 @@ import {
   Pressable,
   TextInput,
   ActivityIndicator,
-} from "react-native";
-import React, { useCallback, useState } from "react";
-import logo from "../../assets/adaptive-icon.png";
-import { LinearGradient } from "expo-linear-gradient";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
-import useAuth from "../../utils/useAuth";
-import Modal from "react-native-modal";
-import { Snackbar } from "react-native-paper";
-import api from "../Authorization/api";
-import * as ImagePicker from "expo-image-picker";
-import ErrModal from "./ErrModal";
+  Alert,
+  StyleSheet,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Icon } from '@rneui/base';
+import { Snackbar } from 'react-native-paper';
+import api from '../Authorization/api';
+import * as DocumentPicker from 'expo-document-picker';
+import ErrModal from './ErrModal';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { useTranslation } from "react-i18next";
-import ChooseLocation from "./ChooseLocation";
-import Mapbox, { MapView, Camera, PointAnnotation, Logger, } from "@rnmapbox/maps";
-import * as Location from "expo-location"
-import { useFocusEffect } from "@react-navigation/native";
-Logger.setLogCallback(log => {
-  const { message } = log;
-  if (
-    message.match("Request failed due to a permanent error: Canceled") ||
-    message.match("Request failed due to a permanent error: Socket Closed")
-  ) {
-    return true;
-  }
-  return false;
-})
-Mapbox.setWellKnownTileServer('Mapbox');
-Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
 
+const formatDateToDisplay = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('vi-VN');
+};
 
 export default function ChangeProfile() {
-  const [location, setLocation] = useState(null);
-
-  const { logout, user, setUser } = useAuth();
-
-  const urlUser = `/users/${user.id}`;
-  const urlRestaurant = `/restaurants/${user.idRestaurant}`;
-
-  const [isOpenFields, setIsOpenFields] = useState({
-    image: false,
-    fullName: false,
-    phoneNumber: false,
-    description: false,
-    address: false,
-  });
-
+  const [customer, setCustomer] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [newFields, setNewFields] = useState({
-    fullName: "",
-    phoneNumber: "",
-    address: "",
-    description: "",
-    image: "",
-    imageBase64: "",
+    fullName: '',
+    phoneNumber: '',
+    address: '',
+    cccd: '',
+    gender: '',
+    dateOfBirth: '',
+    avatarUrl: '',
   });
-
-  const [stringErr, setStringErr] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [stringErr, setStringErr] = useState('');
   const [isError, setIsError] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [isFetching, setIsFetching] = useState(false);
-
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const { t } = useTranslation();
 
-  const geocode = async (address) => {
-    const geocodedLocation = await Location.geocodeAsync(
-      address
-        ? address
-        : "Ho Chi Minh"
-    ); //Default Ho Chi Minh
-    setLocation(geocodedLocation[0]);
-  };
+  useEffect(() => {
+    fetchCustomerData();
+  }, []);
 
-  const handleChangeData = (fieldName, data) => {
-    setNewFields((prev) => ({
-      ...prev,
-      [fieldName]: data,
-    }));
-  };
-
-  const handleChangeModal = (fieldName, data) => {
-    setIsOpenFields((prev) => ({
-      ...prev,
-      [fieldName]: data,
-    }));
-  };
-
-  const handleChangeFullName = async () => {
-    if (newFields.fullName == "") {
+  const fetchCustomerData = async () => {
+    try {
+      const response = await api.get('/users/current');
+      const userData = response.data.customer;
+      setCustomer(userData);
+      setNewFields({
+        fullName: userData.fullName,
+        phoneNumber: userData.phoneNumber || '',
+        address: userData.address || '',
+        cccd: userData.cccd || '',
+        gender: userData.gender || 'Male',
+        dateOfBirth: userData.dateOfBirth ? new Date(userData.dateOfBirth) : new Date(),
+        avatarUrl: userData.avatarUrl || '',
+      });
+    } catch (error) {
+      console.error('Error fetching customer data:', error);
+      setStringErr('Không thể tải thông tin khách hàng');
       setIsError(true);
-      setStringErr(t("empty-new-name"));
-      return;
-    }
-
-    if (user.role != "RESTAURANT") {
-      try {
-        setIsFetching(true);
-        const res = await api.patch(urlUser, {
-          fullName: newFields.fullName,
-        });
-        setIsFetching(false);
-
-        handleChangeModal("fullName", false);
-        setSnackbarVisible(true);
-        handleChangeData("fullName", "");
-        setSnackbarMessage(t("update-name-success"));
-        setUser((prev) => ({ ...prev, fullName: res.data.fullName }));
-      } catch (e) {
-        setStringErr(e.response.data.reasons[0].message);
-        setIsError(true);
-      }
-    } else {
-      try {
-        setIsFetching(true);
-        const res = await api.patch(urlRestaurant, {
-          name: newFields.fullName,
-        });
-        setIsFetching(true);
-
-        handleChangeModal("fullName", false);
-        setSnackbarVisible(true);
-        setSnackbarMessage(t("update-name-success"));
-        setUser((prev) => ({ ...prev, fullName: res.data.fullName }));
-      } catch (e) {
-        setStringErr(e.response.data.reasons[0].message);
-        setIsError(true);
-      }
     }
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      quality: 1,
-    });
+  const handleChange = (field, value) => {
+    setNewFields(prev => ({ ...prev, [field]: value }));
+  };
 
-    if (!result.canceled) {
-      const fileSizeInMB = result.assets[0].filesize / (1024 * 1024);
-      const fileExtension = result.assets[0].uri.split(".").pop();
-
-      if (fileSizeInMB <= 3) {
-        const strBase64 =
-          `data:image/${fileExtension};base64,` + result.assets[0].base64;
-        handleChangeData("imageBase64", strBase64);
-        handleChangeData("image", result.assets[0]);
-
-        try {
-          let res;
-          if (user.role == "USER") {
-            res = await api.patch(urlUser, {
-              image: strBase64,
-            });
-            setUser((prev) => ({ ...prev, imageUrl: res.data.imageUrl }));
-          } else {
-            setIsFetching(true);
-            res = await api.patch(urlRestaurant, {
-              image: strBase64,
-            });
-            setIsFetching(false);
-            setUser((prev) => ({ ...prev, imageUrl: res.data.image }));
-          }
-          setSnackbarVisible(true);
-          setSnackbarMessage(t("update-image-success"));
-        } catch (e) {
-          setStringErr(e.response.data.reasons[0].message);
-          setIsError(true);
+  const handleSave = async () => {
+    try {
+      setIsFetching(true);
+      const formData = new FormData();
+      Object.keys(newFields).forEach(key => {
+        if (key === 'dateOfBirth') {
+          formData.append(key, newFields[key].toISOString());
+        } else if (newFields[key] !== customer[key]) {
+          formData.append(key, newFields[key]);
         }
+      });
+
+
+      if (selectedAvatar) {
+        formData.append('Avatar', {
+          uri: selectedAvatar.uri,
+          name: selectedAvatar.name,
+          type: selectedAvatar.mimeType,
+        });
+      }
+
+      const response = await api.patch('/customer', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      // Check for response status
+      if (response.status >= 200 && response.status < 300) {
+        // Update the customer state with new fields
+        setCustomer(prev => ({
+          ...prev,
+          ...newFields,
+          dateOfBirth: newFields.dateOfBirth.toISOString(),
+          avatarUrl: selectedAvatar ? selectedAvatar.uri : newFields.avatarUrl,  // Update avatar URL from state
+        }));
+
+        setIsEditing(false);
+        setSnackbarMessage('Cập nhật thông tin thành công!');
+        setSnackbarVisible(true);
       } else {
-        setIsError(true);
-        setStringErr(t("img-oversize"));
+        Alert.alert('Lỗi', 'Đã xảy ra lỗi. Vui lòng thử lại.');
       }
-    }
-  };
-
-  const deleteImage = async () => {
-    try {
-      setIsFetching(true);
-      let res;
-      if (user.role == "USER") {
-        res = await api.patch(urlUser, {
-          image: "",
-        });
-        setUser((prev) => ({ ...prev, imageUrl: res.data.imageUrl }));
-      }
+    } catch (error) {
+      setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      setIsError(true);
+    } finally {
       setIsFetching(false);
-      setSnackbarVisible(true);
-      setSnackbarMessage(t("delete-image-success"));
-    } catch (e) {
-      setStringErr(e.response.data.reasons[0].message);
-      setIsError(true);
     }
   };
 
-  const handleChangePhoneNumber = async () => {
-    if (newFields.phoneNumber == "") {
-      setIsError(true);
-      setStringErr(t("empty-new-phone"));
-      return;
-    }
 
-    if (user.role == "RESTAURANT") {
-      try {
-        const res = await api.patch(urlRestaurant, {
-          phoneNumber: newFields.phoneNumber,
-        });
-
-        handleChangeModal("phoneNumber", false);
-        setSnackbarVisible(true);
-        handleChangeData("phoneNumber", "");
-        setSnackbarMessage(t("update-phone-number-success"));
-        const newUser = await api.get("/users/current");
-        setUser((prev) => ({ ...prev, phoneNumber: newUser.data.phoneNumber }));
-      } catch (e) {
-        setStringErr(e.response.data.reasons[0].message);
-        setIsError(true);
-      }
-    } else {
-      try {
-        setIsFetching(true);
-        const res = await api.patch(urlUser, {
-          phoneNumber: newFields.phoneNumber,
-        });
-        setIsFetching(false);
-
-        handleChangeModal("phoneNumber", false);
-        setSnackbarVisible(true);
-        handleChangeData("phoneNumber", "");
-        setSnackbarMessage(t("update-phone-number-success"));
-        setUser((prev) => ({ ...prev, phoneNumber: res.data.phoneNumber }));
-      } catch (e) {
-        setStringErr(e.response.data.reasons[0].message);
-        setIsError(true);
-      }
-    }
-  };
-
-  const handleChangeDescription = async () => {
-    if (newFields.description == "") {
-      setIsError(true);
-      setStringErr(t("empty-new-description"));
-      return;
-    }
-
+  const pickDocument = async () => {
     try {
-      setIsFetching(true);
-      const res = await api.patch(urlRestaurant, {
-        description: newFields.description,
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/svg+xml",
+          "image/webp"
+        ],
+        multiple: false,
       });
-      setIsFetching(false);
 
-      handleChangeModal("description", false);
-      setSnackbarVisible(true);
-      handleChangeData("description", "");
-      setSnackbarMessage(t("update-new-description-success"));
-      setUser((prev) => ({ ...prev, description: res.data.description }));
-    } catch (e) {
-      setStringErr(e.response.data.reasons[0].message);
+      console.log('DocumentPicker result:', result);
+
+      // Check if the user canceled the selection
+      if (!result.canceled) {
+        const { uri, size, mimeType, name } = result.assets[0]; // Access the first asset in the array
+
+        console.log('Selected file details:');
+        console.log('File URI:', uri);
+        console.log('File Name:', name);
+        console.log('File Size:', size);
+        console.log('File MIME Type:', mimeType);
+
+        // Check file size (limit to 3MB)
+        if (size > 3 * 1024 * 1024) {
+          setStringErr('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 3MB.');
+          setIsError(true);
+          return;
+        }
+
+        // Lưu trữ avatar đã chọn vào state
+        setSelectedAvatar({ uri, name, mimeType });
+        console.log('Preview Avatar URI:', uri);
+      } else {
+        console.log('User canceled the document selection');
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+      setStringErr('Có lỗi xảy ra khi chọn file. Vui lòng thử lại.');
       setIsError(true);
     }
   };
 
-  const handleChangeAddress = async (newAddress) => {
-    try {
-      setIsFetching(true);
-      const res = await api.patch(urlRestaurant, {
-        address: newAddress,
-      });
-      setIsFetching(false);
-
-      setUser((prev) => ({ ...prev, address: res.data.address }));
-    } catch (e) {
-      setStringErr(e.response.data.reasons[0].message);
-      setIsError(true);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      geocode(user.address)
-    }, [user.address])
-  );
+  if (!customer) {
+    return <ActivityIndicator size="large" color="#ed8900" />;
+  }
 
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 0.8 }}
-      colors={["#FFFFFF", "#ed8900"]}
-      style={{ flex: 1 }}
+      colors={['#FFFFFF', '#ed8900']}
+      style={styles.container}
     >
-      <ScrollView
-        style={{ paddingHorizontal: 14 }}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* TechGadget logo */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 12,
-            marginTop: 10,
-          }}
+      <ScrollView style={styles.scrollView}>
+        <Text style={styles.title}>Thông tin cá nhân</Text>
+
+        <Pressable
+          style={styles.avatarContainer}
+          onPress={isEditing ? pickDocument : null}  // Enable press only in edit mode
         >
           <Image
-            style={{
-              width: 70,
-              height: 70,
-              borderColor: "black",
-              marginRight: -12,
-            }}
-            source={logo}
+            source={{ uri: selectedAvatar?.uri || newFields.avatarUrl || 'https://via.placeholder.com/150' }}
+            style={styles.avatar}
           />
-          <MaskedView
-            maskElement={
-              <Text
-                style={{
-                  backgroundColor: "transparent",
-                  fontSize: 28,
-                  fontWeight: "bold",
-                }}
-              >
-                TechGadget
-              </Text>
-            }
-          >
-            <LinearGradient
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0.6, y: 0.6 }}
-              colors={["rgba(250, 164, 147, 0.65)", "#FB5854"]}
-            >
-              <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
-                TechGadget
-              </Text>
-            </LinearGradient>
-          </MaskedView>
-        </View>
-
-        {/* Thông tin cá nhân */}
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "bold",
-            textAlignVertical: "center",
-          }}
-        >
-          {t("personal-profile-title")}
-        </Text>
-        <Text style={{ fontSize: 15, marginTop: 10 }}>
-          {t("personal-profile-content")}
-        </Text>
-
-        {/* Open image modal */}
-        <Pressable
-          style={{
-            height: 140,
-            width: 140,
-            backgroundColor: "white",
-            borderRadius: 100,
-            justifyContent: "center",
-            alignItems: "center",
-            alignSelf: "center",
-            marginVertical: 12,
-          }}
-          onPress={() => handleChangeModal("image", true)}
-          disabled={isFetching}
-        >
-          {
-            isFetching ?
-              <ActivityIndicator color={"#ed8900"} size={30} />
-              :
-              <View
-                style={{
-                  height: 140,
-                  width: 140,
-                  backgroundColor: "white",
-                  borderRadius: 100,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {user.imageUrl == null ? (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Icon
-                      type="feather"
-                      name="image"
-                      size={40}
-                      color="#ed8900"
-                    />
-                    <Icon
-                      type="material"
-                      name="add"
-                      size={30}
-                      color="#ed8900"
-                    />
-                  </View>
-                ) : (
-                  <Image
-                    source={{ uri: user.imageUrl }}
-                    style={{
-                      height: 140,
-                      width: 140,
-                      borderRadius: 100,
-                    }}
-                  />
-                )}
-              </View>
-          }
+          {isEditing && (  // Only show edit icon when in editing mode
+            <View style={styles.editIconContainer}>
+              <Icon name="edit" type="feather" color="#FFFFFF" size={20} />
+            </View>
+          )}
         </Pressable>
 
-        <View
-          style={{
-            marginTop: 10,
-            backgroundColor: "white",
-            borderRadius: 10,
-            paddingVertical: 5,
-            marginBottom: 16,
-          }}
-        >
-          {/* Thông tin liên hệ */}
-          <Pressable
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "white",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 10,
-              justifyContent: "space-between",
-            }}
-            onPress={() => handleChangeModal("fullName", true)}
-          >
-            <View
-              style={{
-                width: ScreenWidth / 1.5,
-              }}
-            >
-              <Text style={{ fontSize: 17 }}>
-                {t("contact-info")}
-              </Text>
-              <Text style={{ fontSize: 15, fontWeight: "300" }}>
-                {user.email}, {user.role === "RESTAURANT" ? user.restaurantName : user.fullName}
-              </Text>
-            </View>
-            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-          </Pressable>
-          {/* Số điện thoại */}
-          <Pressable
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "white",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 10,
-              justifyContent: "space-between",
-            }}
-            onPress={() => handleChangeModal("phoneNumber", true)}
-          >
-            <View
-              style={{
-                width: ScreenWidth / 1.5,
-              }}
-            >
-              <Text style={{ fontSize: 17 }}>
-                {t("contact-phone")}
-              </Text>
-              <Text style={{ fontSize: 15, fontWeight: "300" }}>
-                {user.phoneNumber}
-              </Text>
-            </View>
-            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-          </Pressable>
-
-          {/* Mô tả*/}
-          {user.role == "RESTAURANT" && (
-            <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "white",
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 10,
-                justifyContent: "space-between",
-              }}
-              onPress={() => handleChangeModal("description", true)}
-            >
-              <View
-                style={{
-                  width: ScreenWidth / 1.5,
-                }}
-              >
-                <Text style={{ fontSize: 17 }}>Mô tả</Text>
-                <Text style={{ fontSize: 15, fontWeight: "300" }}>
-                  {user.description}
+        <View style={styles.infoContainer}>
+          {Object.entries(newFields).map(([key, value]) => (
+            key !== 'avatarUrl' && (
+              <View key={key} style={styles.infoItem}>
+                <Text style={styles.infoLabel}>
+                  {key === 'fullName' ? 'Họ và tên' :
+                    key === 'phoneNumber' ? 'Số Điện Thoại' :
+                      key === 'address' ? 'Địa Chỉ' :
+                        key === 'cccd' ? 'CCCD' :
+                          key === 'gender' ? 'Giới Tính' :
+                            key === 'dateOfBirth' ? 'Ngày Sinh' : key}
                 </Text>
-              </View>
-              <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-            </Pressable>
-          )}
-
-          {/* Địa chỉ */}
-          {user.role == "RESTAURANT" && (
-            <>
-              <Pressable
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "white",
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  justifyContent: "space-between",
-                }}
-                onPress={() => handleChangeModal("address", true)}
-              >
-                <View
-                  style={{
-                    width: ScreenWidth / 1.5,
-                  }}
-                >
-                  <Text style={{ fontSize: 17 }}>Địa chỉ</Text>
-                  <Text style={{ fontSize: 15, fontWeight: "300" }}>
-                    {user.address}
+                {isEditing ? (
+                  key === 'gender' ? (
+                    <Picker
+                      selectedValue={value}
+                      style={styles.picker}
+                      onValueChange={(itemValue) => handleChange(key, itemValue)}
+                    >
+                      <Picker.Item label="Nam" value="Male" />
+                      <Picker.Item label="Nữ" value="Female" />
+                    </Picker>
+                  ) : key === 'dateOfBirth' ? (
+                    <Pressable onPress={() => setShowDatePicker(true)}>
+                      <Text style={styles.datePickerText}>
+                        {formatDateToDisplay(value)}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={(text) => handleChange(key, text)}
+                    />
+                  )
+                ) : (
+                  <Text style={styles.infoValue}>
+                    {key === 'gender' ? (value === 'Male' ? 'Nam' : 'Nữ') :
+                      key === 'dateOfBirth' ? formatDateToDisplay(value) : value}
                   </Text>
-                </View>
-                <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-              </Pressable>
-              <MapView
-                style={{
-                  height: ScreenHeight / 6,
-                  width: ScreenWidth / 1.2,
-                  marginVertical: 7,
-                  alignSelf: "center"
-                }}
-                styleURL="mapbox://styles/mapbox/streets-v12"
-                onPress={() => {
-                  handleChangeModal("address", true);
-                }}
-                zoomEnabled={false}
-                attributionEnabled={false} //Ẩn info icon
-                logoEnabled={false} //Ẩn logo
-                rotateEnabled={false}
-                scrollEnabled={false}
-              >
-                <Camera
-                  centerCoordinate={[location?.longitude || 0, location?.latitude || 0]}
-                  zoomLevel={15}
-                  pitch={10}
-                  heading={0}
-                />
-
-                <PointAnnotation
-                  id="marker"
-                  coordinate={[location?.longitude || 0, location?.latitude || 0]}
-                  onSelected={() => {
-                    handleChangeModal("address", true);
-                  }}
-                />
-              </MapView>
-            </>
-          )}
+                )}
+              </View>
+            )
+          ))}
         </View>
 
-        <ChooseLocation
-          isOpen={isOpenFields.address}
-          handleChangeModal={handleChangeModal}
-          location={location}
-          setLocation={setLocation}
-          address={user.address}
-          handleChangeAddress={handleChangeAddress}
-          isFetching={isFetching}
-          setIsFetching={setIsFetching}
-        />
-
-        <DescriptionModal
-          handleChangeData={handleChangeData}
-          handleChangeDescription={handleChangeDescription}
-          isOpen={isOpenFields.description}
-          description={newFields.description}
-          handleChangeModal={handleChangeModal}
-          isFetching={isFetching}
-        />
-
-        <NameModel
-          handleChangeData={handleChangeData}
-          handleChangeFullName={handleChangeFullName}
-          isOpen={isOpenFields.fullName}
-          fullName={newFields.fullName}
-          handleChangeModal={handleChangeModal}
-          isFetching={isFetching}
-        />
-
-        <PhoneModal
-          handleChangeData={handleChangeData}
-          handleChangePhoneNumber={handleChangePhoneNumber}
-          isOpen={isOpenFields.phoneNumber}
-          phoneNumber={newFields.phoneNumber}
-          handleChangeModal={handleChangeModal}
-          isFetching={isFetching}
-        />
-
-        <ImageModal
-          isOpen={isOpenFields.image}
-          pickImage={pickImage}
-          deleteImage={deleteImage}
-          handleChangeModal={handleChangeModal}
-        />
+        <Pressable
+          style={styles.editButton}
+          onPress={() => isEditing ? handleSave() : setIsEditing(true)}
+        >
+          <Text style={styles.editButtonText}>
+            {isEditing ? 'Lưu thay đổi' : 'Chỉnh sửa thông tin'}
+          </Text>
+        </Pressable>
       </ScrollView>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={newFields.dateOfBirth}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (selectedDate) {
+              handleChange('dateOfBirth', selectedDate);
+            }
+          }}
+        />
+      )}
+
       <ErrModal
         stringErr={stringErr}
         isError={isError}
@@ -634,8 +280,8 @@ export default function ChangeProfile() {
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
-        duration={1500}
-        wrapperStyle={{ bottom: 0, zIndex: 1 }}
+        duration={3000}
+        style={styles.snackbar}
       >
         {snackbarMessage}
       </Snackbar>
@@ -643,469 +289,90 @@ export default function ChangeProfile() {
   );
 }
 
-const DescriptionModal = ({
-  isOpen,
-  handleChangeModal,
-  description,
-  handleChangeData,
-  handleChangeDescription,
-  isFetching
-}) => {
-  const { t } = useTranslation();
-  return (
-    <Modal
-      isVisible={isOpen}
-      onBackdropPress={() => handleChangeModal("description", false)}
-      onSwipeComplete={() => handleChangeModal("description", false)}
-      useNativeDriverForBackdrop
-      swipeDirection={"down"}
-      propagateSwipe={true}
-      style={{
-        justifyContent: 'flex-end',
-        margin: 0,
-      }}
-    >
-      {/* Bottom Modal Screen */}
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#ed8900"]}
-        style={{
-          width: ScreenWidth,
-          height: ScreenHeight / 1.5,
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20
-        }}
-      >
-        {/* Thanh trên cùng */}
-        <View
-          style={{
-            alignItems: "center",
-            padding: 10,
-          }}
-        >
-          <View
-            style={{
-              width: ScreenWidth / 5,
-              height: ScreenHeight / 80,
-              backgroundColor: "#ed8900",
-              borderRadius: 30,
-            }}
-          />
-        </View>
-
-        <View
-          style={{
-            height: ScreenHeight / 2.1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              marginVertical: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              gap: 14,
-              backgroundColor: "white",
-              width: ScreenWidth / 1.1,
-              borderRadius: 10,
-            }}
-          >
-            <TextInput
-              style={{
-                borderColor: "#B7B7B7",
-                borderWidth: 1,
-                borderRadius: 5,
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                fontSize: 18,
-              }}
-              multiline={true}
-              numberOfLines={5}
-              textAlignVertical="top"
-              placeholder={t("input-new-description")}
-              value={description}
-              onChangeText={(value) => {
-                handleChangeData("description", value);
-              }}
-            />
-            <Pressable
-              style={{
-                backgroundColor: "#ed8900",
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                borderRadius: 10,
-                flexDirection: "row",
-                gap: 5,
-                justifyContent: "center"
-              }}
-              onPress={handleChangeDescription}
-              disabled={isFetching}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  textAlign: "center",
-                  textAlignVertical: "center",
-                  fontSize: 18,
-                }}
-              >
-                {t("input-btn")}
-              </Text>
-              {
-                isFetching &&
-                <ActivityIndicator color={"white"} />
-              }
-            </Pressable>
-          </View>
-        </View>
-      </LinearGradient>
-    </Modal>
-  );
-};
-
-const NameModel = ({
-  isOpen,
-  handleChangeModal,
-  fullName,
-  handleChangeData,
-  handleChangeFullName,
-  isFetching
-}) => {
-  const { t } = useTranslation();
-  return (
-    <Modal
-      isVisible={isOpen}
-      onBackdropPress={() => handleChangeModal("fullName", false)}
-      onSwipeComplete={() => handleChangeModal("fullName", false)}
-      useNativeDriverForBackdrop
-      swipeDirection={"down"}
-      propagateSwipe={true}
-      style={{
-        justifyContent: 'flex-end',
-        margin: 0,
-      }}
-    >
-      {/* Bottom Modal Screen */}
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#ed8900"]}
-        style={{
-          width: ScreenWidth,
-          height: ScreenHeight / 1.5,
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20
-        }}
-      >
-        {/* Thanh trên cùng */}
-        <View
-          style={{
-            alignItems: "center",
-            padding: 10,
-          }}
-        >
-          <View
-            style={{
-              width: ScreenWidth / 5,
-              height: ScreenHeight / 80,
-              backgroundColor: "#ed8900",
-              borderRadius: 30,
-            }}
-          />
-        </View>
-
-        <View
-          style={{
-            height: ScreenHeight / 2.1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              marginVertical: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              gap: 14,
-              backgroundColor: "white",
-              width: ScreenWidth / 1.1,
-              borderRadius: 10,
-            }}
-          >
-            <TextInput
-              style={{
-                borderColor: "#B7B7B7",
-                borderWidth: 1,
-                borderRadius: 5,
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                fontSize: 18,
-              }}
-              placeholder={t("input-new-name")}
-              value={fullName}
-              onChangeText={(value) => {
-                handleChangeData("fullName", value);
-              }}
-            />
-            <Pressable
-              style={{
-                backgroundColor: "#ed8900",
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                borderRadius: 10,
-                flexDirection: "row",
-                gap: 5,
-                justifyContent: "center"
-              }}
-              onPress={handleChangeFullName}
-              disabled={isFetching}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  textAlign: "center",
-                  textAlignVertical: "center",
-                  fontSize: 18,
-                }}
-              >
-                {t("input-btn")}
-              </Text>
-              {
-                isFetching &&
-                <ActivityIndicator color={"white"} />
-              }
-            </Pressable>
-          </View>
-        </View>
-      </LinearGradient>
-    </Modal>
-  );
-};
-
-const PhoneModal = ({
-  isOpen,
-  handleChangeModal,
-  phoneNumber,
-  handleChangeData,
-  handleChangePhoneNumber,
-  isFetching
-}) => {
-  const { t } = useTranslation();
-  return (
-    <Modal
-      isVisible={isOpen}
-      onBackdropPress={() => handleChangeModal("phoneNumber", false)}
-      onSwipeComplete={() => handleChangeModal("phoneNumber", false)}
-      useNativeDriverForBackdrop
-      swipeDirection={"down"}
-      propagateSwipe={true}
-      style={{
-        justifyContent: 'flex-end',
-        margin: 0,
-      }}
-    >
-      {/* Bottom Modal Screen */}
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#ed8900"]}
-        style={{
-          width: ScreenWidth,
-          height: ScreenHeight / 1.5,
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20
-        }}
-      >
-        {/* Thanh trên cùng */}
-        <View
-          style={{
-            alignItems: "center",
-            padding: 10,
-          }}
-        >
-          <View
-            style={{
-              width: ScreenWidth / 5,
-              height: ScreenHeight / 80,
-              backgroundColor: "#ed8900",
-              borderRadius: 30,
-            }}
-          />
-        </View>
-
-        <View
-          style={{
-            height: ScreenHeight / 2.1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              marginVertical: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              gap: 14,
-              backgroundColor: "white",
-              width: ScreenWidth / 1.1,
-              borderRadius: 10,
-            }}
-          >
-            <TextInput
-              style={{
-                borderColor: "#B7B7B7",
-                borderWidth: 1,
-                borderRadius: 5,
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                fontSize: 18,
-              }}
-              placeholder={t("input-new-phone-number")}
-              value={phoneNumber}
-              onChangeText={(value) => {
-                handleChangeData("phoneNumber", value);
-              }}
-            />
-            <Pressable
-              style={{
-                backgroundColor: "#ed8900",
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                borderRadius: 10,
-                flexDirection: "row",
-                gap: 5,
-                justifyContent: "center"
-              }}
-              onPress={handleChangePhoneNumber}
-              disabled={isFetching}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  textAlign: "center",
-                  textAlignVertical: "center",
-                  fontSize: 18,
-                }}
-              >
-                {t("input-btn")}
-              </Text>
-              {
-                isFetching &&
-                <ActivityIndicator color={"white"} />
-              }
-            </Pressable>
-          </View>
-        </View>
-      </LinearGradient>
-    </Modal>
-  );
-};
-
-const ImageModal = ({
-  isOpen,
-  handleChangeModal,
-  pickImage,
-  deleteImage,
-}) => {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  return (
-    <Modal
-      isVisible={isOpen}
-      onBackdropPress={() => handleChangeModal("image", false)}
-      onSwipeComplete={() => handleChangeModal("image", false)}
-      useNativeDriverForBackdrop
-      swipeDirection={"down"}
-      propagateSwipe={true}
-      style={{
-        justifyContent: 'flex-end',
-        margin: 0,
-      }}
-    >
-      {/* Bottom Modal Screen */}
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#FFFFFF"]}
-        style={{
-          width: ScreenWidth,
-          height: ScreenHeight / 6,
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20,
-          position: "relative",
-          justifyContent: "center"
-        }}
-      >
-        {/* Thanh trên cùng */}
-        <View
-          style={{
-            width: ScreenWidth / 5,
-            height: ScreenHeight / 80,
-            backgroundColor: "#ed8900",
-            borderRadius: 30,
-            position: "absolute",
-            top: 10,
-            alignSelf: "center"
-          }}
-        />
-
-        {/* Choose image */}
-        <Pressable
-          style={{
-            paddingVertical: 5,
-            paddingHorizontal: 10,
-            flexDirection: "row",
-            gap: 5,
-          }}
-          onPress={() => {
-            pickImage();
-            handleChangeModal("image", false);
-          }}
-        >
-          <Text
-            style={{
-              color: "black",
-              textAlign: "center",
-              textAlignVertical: "center",
-              fontSize: 18,
-            }}
-          >
-            {t("choose-image-content")}
-          </Text>
-        </Pressable>
-
-        {/* Delete image */}
-        {
-          user.role !== "RESTAURANT" &&
-          <Pressable
-            style={{
-              paddingVertical: 5,
-              paddingHorizontal: 10,
-              flexDirection: "row",
-              gap: 5,
-            }}
-            onPress={() => {
-              deleteImage();
-              handleChangeModal("image", false);
-            }}
-            disabled={user.imageUrl == null}
-          >
-            <Text
-              style={{
-                color: "black",
-                textAlign: "center",
-                textAlignVertical: "center",
-                fontSize: 18,
-              }}
-            >
-              {t("delete-image-content")}
-            </Text>
-          </Pressable>
-        }
-
-      </LinearGradient>
-    </Modal>
-  );
-};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  avatarContainer: {
+    alignSelf: 'center',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  avatar: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+  },
+  editIconContainer: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#ed8900',
+    borderRadius: 15,
+    padding: 5,
+  },
+  infoContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+  },
+  infoItem: {
+    marginBottom: 15,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    backgroundColor: '#fea92866', 
+    padding: 5, 
+    borderRadius: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    backgroundColor: '#f0f0f0',
+  },
+  datePickerText: {
+    fontSize: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
+  editButton: {
+    backgroundColor: "#fea92866",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  snackbar: {
+    bottom: 20,
+  },
+});

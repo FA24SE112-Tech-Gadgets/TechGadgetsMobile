@@ -136,7 +136,7 @@ export default function BuyerPersonal() {
         </View>
 
         {/* Trang cá nhân */}
-        <Pressable
+        {/* <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -173,9 +173,9 @@ export default function BuyerPersonal() {
             >
               <Text
                 style={{ fontSize: 20, fontWeight: "bold", color: "white" }}
-              >
+              > */}
                 {/* {user.fullName.charAt(0)} */}
-              </Text>
+              {/* </Text>
             </View>
           )}
 
@@ -190,7 +190,7 @@ export default function BuyerPersonal() {
             </Text>
           </View>
           <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-        </Pressable>
+        </Pressable> */}
 
         {/* Cài đặt tài khoản */}
         <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
@@ -215,12 +215,12 @@ export default function BuyerPersonal() {
               justifyContent: "space-between",
             }}
             onPress={() => {
-              // navigation.navigate("PasswordAndSecure", { id: 0 });
+              navigation.navigate("PasswordAndSecure");
               // TODO: Sẽ mở sau khi đã làm xong
-              setIsError(true);
-              setStringErr(
-                t("lock-feature")
-              );
+              // setIsError(true);
+              // setStringErr(
+              //   t("lock-feature")
+              // );
             }}
           >
             <View

@@ -18,6 +18,7 @@ import { MaterialCommunityIcons,FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BusinessRegistrationCertificate from "../components/Seller/BusinessRegistrationCertificate";
 import CertificateHistory from "../components/Seller/CertificateHistory";
+import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -113,6 +114,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <ChangeProfile />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PasswordAndSecure" >
+        {() => (
+          <AuthRoute>
+            <PasswordAndSecure />
           </AuthRoute>
         )}
       </Stack.Screen>
