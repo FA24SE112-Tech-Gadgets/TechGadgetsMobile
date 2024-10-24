@@ -17,11 +17,12 @@ import useAuth from "../../utils/useAuth";
 import Hyperlink from "react-native-hyperlink";
 import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
+import { useNavigation } from "@react-navigation/native";
 
-export default function BuyerPersonal({ navigation }) {
+export default function BuyerPersonal() {
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
-
+  const navigation = useNavigation();
   const { t } = useTranslation();
 
   const { logout, user } = useAuth();
@@ -135,7 +136,7 @@ export default function BuyerPersonal({ navigation }) {
         </View>
 
         {/* Trang cá nhân */}
-        <Pressable
+        {/* <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -172,9 +173,9 @@ export default function BuyerPersonal({ navigation }) {
             >
               <Text
                 style={{ fontSize: 20, fontWeight: "bold", color: "white" }}
-              >
-                {user.fullName.charAt(0)}
-              </Text>
+              > */}
+                {/* {user.fullName.charAt(0)} */}
+              {/* </Text>
             </View>
           )}
 
@@ -189,7 +190,7 @@ export default function BuyerPersonal({ navigation }) {
             </Text>
           </View>
           <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-        </Pressable>
+        </Pressable> */}
 
         {/* Cài đặt tài khoản */}
         <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
@@ -214,12 +215,12 @@ export default function BuyerPersonal({ navigation }) {
               justifyContent: "space-between",
             }}
             onPress={() => {
-              // navigation.navigate("PasswordAndSecure", { id: 0 });
+              navigation.navigate("PasswordAndSecure");
               // TODO: Sẽ mở sau khi đã làm xong
-              setIsError(true);
-              setStringErr(
-                t("lock-feature")
-              );
+              // setIsError(true);
+              // setStringErr(
+              //   t("lock-feature")
+              // );
             }}
           >
             <View

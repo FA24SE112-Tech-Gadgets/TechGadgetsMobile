@@ -76,7 +76,18 @@ const LoginScreen = () => {
 
       await login();
 
-      navigation.replace("StackBuyerHome")
+      // navigation.replace("StackBuyerHome")
+      if (user?.role === "Customer") {
+        navigation.replace("StackBuyerHome");
+    } else if (user?.role === "Seller") {
+
+      
+        if (!user?.seller) { //fix  
+            navigation.replace("RegisterSeller");
+        } else {
+            navigation.replace("StackSellerHome");
+        }
+    }
     } catch (error) {
       console.log(error.response.data);
 
@@ -254,13 +265,28 @@ const LoginScreen = () => {
   //   }, [])
   // );
 
+
+// if (user?.role == "Customer" ) {
+//   navigation.replace("StackBuyerHome")
+//   return;
+// }
+// else if (user?.role == "Seller") {
+//   navigation.replace("StackSellerHome");
+//   return;
+// }
+
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
 
-        if (user?.role == "Customer" && isLoggedIn) {
-          navigation.replace("StackBuyerHome")
-          return;
+        if (user?.role === "Customer") {
+          navigation.replace("StackBuyerHome");
+        } else if (user?.role === "Seller") {
+          if (!user?.seller) { //fix  
+            navigation.replace("RegisterSeller");
+          } else {
+            navigation.replace("StackSellerHome");
+          }
         }
       }
       fetchFunction();
@@ -388,6 +414,8 @@ const LoginScreen = () => {
         <Pressable
           style={styles.registerButton}
           onPress={() => navigation.push("Register")}
+        // onPress={() => navigation.push("RegisterSeller")}
+
         >
           <Text
             style={{
