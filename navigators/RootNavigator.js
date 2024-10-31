@@ -19,6 +19,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BusinessRegistrationCertificate from "../components/Seller/BusinessRegistrationCertificate";
 import CertificateHistory from "../components/Seller/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
+import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -87,6 +88,11 @@ const RootNavigator = () => {
         name="Details"
         component={Details} 
         options={{ title: 'Chi tiết sản phẩm' }}
+      />
+       <Stack.Screen
+        name="GadgetDetail"
+        component={GadgetDetail}
+        options={{ headerShown: false }}
       />
 
       <Stack.Screen name="AboutTechGadget" >
