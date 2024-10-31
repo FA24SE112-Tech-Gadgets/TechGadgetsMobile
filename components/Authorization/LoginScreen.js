@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -32,6 +33,17 @@ import {
   GoogleSigninButton,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+
+
+const CustomGoogleSignInButton = ({ onPress }) => (
+  <TouchableOpacity style={styles.googleButton} onPress={onPress}>
+    <View style={styles.googleIconContainer}>
+      <Icon name="logo-google" size={24} color="white" />
+    </View>
+    <Text style={styles.googleButtonText}>Sign in with Google</Text>
+  </TouchableOpacity>
+);
+
 
 const LoginScreen = () => {
   GoogleSignin.configure({
@@ -79,15 +91,15 @@ const LoginScreen = () => {
       // navigation.replace("StackBuyerHome")
       if (user?.role === "Customer") {
         navigation.replace("StackBuyerHome");
-    } else if (user?.role === "Seller") {
+      } else if (user?.role === "Seller") {
 
-      
+
         if (!user?.seller) { //fix  
-            navigation.replace("RegisterSeller");
+          navigation.replace("RegisterSeller");
         } else {
-            navigation.replace("StackSellerHome");
+          navigation.replace("StackSellerHome");
         }
-    }
+      }
     } catch (error) {
       console.log(error.response.data);
 
@@ -135,6 +147,29 @@ const LoginScreen = () => {
       navigation.replace('StackBuyerHome');
     } catch (error) {
       console.error('API call error:', error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      console.log(userInfo);
+
+      const token = await GoogleSignin.getTokens();
+      console.log('Access Token:', token.accessToken);
+
+      await handleLoginGoogle(token.accessToken);
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("SIGN_IN_CANCELLED");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("IN_PROGRESS");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log("PLAY_SERVICES_NOT_AVAILABLE");
+      } else {
+        console.log("Some other error happened", error);
+      }
     }
   };
 
@@ -266,14 +301,14 @@ const LoginScreen = () => {
   // );
 
 
-// if (user?.role == "Customer" ) {
-//   navigation.replace("StackBuyerHome")
-//   return;
-// }
-// else if (user?.role == "Seller") {
-//   navigation.replace("StackSellerHome");
-//   return;
-// }
+  // if (user?.role == "Customer" ) {
+  //   navigation.replace("StackBuyerHome")
+  //   return;
+  // }
+  // else if (user?.role == "Seller") {
+  //   navigation.replace("StackSellerHome");
+  //   return;
+  // }
 
   useFocusEffect(
     useCallback(() => {
@@ -371,32 +406,9 @@ const LoginScreen = () => {
           }
         </Pressable>
 
-        <GoogleSigninButton
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={async () => {
-            try {
-              await GoogleSignin.hasPlayServices();
-              const userInfo = await GoogleSignin.signIn();
-              console.log(userInfo);
-
-              const token = await GoogleSignin.getTokens();
-              console.log('Access Token:', token.accessToken);
-
-              await handleLoginGoogle(token.accessToken);
-            } catch (error) {
-              if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-                console.log("SIGN_IN_CANCELLED");
-              } else if (error.code === statusCodes.IN_PROGRESS) {
-                console.log("IN_PROGRESS");
-              } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                console.log("PLAY_SERVICES_NOT_AVAILABLE");
-              } else {
-                console.log("Some other error happened", error);
-              }
-            }
-          }}
-        />
+        <View style={styles.googleButtonContainer}>
+          <CustomGoogleSignInButton onPress={handleGoogleSignIn} />
+        </View>
 
         <Text
           style={{
@@ -517,6 +529,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 5
+  },
+  googleButtonContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    backgroundColor: '#4285F4',
+    borderRadius: 30,
+    overflow: 'hidden',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4285F4',
+    borderRadius: 40,
+    width: 320,
+    height: 48,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  googleIconContainer: {
+    marginRight: 12,
+  },
+  googleButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   registerButton: {
     display: "flex",
