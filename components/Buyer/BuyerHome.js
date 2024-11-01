@@ -1,39 +1,156 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   FlatList,
-  KeyboardAvoidingView,
   StyleSheet,
   Image,
   TextInput,
   TouchableOpacity,
-} from "react-native";
-import React, { useRef, useState, useCallback } from "react";
-import { ScreenHeight, ScreenWidth } from "@rneui/base";
-import Modal from "react-native-modal";
-import ErrModal from "../CustomComponents/ErrModal";
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
+import { AntDesign } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
+import api from "../Authorization/api";
+import logo from "../../assets/adaptive-icon.png";
+import { useNavigation } from '@react-navigation/native';
+
+
+const { width: screenWidth } = Dimensions.get('window');
 
 const bannerArr = [
-  { id: '1', image: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80' },
-  { id: '2', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80' },
-  { id: '3', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80' },
+  { id: '1', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/fd03b255-bb6c-4cfd-84cb-269df900b4b2.png' },
+  { id: '2', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/512a8bb8-b561-45c5-b40a-637c5734b098.png' },
+  { id: '3', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/f4a9f07b-7b35-4c9b-9893-01c1669e8d38.png' },
+  { id: '4', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/ad5f0c4e-066f-4448-b8a2-42df939462c5.png' },
 ];
 
-const products = [
-  { id: '1', name: 'Smart Watch', image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80', price: '$299' },
-  { id: '2', name: 'Wireless Earbuds', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80', price: '$159' },
-  { id: '3', name: 'Smartphone', image: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2329&q=80', price: '$799' },
-  { id: '4', name: 'Laptop', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2342&q=80', price: '$1299' },
-];
-
-export default function BuyerHome({ navigation }) {
-  const [stringErr, setStringErr] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+export default function BuyerHome() {
+  const [categories, setCategories] = useState([]);
+  const [gadgets, setGadgets] = useState({});
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [favorites, setFavorites] = useState({});
   const flatListRef = useRef();
+  const navigation = useNavigation();
+
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(response.data.items);
+      response.data.items.forEach((category) => {
+        fetchGadgets(category.id);
+      });
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGadgets = async (categoryId) => {
+    try {
+      const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
+      setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+    } catch (error) {
+      console.error('Error fetching gadgets:', error);
+    }
+  };
+
+  const toggleFavorite = (gadgetId) => {
+    setFavorites(prev => ({
+      ...prev,
+      [gadgetId]: !prev[gadgetId]
+    }));
+  };
+
+  const renderGadget = ({ item }) => (
+    <TouchableOpacity
+      style={[styles.gadgetCard, { backgroundColor: '#FFFFFF' }]}
+      onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.id })}
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: item.thumbnailUrl }}
+          style={styles.gadgetImage}
+          resizeMode="contain"
+        />
+        {!item.isForSale && (
+          <View style={styles.watermarkContainer}>
+            <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+          </View>
+        )}
+        {item.discountPercentage > 0 && (
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(item.id)}
+        >
+          <AntDesign
+            name={favorites[item.id] ? "heart" : "hearto"}
+            size={24}
+            color={favorites[item.id] ? "red" : "black"}
+          />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
+      <View style={styles.priceContainer}>
+        {item.discountPercentage > 0 ? (
+          <>
+            <Text style={styles.originalPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
+            <Text style={styles.discountPrice}>{item.discountPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
+            {/* {item.discountExpiredDate && (
+              <Text style={styles.expiryDate}>
+                HSD: {new Date(item.discountExpiredDate).toLocaleDateString('vi-VN')}
+              </Text>
+            )} */}
+          </>
+        ) : (
+          <Text style={styles.gadgetPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderCategory = ({ item }) => {
+    const categoryGadgets = gadgets[item.id] || [];
+
+    return (
+      <LinearGradient
+        colors={['#FFFFFF', '#fea92866']}
+        style={styles.categoryContainer}
+      >
+        <View style={styles.categoryHeader}>
+          <Text style={styles.categoryName}>{item.name}</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAllText}>Xem tất cả</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.categoryUnderline} />
+        <FlatList
+          data={categoryGadgets.slice(0, 20)}
+          renderItem={renderGadget}
+          keyExtractor={(gadget) => gadget.id.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          contentContainerStyle={styles.gadgetList}
+        />
+      </LinearGradient>
+    );
+  };
 
   const goToNextPage = () => {
     const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
@@ -53,44 +170,51 @@ export default function BuyerHome({ navigation }) {
     }, [currentSlide, bannerArr])
   );
 
-  const toggleFavorite = (id) => {
-    setFavorites(prev => ({...prev, [id]: !prev[id]}));
-  };
-
-  const renderProduct = ({ item }) => (
-    <View style={styles.productCard}>
-      <Image source={{ uri: item.image }} style={styles.productImage} />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
-      <TouchableOpacity 
-        style={styles.favoriteButton} 
-        onPress={() => toggleFavorite(item.id)}
-      >
-        <Text style={[styles.favoriteIcon, favorites[item.id] && styles.favoritedIcon]}>
-          {favorites[item.id] ? '♥' : '♡'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior="padding"
-    >
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for gadgets..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <TouchableOpacity style={styles.searchButton}>
-          <Text style={styles.searchButtonText}>🔍</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#FFFFFF', '#fea92866']}
+        style={styles.header}
+      >
+        <View
+          style={{
+            height: 40,
+            width: 40,
+            overflow: 'hidden',
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 8,
+          }}
+        >
+          <Image
+            style={{
+              width: 48,
+              height: 48,
+            }}
+            source={logo}
+          />
+        </View>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          <TouchableOpacity style={styles.searchButton}>
+            <AntDesign name="search1" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
 
       <View style={styles.bannerContainer}>
         <FlatList
@@ -109,84 +233,169 @@ export default function BuyerHome({ navigation }) {
         />
       </View>
 
-      <View style={styles.contentContainer}>
-        <Text style={styles.sectionTitle}>Featured Tech Gadgets</Text>
-        <FlatList
-          data={products}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.productRow}
-        />
-      </View>
-
-      <ErrModal
-        stringErr={stringErr}
-        isError={isError}
-        setIsError={setIsError}
+      <FlatList
+        data={categories}
+        renderItem={renderCategory}
+        keyExtractor={(item) => item.id}
+        style={styles.categoryList}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fafafa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  logo: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    width: 45,
+    height: 45,
+    borderRadius: 80,
+    overflow: 'hidden',
   },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
-    padding: 10,
-    backgroundColor: 'white',
   },
   searchInput: {
     flex: 1,
     height: 40,
-    borderColor: 'gray',
+    borderColor: 'black',
     borderWidth: 1,
     borderRadius: 20,
     paddingLeft: 15,
     marginRight: 10,
+    fontSize: 16,
   },
   searchButton: {
     justifyContent: 'center',
     alignItems: 'center',
     width: 40,
     height: 40,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#fea128',
     borderRadius: 20,
   },
-  searchButtonText: {
-    fontSize: 20,
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 120,
+    marginBottom: 15,
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    top: 30,
+    left: -8,
+    right: -8,
+    bottom: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    zIndex: 1,
+  },
+  watermarkText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    padding: 4,
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    backgroundColor: '#ff4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  discountText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  priceContainer: {
+    flexDirection: 'column',
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginBottom: 2,
+  },
+  discountPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ed8900',
+  },
+  expiryDate: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
   bannerContainer: {
-    height: ScreenWidth * 0.5,
-    marginBottom: 10,
+    height: screenWidth * 0.5,
+    marginBottom: 15,
   },
   bannerImage: {
-    width: ScreenWidth,
-    height: ScreenWidth * 0.5,
+    width: screenWidth,
+    height: screenWidth * 0.5,
   },
-  contentContainer: {
+  categoryList: {
     flex: 1,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 20,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '500',
+  categoryContainer: {
     marginBottom: 15,
-  },
-  productRow: {
-    justifyContent: 'space-between',
-  },
-  productCard: {
-    width: '48%',
-    marginBottom: 15,
-    backgroundColor: 'white',
+    paddingTop: 15,
+    paddingBottom: 20,
     borderRadius: 10,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginBottom: 10,
+  },
+  categoryName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  viewAllText: {
+    color: '#fea128',
+    fontSize: 16,
+  },
+  categoryUnderline: {
+    height: 2,
+    backgroundColor: '#fea92866',
+    marginStart: 10,
+    marginBottom: 15,
+  },
+  gadgetList: {
+    paddingHorizontal: 10,
+  },
+  gadgetCard: {
+    width: (screenWidth - 40) / 3,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    padding: 10,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -196,22 +405,22 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  productImage: {
+  gadgetImage: {
     width: '100%',
     height: 120,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderRadius: 10,
+    marginBottom: 15,
   },
-  productInfo: {
-    padding: 10,
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  productPrice: {
+  gadgetName: {
     fontSize: 14,
-    color: 'gray',
+    fontWeight: '500',
+    marginBottom: 5,
+    color: '#333',
+  },
+  gadgetPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ed8900',
   },
   favoriteButton: {
     position: 'absolute',
@@ -223,12 +432,5 @@ const styles = StyleSheet.create({
     height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  favoriteIcon: {
-    fontSize: 24,
-    color: 'black',
-  },
-  favoritedIcon: {
-    color: 'red',
   },
 });

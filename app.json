@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tech Gadget",
     "slug": "WhatEat",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -70,7 +70,7 @@
       "bundleIdentifier": "com.kietpt2003.WhatEat"
     },
     "android": {
-      "versionCode": 140,
+      "versionCode": 141,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
