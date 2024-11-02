@@ -133,7 +133,7 @@ export default function BuyerHome() {
       >
         <View style={styles.categoryHeader}>
           <Text style={styles.categoryName}>{item.name}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('CategoryGadgets', { categoryId: item.id, categoryName: item.name })}>
             <Text style={styles.viewAllText}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
