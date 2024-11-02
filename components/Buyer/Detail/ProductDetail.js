@@ -1,11 +1,38 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Alert } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging';
 
 // const { height } = Dimensions.get('window');
 
 export default function ProductDetails() {
   const navigation = useNavigation();
+  const [token, setToken] = useState("");
+
+  const getDeviceToken = async () => {
+    let token = await messaging().getToken();
+    setToken(token);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        await messaging().registerDeviceForRemoteMessages();
+        await getDeviceToken();
+      })();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      });
+
+      return unsubscribe;
+    }, [])
+  );
+
   return (
     <View style={{ flex: 1 }}>
       {/* <View style={styles.header}>
@@ -33,14 +60,14 @@ export default function ProductDetails() {
 
 
         <View style={styles.optionsContainer}>
-          {['512GB', '256GB', '128GB','64GB','32GB'].map((storage, index) => (
+          {['512GB', '256GB', '128GB', '64GB', '32GB'].map((storage, index) => (
             <TouchableOpacity key={index} style={styles.optionButtons}>
               <Text>{storage}</Text>
             </TouchableOpacity>
           ))}
         </View>
         <Text style={styles.priceText}>22.990.000đ</Text>
-        <Text style={styles.productName}>iPhone 16 128GB</Text>
+        <Text style={styles.productName}>{token}</Text>
 
         <View style={styles.detailsContainer}>
           <Text style={styles.detail}>- Chính hãng, Mới 100%, Nguyên seal</Text>
@@ -154,7 +181,7 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
   },
-  optionButtons:{
+  optionButtons: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,

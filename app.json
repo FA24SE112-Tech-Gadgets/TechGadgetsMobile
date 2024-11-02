@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tech Gadget",
     "slug": "WhatEat",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -70,7 +70,7 @@
       "bundleIdentifier": "com.kietpt2003.WhatEat"
     },
     "android": {
-      "versionCode": 141,
+      "versionCode": 142,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -84,6 +84,20 @@
         "android.permission.SCHEDULE_EXACT_ALAR",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
+      "manifest": {
+        "meta-data": [
+          {
+            "android:name": "com.google.firebase.messaging.default_notification_channel_id",
+            "android:value": "default",
+            "tools:replace": "android:value"
+          },
+          {
+            "android:name": "com.google.firebase.messaging.default_notification_color",
+            "android:resource": "@color/notification_icon_color",
+            "tools:replace": "android:resource"
+          }
+        ]
+      },
       "package": "com.kietpt2003.WhatEat"
     },
     "web": {
