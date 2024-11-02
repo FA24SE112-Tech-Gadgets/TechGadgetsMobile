@@ -30,10 +30,8 @@ import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
   GoogleSignin,
-  GoogleSigninButton,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
@@ -189,6 +187,8 @@ const LoginScreen = () => {
         // For Android 11 (API level 30) to Android 12 (API level 31)
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
         // Add any other permissions for Android 11 and 12
+      } else if (Platform.Version >= 30) {
+        permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
       } else {
         // For Android 10 and below
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
