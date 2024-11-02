@@ -21,6 +21,7 @@ import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { Checkbox } from 'react-native-paper';
+import messaging from '@react-native-firebase/messaging';
 
 export default function RegisterScreen({ navigation }) {
   const [stringErr, setStringErr] = useState("");
@@ -35,6 +36,13 @@ export default function RegisterScreen({ navigation }) {
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
   const [isFetching, setIsFetching] = useState(false);
+
+  const [deviceToken, setDeviceToken] = useState("");
+
+  const getDeviceToken = async () => {
+    let token = await messaging().getToken();
+    setDeviceToken(token);
+  }
 
   const { t } = useTranslation();
 
@@ -65,7 +73,7 @@ export default function RegisterScreen({ navigation }) {
     //email
     if (account.email === "") {
       return { isError: true, stringErr: t("empty-email") };
-    } 
+    }
     // else if (!handleValidEmail(account.email)) {
     //   return { isError: true, stringErr: t("email-wrong-format") };
     // }
@@ -115,7 +123,7 @@ export default function RegisterScreen({ navigation }) {
     setStringErr(stringErr);
     if (!isError) {
       setIsFetching(true);
-      const response = await registerAccount(account);
+      const response = await registerAccount({ ...account, deviceToken });
       setIsFetching(false);
       if (response.status >= 200 && response.status < 300) {
         setSnackbarVisible(true);
@@ -136,14 +144,20 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  async function registerAccount(createAccountReq) {
+  async function registerAccount({ fullName, email, password, role, deviceToken }) {
     const url =
       NODE_ENV == "development"
         ? DEV_API
         : PROD_API;
 
     try {
-      const response = await axios.post(`${url}/auth/signup`, createAccountReq);
+      const response = await axios.post(`${url}/auth/signup`, {
+        fullName,
+        email,
+        password,
+        role,
+        deviceToken
+      });
 
       return response;
     } catch (error) {
@@ -172,6 +186,16 @@ export default function RegisterScreen({ navigation }) {
         keyboardDidShowListener.remove();
         keyboardDidHideListener.remove();
       };
+    }, [])
+  );
+
+  //Get deviceToken for FCM
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        await messaging().registerDeviceForRemoteMessages();
+        await getDeviceToken();
+      })();
     }, [])
   );
 
@@ -609,7 +633,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,  // Space between text and checkboxes
-    
+
   },
   roleSelectionContainer: {
     flexDirection: 'row',
