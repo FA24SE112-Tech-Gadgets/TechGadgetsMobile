@@ -2,7 +2,7 @@ import React from "react";
 import { AuthProvider } from "./components/Authorization/AuthContext";
 import RootNavigator from "./navigators/RootNavigator";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -10,6 +10,15 @@ import api from "./components/Authorization/api";
 import LoadingScreen from "./components/CustomComponents/LoadingScreen";
 import useAuth from "./utils/useAuth";
 import 'text-encoding';
+import { AppRegistry } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
+
+// Register background handler
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log('Message handled in the background!', remoteMessage);
+});
+
+AppRegistry.registerComponent('app', () => App);
 
 export default function App() {
   const { isLoggedIn, fetchUser } = useAuth();
