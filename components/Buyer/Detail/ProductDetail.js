@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Alert } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import messaging from '@react-native-firebase/messaging';
@@ -20,6 +20,16 @@ export default function ProductDetails() {
         await messaging().registerDeviceForRemoteMessages();
         await getDeviceToken();
       })();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      });
+
+      return unsubscribe;
     }, [])
   );
 

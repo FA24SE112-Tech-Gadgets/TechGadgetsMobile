@@ -84,6 +84,20 @@
         "android.permission.SCHEDULE_EXACT_ALAR",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
+      "manifest": {
+        "meta-data": [
+          {
+            "android:name": "com.google.firebase.messaging.default_notification_channel_id",
+            "android:value": "default",
+            "tools:replace": "android:value"
+          },
+          {
+            "android:name": "com.google.firebase.messaging.default_notification_color",
+            "android:resource": "@color/notification_icon_color",
+            "tools:replace": "android:resource"
+          }
+        ]
+      },
       "package": "com.kietpt2003.WhatEat"
     },
     "web": {
