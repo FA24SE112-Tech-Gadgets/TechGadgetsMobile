@@ -32,6 +32,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import messaging from '@react-native-firebase/messaging';
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
@@ -61,6 +62,13 @@ const LoginScreen = () => {
 
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
+  const [deviceToken, setDeviceToken] = useState("");
+
+  const getDeviceToken = async () => {
+    let token = await messaging().getToken();
+    setDeviceToken(token);
+  }
+
   const { t } = useTranslation();
 
   const { login, user, isLoggedIn } = useAuth();
@@ -76,10 +84,9 @@ const LoginScreen = () => {
       const res = await axios.post(url, {
         email: userEmail,
         password,
+        deviceToken
       });
       const { token, refreshToken } = res.data;
-      // console.log("tok", token);
-
 
       await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("token", token);
@@ -130,7 +137,9 @@ const LoginScreen = () => {
         NODE_ENV == "development"
           ? DEV_API
           : PROD_API;
-      const response = await axios.post(`${url}/auth/google/${accessToken}`);
+      const response = await axios.post(`${url}/auth/google/${accessToken}`, {
+        deviceToken
+      });
       const { token: apiToken, refreshToken } = response.data;
 
       const decodedToken = jwtDecode(apiToken);
@@ -257,59 +266,7 @@ const LoginScreen = () => {
     }, [])
   );
 
-  const [serverMessages, setServerMessages] = useState([]);
-  //   const headers = {
-  //     login: 'myadmin', // Replace with your RabbitMQ username
-  //     passcode: 'mypassword' // Replace with your RabbitMQ password
-  //   };
-  //   client = new Client({
-  //     brokerURL: `ws://${domainName}:${webSocketPort}/ws`,
-  //     connectHeaders: headers,
-  //     onConnect: () => {
-  //       console.log("connect success");
-  //       client.subscribe(`/exchange/${exchangeName}/${routingKey}`, message => {
-  //         console.log(`Received: ${message.body}`)
-  //         setServerMessages(prevNotifications => [
-  //           ...prevNotifications,
-  //           message.body
-  //         ]);
-  //       }
-  //       );
-  //     },
-  //     onStompError: (frame) => {
-  //       const readableString = new TextDecoder().decode(frame.binaryBody);
-  //       console.log('STOMP error', readableString);
-  //     },
-  //     appendMissingNULLonIncoming: true,
-  //     forceBinaryWSFrames: true
-  //   });
-
-  //   client.activate();
-  // };
-
-  // //Connect RabbitMQ
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     connectToRabbitMQ();
-  //     return () => {
-  //       if (client) {
-  //         console.log("Disconnecting from RabbitMQ");
-  //         client.deactivate(); // Properly deactivate the client on component unmount
-  //       }
-  //     };
-  //   }, [])
-  // );
-
-
-  // if (user?.role == "Customer" ) {
-  //   navigation.replace("StackBuyerHome")
-  //   return;
-  // }
-  // else if (user?.role == "Seller") {
-  //   navigation.replace("StackSellerHome");
-  //   return;
-  // }
-
+  //Check isLoggedIn for navigation
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
@@ -326,6 +283,16 @@ const LoginScreen = () => {
       }
       fetchFunction();
     }, [isLoggedIn])
+  );
+
+  //Get deviceToken for FCM
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        await messaging().registerDeviceForRemoteMessages();
+        await getDeviceToken();
+      })();
+    }, [])
   );
 
   return (

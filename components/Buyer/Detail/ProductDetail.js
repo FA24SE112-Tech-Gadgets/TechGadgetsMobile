@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Alert, TextInput } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import messaging from '@react-native-firebase/messaging';
@@ -67,7 +67,13 @@ export default function ProductDetails() {
           ))}
         </View>
         <Text style={styles.priceText}>22.990.000đ</Text>
-        <Text style={styles.productName}>{token}</Text>
+        <TextInput
+          style={styles.productName}
+          placeholder={"token"}
+          value={token}
+          multiline
+          textAlignVertical='top'
+        ></TextInput>
 
         <View style={styles.detailsContainer}>
           <Text style={styles.detail}>- Chính hãng, Mới 100%, Nguyên seal</Text>
