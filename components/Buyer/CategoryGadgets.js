@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
+import Slider from '@react-native-community/slider';
 import api from "../Authorization/api";
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -22,23 +25,64 @@ export default function CategoryGadgets({ route, navigation }) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [favorites, setFavorites] = useState({});
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [filters, setFilters] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState({});
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(150000000);
+  const [activeFilters, setActiveFilters] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState('');
+  const [noResults, setNoResults] = useState(false);
+
+  const fetchGadgets = useCallback(async (filterParams = '', resetPage = false) => {
+    if (!hasMore && page !== 1 && !resetPage) return;
+    setLoading(true);
+    try {
+      const currentPage = resetPage ? 1 : page;
+      const baseUrl = `/gadgets/category/${categoryId}`;
+      const url = `${baseUrl}${filterParams}${filterParams ? '&' : '?'}Page=${currentPage}&PageSize=20`;
+      const response = await api.get(url);
+
+      const newGadgets = response.data.items;
+      if (newGadgets.length === 0 && currentPage === 1) {
+        setNoResults(true);
+      } else {
+        setNoResults(false);
+        setGadgets(prev => resetPage ? newGadgets : [...prev, ...newGadgets]);
+        setPage(prev => resetPage ? 2 : prev + 1);
+        setHasMore(newGadgets.length === 20);
+      }
+    } catch (error) {
+      console.error('Error fetching gadgets:', error);
+      setNoResults(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [categoryId, page, hasMore]);
 
   useEffect(() => {
     fetchGadgets();
-  }, []);
+    fetchBrands();
+    fetchFilters();
+  }, [fetchGadgets]);
 
-  const fetchGadgets = async () => {
-    if (!hasMore) return;
+  const fetchBrands = async () => {
     try {
-      const response = await api.get(`/gadgets/category/old/${categoryId}?Page=${page}&PageSize=20`);
-      const newGadgets = response.data.items;
-      setGadgets(prev => [...prev, ...newGadgets]);
-      setPage(prev => prev + 1);
-      setHasMore(newGadgets.length === 20);
+      const response = await api.get(`/brands/categories/${categoryId}?Page=1&PageSize=50`);
+      setBrands(response.data.items);
     } catch (error) {
-      console.error('Error fetching gadgets:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching brands:', error);
+    }
+  };
+
+  const fetchFilters = async () => {
+    try {
+      const response = await api.get(`/gadget-filters/category/${categoryId}`);
+      setFilters(response.data);
+    } catch (error) {
+      console.error('Error fetching filters:', error);
     }
   };
 
@@ -47,6 +91,33 @@ export default function CategoryGadgets({ route, navigation }) {
       ...prev,
       [gadgetId]: !prev[gadgetId]
     }));
+  };
+
+  const openFilterModal = () => {
+    setFilterModalVisible(true);
+  };
+
+  const applyFilters = () => {
+    let filterParams = [];
+    if (selectedBrands.length > 0) {
+      selectedBrands.forEach(brandId => {
+        filterParams.push(`Brands=${brandId}`);
+      });
+    }
+    if (minPrice !== 0 || maxPrice !== 150000000) {
+      filterParams.push(`MinPrice=${minPrice}`);
+      filterParams.push(`MaxPrice=${maxPrice}`);
+    }
+    Object.entries(selectedFilters).forEach(([key, value]) => {
+      value.forEach(filterId => {
+        filterParams.push(`GadgetFilters=${filterId}`);
+      });
+    });
+    const filterString = filterParams.length > 0 ? `?${filterParams.join('&')}` : '';
+    setCurrentFilters(filterString);
+    setFilterModalVisible(false);
+    setActiveFilters(true);
+    fetchGadgets(filterString, true);
   };
 
   const renderGadget = ({ item }) => (
@@ -95,6 +166,146 @@ export default function CategoryGadgets({ route, navigation }) {
     </TouchableOpacity>
   );
 
+  const renderBrandItem = ({ item, index }) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[
+        styles.brandItem,
+        selectedBrands.includes(item.id) && styles.selectedBrandItem
+      ]}
+      onPress={() => {
+        setSelectedBrands(prev =>
+          prev.includes(item.id)
+            ? prev.filter(id => id !== item.id)
+            : [...prev, item.id]
+        );
+      }}
+    >
+      <Image source={{ uri: item.logoUrl }} style={styles.brandLogo} />
+      <Text style={styles.brandName} numberOfLines={1}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderBrandRows = () => {
+    const rows = [];
+    const itemsPerRow = 4;
+    const numRows = 2;
+    const totalItems = itemsPerRow * numRows;
+
+    for (let i = 0; i < brands.length; i += totalItems) {
+      const rowGroup = brands.slice(i, i + totalItems);
+      rows.push(
+        <View key={`group-${i}`} style={styles.brandRowGroup}>
+          {[0, 1].map(rowIndex => (
+            <View key={`row-${i}-${rowIndex}`} style={styles.brandRow}>
+              {rowGroup.slice(rowIndex * itemsPerRow, (rowIndex + 1) * itemsPerRow).map((brand, index) => (
+                renderBrandItem({ item: brand, index: i + rowIndex * itemsPerRow + index })
+              ))}
+            </View>
+          ))}
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.brandListContainer}
+      >
+        {rows}
+      </ScrollView>
+    );
+  };
+
+  const renderFilterModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={filterModalVisible}
+      onRequestClose={() => setFilterModalVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <ScrollView>
+            <Text style={styles.modalTitle}>Lọc sản phẩm</Text>
+
+            <Text style={styles.filterSectionTitle}>Thương hiệu</Text>
+            {renderBrandRows()}
+
+
+            <Text style={styles.filterSectionTitle}>Giá</Text>
+            <View style={styles.priceRangeContainer}>
+              <Text>{minPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
+              <Slider
+                style={styles.slider}
+                minimumValue={0}
+                maximumValue={150000000}
+                step={100000}
+                value={minPrice}
+                onValueChange={(value) => {
+                  setMinPrice(value);
+                  console.log('Min price:', value);
+                }}
+              />
+              <Text>{maxPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
+            </View>
+            <View style={styles.priceRangeContainer}>
+              <Slider
+                style={styles.slider}
+                minimumValue={0}
+                maximumValue={150000000}
+                step={100000}
+                value={maxPrice}
+                onValueChange={(value) => {
+                  setMaxPrice(value);
+                  console.log('Max price:', value);
+                }}
+              />
+            </View>
+
+            {filters.map(filter => (
+              <View key={filter.specificationKeyName}>
+                <Text style={styles.filterSectionTitle}>{filter.specificationKeyName}</Text>
+                <View style={styles.filterOptionsContainer}>
+                  {filter.gadgetFilters.map(option => (
+                    <TouchableOpacity
+                      key={option.gadgetFilterId}
+                      style={[
+                        styles.filterOption,
+                        (selectedFilters[filter.specificationKeyName] || []).includes(option.gadgetFilterId) && styles.selectedFilterOption
+                      ]}
+                      onPress={() => {
+                        setSelectedFilters(prev => {
+                          const current = prev[filter.specificationKeyName] || [];
+                          const updated = current.includes(option.gadgetFilterId)
+                            ? current.filter(id => id !== option.gadgetFilterId)
+                            : [...current, option.gadgetFilterId];
+                          return { ...prev, [filter.specificationKeyName]: updated };
+                        });
+                      }}
+                    >
+                      <Text style={styles.filterOptionText}>{option.value}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            ))}
+
+            <View style={styles.filterButtonsContainer}>
+              <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                <Text style={styles.applyButtonText}>Áp dụng</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setFilterModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Hủy</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <LinearGradient
       colors={['#FFFFFF', '#fea92866']}
@@ -105,22 +316,31 @@ export default function CategoryGadgets({ route, navigation }) {
           <AntDesign name="arrowleft" size={24} color="black" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{categoryName}</Text>
-        <TouchableOpacity onPress={() => {/* Implement filter functionality */}}>
-          <AntDesign name="filter" size={24} color="black" />
+        <TouchableOpacity onPress={openFilterModal}>
+          <AntDesign name="filter" size={24} color={activeFilters ? "#fea128" : "black"} />
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={gadgets}
-        renderItem={renderGadget}
-        keyExtractor={(item, index) => `${item.id}-${index}`} 
-        numColumns={2}
-        contentContainerStyle={styles.gadgetList}
-        onEndReached={fetchGadgets}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={() => (
-          hasMore && <ActivityIndicator size="large" color="#0000ff" />
-        )}
-      />
+      {loading && page === 1 ? (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+      ) : noResults ? (
+        <View style={styles.noResultsContainer}>
+          <Text style={styles.noResultsText}>Không có sản phẩm bạn tìm kiếm</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={gadgets}
+          renderItem={renderGadget}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          numColumns={2}
+          contentContainerStyle={styles.gadgetList}
+          onEndReached={() => fetchGadgets(currentFilters)}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={() => (
+            hasMore && <ActivityIndicator size="large" color="#0000ff" />
+          )}
+        />
+      )}
+      {renderFilterModal()}
     </LinearGradient>
   );
 }
@@ -181,6 +401,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 10,
+
   },
   watermarkText: {
     color: 'white',
@@ -236,5 +457,132 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#ed8900',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  brandListContainer: {
+    height: 170, // Adjust this value to fit two rows of brands
+  },
+  brandRowGroup: {
+    marginRight: 20, // Add some space between groups of brands
+  },
+  brandRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  brandItem: {
+    width: (screenWidth - 60) / 4, // Display 4 items per row
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 5,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  selectedBrandItem: {
+    backgroundColor: '#fea92866',
+  },
+  brandLogo: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  brandName: {
+    marginTop: 5,
+    textAlign: 'center',
+    fontSize: 10,
+  },
+  priceRangeContainer: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    marginBottom: 10,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  filterOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  filterOption: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 5,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  selectedFilterOption: {
+    backgroundColor: '#fea92866',
+  },
+  filterOptionText: {
+    fontSize: 14,
+  },
+  filterButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  applyButton: {
+    backgroundColor: '#fea128',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 10,
+  },
+  applyButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: '#e0e0e0',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginLeft: 10,
+  },
+  cancelButtonText: {
+    color: 'black',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
