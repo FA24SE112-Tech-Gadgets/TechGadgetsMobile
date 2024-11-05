@@ -2,6 +2,7 @@
   "expo": {
     "name": "Tech Gadget",
     "slug": "WhatEat",
+    "scheme": "techgadgets",
     "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

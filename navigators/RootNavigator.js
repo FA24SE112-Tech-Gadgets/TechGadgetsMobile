@@ -21,6 +21,10 @@ import CertificateHistory from "../components/Seller/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
 import CategoryGadgets from "../components/Buyer/CategoryGadgets";
+import BuyerWallet from "../components/Buyer/BuyerWallet";
+import DepositHistory from "../components/Buyer/DepositHistory";
+import RefundHistory from "../components/Buyer/RefundHistory";
+import PaymentHistory from "../components/Buyer/PaymentHistory";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -109,6 +113,34 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <BuyerPersonal />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="BuyerWallet" >
+        {() => (
+          <AuthRoute>
+            <BuyerWallet />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="DepositHistory" >
+        {() => (
+          <AuthRoute>
+            <DepositHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="RefundHistory" >
+        {() => (
+          <AuthRoute>
+            <RefundHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PaymentHistory" >
+        {() => (
+          <AuthRoute>
+            <PaymentHistory />
           </AuthRoute>
         )}
       </Stack.Screen>

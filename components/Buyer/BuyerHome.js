@@ -126,6 +126,10 @@ export default function BuyerHome() {
   const renderCategory = ({ item }) => {
     const categoryGadgets = gadgets[item.id] || [];
 
+    if (categoryGadgets.length <= 0) {
+      return null;
+    }
+
     return (
       <LinearGradient
         colors={['#FFFFFF', '#fea92866']}

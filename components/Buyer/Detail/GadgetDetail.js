@@ -313,7 +313,7 @@ export default function GadgetDetail({ route, navigation }) {
           }}
         >
           <LinearGradient
-            colors={['#FFFFFF', '#fea92866']}
+            colors={['#FFFFFF', '#fecc80']}
             style={styles.addToCartGradient}
           >
             <Text style={styles.addToCartText}>Thêm vào giỏ hàng</Text>
