@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     View,
     Text,
@@ -16,21 +16,30 @@ import { AntDesign } from '@expo/vector-icons';
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
-import { useDebounce } from 'use-debounce';
-import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function SellerHome() {
+const bannerArr = [
+    { id: '1', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/fd03b255-bb6c-4cfd-84cb-269df900b4b2.png' },
+    { id: '2', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/512a8bb8-b561-45c5-b40a-637c5734b098.png' },
+    { id: '3', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/f4a9f07b-7b35-4c9b-9893-01c1669e8d38.png' },
+    { id: '4', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/ad5f0c4e-066f-4448-b8a2-42df939462c5.png' },
+];
+
+export default function SellerOrders() {
     const [categories, setCategories] = useState([]);
     const [gadgets, setGadgets] = useState({});
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchBounceString] = useDebounce(searchQuery, 1000);
-
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [favorites, setFavorites] = useState({});
+    const flatListRef = useRef();
     const navigation = useNavigation();
+
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const fetchCategories = async () => {
         try {
@@ -48,17 +57,24 @@ export default function SellerHome() {
 
     const fetchGadgets = async (categoryId) => {
         try {
-            const response = await api.get(`/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&Page=${currentPage}&PageSize=10`);
+            const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
             setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
         } catch (error) {
             console.error('Error fetching gadgets:', error);
         }
     };
 
+    const toggleFavorite = (gadgetId) => {
+        setFavorites(prev => ({
+            ...prev,
+            [gadgetId]: !prev[gadgetId]
+        }));
+    };
+
     const renderGadget = ({ item }) => (
         <TouchableOpacity
             style={[styles.gadgetCard, { backgroundColor: '#FFFFFF' }]}
-            onPress={() => navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })}
+            onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.id })}
         >
             <View style={styles.imageContainer}>
                 <Image
@@ -76,6 +92,16 @@ export default function SellerHome() {
                         <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
                     </View>
                 )}
+                <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={() => toggleFavorite(item.id)}
+                >
+                    <AntDesign
+                        name={favorites[item.id] ? "heart" : "hearto"}
+                        size={24}
+                        color={favorites[item.id] ? "red" : "black"}
+                    />
+                </TouchableOpacity>
             </View>
             <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
             <View style={styles.priceContainer}>
@@ -83,6 +109,11 @@ export default function SellerHome() {
                     <>
                         <Text style={styles.originalPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
                         <Text style={styles.discountPrice}>{item.discountPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
+                        {/* {item.discountExpiredDate && (
+                <Text style={styles.expiryDate}>
+                  HSD: {new Date(item.discountExpiredDate).toLocaleDateString('vi-VN')}
+                </Text>
+              )} */}
                     </>
                 ) : (
                     <Text style={styles.gadgetPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
@@ -94,10 +125,6 @@ export default function SellerHome() {
     const renderCategory = ({ item }) => {
         const categoryGadgets = gadgets[item.id] || [];
 
-        if (categoryGadgets.length <= 0) {
-            return null;
-        }
-
         return (
             <LinearGradient
                 colors={['#FFFFFF', '#fea92866']}
@@ -105,9 +132,7 @@ export default function SellerHome() {
             >
                 <View style={styles.categoryHeader}>
                     <Text style={styles.categoryName}>{item.name}</Text>
-                    <TouchableOpacity onPress={() =>
-                        navigation.navigate("SellerGadgetByCategory", { categoryId: item.id })
-                    }>
+                    <TouchableOpacity>
                         <Text style={styles.viewAllText}>Xem tất cả</Text>
                     </TouchableOpacity>
                 </View>
@@ -126,71 +151,47 @@ export default function SellerHome() {
         );
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            setCategories([]);
-            setGadgets({});
-            setCurrentPage(1);
-        }, [])
-    );
+    const goToNextPage = () => {
+        const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
+        flatListRef.current.scrollToIndex({ index: nextSlide, animated: true });
+        setCurrentSlide(nextSlide);
+    };
 
     useFocusEffect(
         useCallback(() => {
-            fetchCategories();
-        }, [searchBounceString])
+            const timerId = setInterval(() => {
+                goToNextPage();
+            }, 4000);
+
+            return () => {
+                clearInterval(timerId);
+            };
+        }, [currentSlide, bannerArr])
     );
 
     if (loading) {
         return (
-            <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+            <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#0000ff" />
-            </LinearGradient>
+            </View>
         );
     }
 
     return (
-        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
-            {/* Search bar */}
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: 5,
-                alignItems: "center",
-                paddingHorizontal: 10,
-                marginVertical: 10
-            }}>
+        <View style={styles.container}>
+            <LinearGradient
+                colors={['#FFFFFF', '#fea92866']}
+                style={styles.header}
+            >
                 <View
                     style={{
-                        flexDirection: "row",
-                        backgroundColor: "#F9F9F9",
-                        alignItems: "center",
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        columnGap: 12,
-                        borderRadius: 6,
-                        height: ScreenWidth / 9,
-                        flex: 1
-                    }}
-                >
-                    <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
-                    <TextInput
-                        placeholder={"Tìm kiếm sản phẩm"}
-                        returnKeyType="search"
-                        style={{ fontSize: 20 }}
-                        value={searchQuery}
-                        onChangeText={(query) => setSearchQuery(query)}
-                    />
-                </View>
-
-                {/* Logo */}
-                <View
-                    style={{
-                        height: 43,
-                        width: 43,
+                        height: 40,
+                        width: 40,
                         overflow: 'hidden',
                         borderRadius: 50,
                         justifyContent: "center",
                         alignItems: "center",
+                        marginRight: 8,
                     }}
                 >
                     <Image
@@ -201,6 +202,34 @@ export default function SellerHome() {
                         source={logo}
                     />
                 </View>
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Tìm kiếm"
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
+                    <TouchableOpacity style={styles.searchButton}>
+                        <AntDesign name="search1" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+            </LinearGradient>
+
+            <View style={styles.bannerContainer}>
+                <FlatList
+                    data={bannerArr}
+                    ref={flatListRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                        <Image
+                            style={styles.bannerImage}
+                            source={{ uri: item.image }}
+                        />
+                    )}
+                    keyExtractor={(item) => item.id}
+                />
             </View>
 
             <FlatList
@@ -209,7 +238,7 @@ export default function SellerHome() {
                 keyExtractor={(item) => item.id}
                 style={styles.categoryList}
             />
-        </LinearGradient>
+        </View>
     )
 }
 

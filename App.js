@@ -56,6 +56,9 @@ export default function App() {
             BuyerNotification: "BuyerNotification",
           }
         },
+        SellerGadgetByCategory: "SellerGadgetByCategory",
+        GadgetSellerDetail: "GadgetSellerDetail",
+        GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",
         BuyerPersonal: "BuyerPersonal",
         Policy: "Policy",
@@ -64,8 +67,7 @@ export default function App() {
         StackSellerHome: {
           screens: {
             SellerHome: "SellerHome",
-            SellerVouchers: "SellerVouchers",
-            SellerMarketing: "SellerMarketing",
+            SellerOrders: "SellerOrders",
             SellerNotification: "SellerNotification",
             SellerProfile: "SellerProfile"
           }

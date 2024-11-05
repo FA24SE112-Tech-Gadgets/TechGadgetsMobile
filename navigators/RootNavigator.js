@@ -14,12 +14,14 @@ import PaymentFail from "../components/Payment/PaymentFail";
 import AuthRoute from "../components/Authorization/AuthRoute";
 import ApplicationRequest from "../components/Buyer/ApplicationRequest";
 import Details from "../components/Buyer/Detail/Detail";
-import { MaterialCommunityIcons,FontAwesome } from '@expo/vector-icons';
+import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BusinessRegistrationCertificate from "../components/Seller/BusinessRegistrationCertificate";
 import CertificateHistory from "../components/Seller/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
+import SellerGadgetByCategory from "../components/Seller/SellerGadgetByCategory";
+import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -40,7 +42,7 @@ const SellerTabNavigator = () => {
   return (
     <Tab.Navigator
       initialRouteName="RegisterSeller"
-      barStyle={{ backgroundColor: '#694fad' }} 
+      barStyle={{ backgroundColor: '#694fad' }}
       screenOptions={{ headerShown: false }}
     >
       <Tab.Screen
@@ -83,13 +85,13 @@ const RootNavigator = () => {
       <Stack.Screen name="RegisterSeller" component={SellerStack} options={{ headerShown: false }} />
       {/* <Stack.Screen name="RegisterSeller" component={BusinessRegistrationCertificate} options={{ headerShown: false }}/>
       <Stack.Screen name="RegisterSellerHistory" component={CertificateHistory} options={{ headerShown: false }}/> */}
- {/* Detail */}
+      {/* Detail */}
       <Stack.Screen
         name="Details"
-        component={Details} 
+        component={Details}
         options={{ title: 'Chi tiết sản phẩm' }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="GadgetDetail"
         component={GadgetDetail}
         options={{ headerShown: false }}
@@ -158,9 +160,23 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
+
+      {/* Seller */}
       <Stack.Screen name="StackSellerHome" component={SellerNavigator} />
+      <Stack.Screen name="SellerGadgetByCategory" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <SellerGadgetByCategory navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="GadgetSellerDetail"
+        component={GadgetSellerDetail}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
-    
+
   );
 };
 
