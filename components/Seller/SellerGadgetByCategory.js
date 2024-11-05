@@ -6,27 +6,24 @@ import {
     StyleSheet,
     Image,
     TextInput,
-    TouchableOpacity,
     ActivityIndicator,
     Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
-import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
 import GadgetItem from './Gadget/GadgetItem';
+import ErrModal from '../CustomComponents/ErrModal';
 
 export default function SellerGadgetByCategory({ navigation, route }) {
     const { categoryId } = route.params;
-    const [categories, setCategories] = useState([]);
+
     const [gadgets, setGadgets] = useState({});
-    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -72,13 +69,13 @@ export default function SellerGadgetByCategory({ navigation, route }) {
 
                     setGadgets((prevArray) => [...prevArray, ...newData]);
                 } catch (error) {
-                    setIsError(true);
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
                             error.response.data.reasons[0].message
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsError(true);
                 }
             };
 
@@ -308,6 +305,12 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     </View>
                 )}
             </View>
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
         </LinearGradient>
     )
 }
@@ -343,7 +346,7 @@ const SortModal = ({
                 />
             </Pressable>
 
-            {/* choose Giá thấp nhất/ Đánh giá cao nhất */}
+            {/* choose Giá thấp nhất/ Tên alphabet */}
             <Modal
                 isVisible={modalVisible}
                 onBackdropPress={() => setModalVisible(false)}
@@ -403,7 +406,7 @@ const SortModal = ({
                             )}
                         </Pressable>
 
-                        {/* Nam alphabet */}
+                        {/* Name alphabet */}
                         <Pressable
                             style={styles.modalOption}
                             onPress={() => handleSortOption("NAME")}

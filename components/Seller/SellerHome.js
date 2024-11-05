@@ -7,52 +7,82 @@ import {
     Image,
     TextInput,
     TouchableOpacity,
-    ActivityIndicator,
     Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import ErrModal from '../CustomComponents/ErrModal';
+import LottieView from 'lottie-react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function SellerHome() {
     const [categories, setCategories] = useState([]);
     const [gadgets, setGadgets] = useState({});
-    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchBounceString] = useDebounce(searchQuery, 1000);
 
+    const [isFetching, setIsFetching] = useState(false);
+    const [stringErr, setStringErr] = useState("");
+    const [isError, setIsError] = useState(false);
+    const [isEmpty, setIsEmpty] = useState(true);
+
     const navigation = useNavigation();
 
     const fetchCategories = async () => {
         try {
+            setIsFetching(true);
             const response = await api.get('/categories');
             setCategories(response.data.items);
             response.data.items.forEach((category) => {
                 fetchGadgets(category.id);
             });
+            setIsFetching(false);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
         } finally {
-            setLoading(false);
+            setIsFetching(false);
         }
     };
 
     const fetchGadgets = async (categoryId) => {
         try {
             const response = await api.get(`/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&Page=${currentPage}&PageSize=10`);
-            setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+            // setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+            setGadgets(prev => {
+                const updatedGadgets = { ...prev, [categoryId]: response.data.items };
+                checkIfEmpty(updatedGadgets); // Kiểm tra sau khi cập nhật
+                return updatedGadgets;
+            });
         } catch (error) {
             console.error('Error fetching gadgets:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
         }
+    };
+
+    const checkIfEmpty = (updatedGadgets) => {
+        const isAllEmpty = Object.values(updatedGadgets).every(gadgetList => gadgetList.length === 0);
+        setIsEmpty(isAllEmpty);
     };
 
     const renderGadget = ({ item }) => (
@@ -66,7 +96,7 @@ export default function SellerHome() {
                     style={styles.gadgetImage}
                     resizeMode="contain"
                 />
-                {!item.isForSale && (
+                {(!item.isForSale && item.gadgetStatus === "Active") && (
                     <View style={styles.watermarkContainer}>
                         <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
                     </View>
@@ -77,6 +107,11 @@ export default function SellerHome() {
                     </View>
                 )}
             </View>
+            {(item.gadgetStatus !== "Active") && (
+                <View style={styles.statusWatermark}>
+                    <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
+                </View>
+            )}
             <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
             <View style={styles.priceContainer}>
                 {item.discountPercentage > 0 ? (
@@ -140,14 +175,6 @@ export default function SellerHome() {
         }, [searchBounceString])
     );
 
-    if (loading) {
-        return (
-            <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </LinearGradient>
-        );
-    }
-
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
             {/* Search bar */}
@@ -203,11 +230,52 @@ export default function SellerHome() {
                 </View>
             </View>
 
-            <FlatList
-                data={categories}
-                renderItem={renderCategory}
-                keyExtractor={(item) => item.id}
-                style={styles.categoryList}
+            {categories.length === 0 ? (
+                <View
+                    style={{
+                        flex: 1,
+                        height: ScreenHeight / 1.5,
+                    }}
+                >
+                    <View
+                        style={{
+                            flex: 1,
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <LottieView
+                            source={require("../../assets/animations/catRole.json")}
+                            style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                            autoPlay
+                            loop
+                            speed={0.8}
+                        />
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                width: ScreenWidth / 1.5,
+                                textAlign: "center",
+                            }}
+                        >
+                            {(isEmpty && isFetching) ? "Không tìm thấy sản phẩm" : "Đang load dữ liệu"}
+                        </Text>
+                    </View>
+                </View>
+            ) : (
+                <FlatList
+                    data={categories}
+                    renderItem={renderCategory}
+                    keyExtractor={(item) => item.id}
+                    style={styles.categoryList}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
             />
         </LinearGradient>
     )
@@ -286,19 +354,39 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         padding: 4,
     },
+    statusWatermark: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderRadius: 10,
+        paddingHorizontal: 15
+    },
+    statusText: {
+        color: 'red',
+        fontSize: 14,
+        fontWeight: '500',
+        textTransform: 'uppercase',
+    },
     discountBadge: {
         position: 'absolute',
         top: 5,
-        left: 5,
-        backgroundColor: '#ff4444',
+        backgroundColor: '#F9F9F9',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 4,
+        borderWidth: 0.5,
+        borderColor: "grey"
     },
     discountText: {
-        color: 'white',
+        color: 'grey',
         fontSize: 12,
-        fontWeight: 'bold',
+        fontWeight: '500',
     },
     priceContainer: {
         flexDirection: 'column',

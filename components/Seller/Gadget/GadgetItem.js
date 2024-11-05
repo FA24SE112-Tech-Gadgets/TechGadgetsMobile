@@ -1,3 +1,4 @@
+import { ScreenHeight, ScreenWidth } from "@rneui/base";
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -16,11 +17,11 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
     }
 
     return (
-        <View style={styles.itemContainer}>
+        <>
             <View style={styles.container}>
                 <View style={{
-                    width: 100,
-                    height: 100,
+                    width: ScreenWidth / 2.5,
+                    height: ScreenHeight / 7,
                     borderRadius: 15,
                     marginRight: 10,
                     borderColor: "#ed8900",
@@ -30,15 +31,15 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
                     backgroundColor: "white"
                 }}>
                     <Image source={{ uri: thumbnailUrl }} style={styles.image} />
-                    {discountPercentage >= 0 && (
+                    {discountPercentage > 0 && (
                         <View style={styles.discountBadge}>
                             <Text style={styles.discountText}>-{discountPercentage}%</Text>
                         </View>
                     )}
                 </View>
                 {(gadgetStatus !== "Active") && (
-                    <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Sản phẩm bị khóa</Text>
+                    <View style={styles.statusWatermark}>
+                        <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
                     </View>
                 )}
                 {(!isForSale && gadgetStatus === "Active") && (
@@ -89,17 +90,16 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
                                 <Text style={styles.discountPrice}>{formatCurrency(discountPrice)}</Text>
                             </>
                         ) : (
-                            <Text style={styles.discountPrice}>{price.toLocaleString().replace(/,/g, '.')} ₫</Text>
+                            <Text style={styles.discountPrice}>{formatCurrency(price)}</Text>
                         )}
                     </View>
                 </View>
             </View>
-        </View>
+        </>
     );
 };
 
 const styles = StyleSheet.create({
-    itemContainer: {},
     container: {
         flexDirection: "row",
         alignItems: "center"
@@ -123,6 +123,25 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         padding: 4,
     },
+    statusWatermark: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderRadius: 15,
+        paddingHorizontal: 15
+    },
+    statusText: {
+        color: 'red',
+        fontSize: 20,
+        fontWeight: '500',
+        textTransform: 'uppercase',
+    },
     discountBadge: {
         position: 'absolute',
         top: 5,
@@ -139,8 +158,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     image: {
-        width: 75,
-        height: 75,
+        width: ScreenWidth / 3,
+        height: ScreenHeight / 9,
     },
     detailsContainer: {
         flex: 1,
