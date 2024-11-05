@@ -25,6 +25,9 @@ import BuyerWallet from "../components/Buyer/BuyerWallet";
 import DepositHistory from "../components/Buyer/DepositHistory";
 import RefundHistory from "../components/Buyer/RefundHistory";
 import PaymentHistory from "../components/Buyer/PaymentHistory";
+import SellerGadgetByCategory from "../components/Seller/SellerGadgetByCategory";
+import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -193,7 +196,21 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
+
+      {/* Seller */}
       <Stack.Screen name="StackSellerHome" component={SellerNavigator} />
+      <Stack.Screen name="SellerGadgetByCategory" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <SellerGadgetByCategory navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="GadgetSellerDetail"
+        component={GadgetSellerDetail}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
 
   );
