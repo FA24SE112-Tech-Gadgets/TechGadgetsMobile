@@ -10,22 +10,37 @@ import {
     Modal,
     FlatList,
     TextInput,
+    Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
 import api from '../../Authorization/api';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import RnModal from "react-native-modal";
+import ErrModal from '../../CustomComponents/ErrModal';
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function GadgetSellerDetail({ route, navigation }) {
     const [gadget, setGadget] = useState(null);
     const [activeTab, setActiveTab] = useState('specs');
-    const [quantity, setQuantity] = useState(1);
+
+    const [newIsForSale, setNewIsForSale] = useState(false);
+    const [newQuantity, setNewQuantity] = useState(0);
+
+    const [isForSaleModalVisible, setIsForSaleModalVisible] = useState(false);
+
     const [imageModalVisible, setImageModalVisible] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isContentExpanded, setIsContentExpanded] = useState(false);
+
+    const [isFetching, setIsFetching] = useState(false);
+    const [stringErr, setStringErr] = useState("");
+    const [isError, setIsError] = useState(false);
+
     const formatVietnamDate = (time) => {
         const date = new Date(time);
         const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
@@ -36,11 +51,24 @@ export default function GadgetSellerDetail({ route, navigation }) {
         return `${day}/${month}/${year}`;
     };
 
-
-
     useEffect(() => {
         fetchGadgetDetail();
     }, []);
+
+    //Reset new quantity, new IsForSale
+    useEffect(() => {
+        if (gadget?.quantity) {
+            setNewQuantity(gadget.quantity);
+        } else {
+            setNewQuantity(0);
+        }
+
+        if (gadget?.isForSale) {
+            setNewIsForSale(gadget.isForSale);
+        } else {
+            setNewIsForSale(false);
+        }
+    }, [gadget]);
 
     // Reset expanded state when switching tabs
     useEffect(() => {
@@ -49,18 +77,71 @@ export default function GadgetSellerDetail({ route, navigation }) {
 
     const fetchGadgetDetail = async () => {
         try {
+            setIsFetching(true);
             const response = await api.get(`/gadgets/${route.params.gadgetId}`);
             setGadget(response.data);
+            setIsFetching(false);
         } catch (error) {
             console.error('Error fetching gadget details:', error);
+            setStringErr(error.reasons != null && error.reasons?.length > 0 ? error?.reasons[0]?.message : "Lỗi mạng vui lòng thử lại sau");
+            setIsError(true);
+            setIsFetching(false);
         }
     };
 
+    const handleUpdateGadget = async () => {
+        setIsFetching(true);
+        if (newIsForSale != gadget.status) {
+            try {
+                await api.put(`/gadgets/${route.params.gadgetId}/${newIsForSale ? "set-for-sale" : "set-not-for-sale"}`);
+            } catch (error) {
+                console.error('Error updating gadget details:', error);
+                setStringErr(
+                    error.response?.data?.reasons[0]?.message ?
+                        error.response.data.reasons[0].message
+                        :
+                        "Lỗi mạng vui lòng thử lại sau"
+                );
+                setIsError(true);
+            }
+        }
+        setIsFetching(false);
+        fetchGadgetDetail();
+    }
+
     if (!gadget) {
         return (
-            <View style={styles.loadingContainer}>
-                <Text>Loading...</Text>
-            </View>
+            <LinearGradient colors={['#fea92866', '#FFFFFF']}
+                style={{
+                    flex: 1,
+                    height: ScreenHeight / 1.5,
+                }}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <LottieView
+                        source={require("../../../assets/animations/catRole.json")}
+                        style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                        autoPlay
+                        loop
+                        speed={0.8}
+                    />
+                    <Text
+                        style={{
+                            fontSize: 18,
+                            width: ScreenWidth / 1.5,
+                            textAlign: "center",
+                        }}
+                    >
+                        Đang load dữ liệu
+                    </Text>
+                </View>
+            </LinearGradient>
         );
     }
 
@@ -85,11 +166,18 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     initialScrollIndex={selectedImageIndex}
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item }) => (
-                        <Image
-                            source={{ uri: item }}
-                            style={styles.modalImage}
-                            resizeMode="contain"
-                        />
+                        <>
+                            <Image
+                                source={{ uri: item }}
+                                style={styles.modalImage}
+                                resizeMode="contain"
+                            />
+                            {gadget.status !== "Active" && (
+                                <View style={styles.statusWatermark}>
+                                    <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
+                                </View>
+                            )}
+                        </>
                     )}
                     keyExtractor={(item, index) => index.toString()}
                     getItemLayout={(data, index) => (
@@ -98,6 +186,82 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 />
             </View>
         </Modal>
+    );
+
+    const ChooseForSaleModal = () => (
+        <RnModal
+            isVisible={isForSaleModalVisible}
+            onBackdropPress={() => setIsForSaleModalVisible(false)}
+            onSwipeComplete={() => setIsForSaleModalVisible(false)}
+            useNativeDriverForBackdrop
+            swipeDirection={"down"}
+            propagateSwipe={true}
+            style={{
+                justifyContent: 'flex-end',
+                margin: 0,
+            }}
+        >
+            <View>
+                <View style={styles.modalContent}>
+                    {/* Thanh hồng trên cùng */}
+                    <View
+                        style={{
+                            alignItems: "center",
+                            padding: 12,
+                        }}
+                    >
+                        <View
+                            style={{
+                                width: ScreenWidth / 7,
+                                height: ScreenHeight / 80,
+                                backgroundColor: "#fea128",
+                                borderRadius: 30,
+                            }}
+                        />
+                    </View>
+
+                    {/* Đang kinh doanh */}
+                    <Pressable
+                        style={styles.modalOption}
+                        onPress={() => {
+                            setNewIsForSale(true)
+                            setIsForSaleModalVisible(false)
+                        }}
+                    >
+                        <Text style={styles.modalOptionText}>Đang kinh doanh</Text>
+                        {newIsForSale ? (
+                            <MaterialCommunityIcons name="check-circle" size={24} color="#fea128" />
+                        ) : (
+                            <MaterialCommunityIcons
+                                name="checkbox-blank-circle-outline"
+                                size={24}
+                                color="#fea128"
+                            />
+                        )}
+                    </Pressable>
+
+                    {/* Ngừng kinh doanh */}
+                    <Pressable
+                        style={styles.modalOption}
+                        onPress={() => {
+                            setNewIsForSale(false)
+                            setIsForSaleModalVisible(false)
+                        }}
+                    >
+                        <Text style={styles.modalOptionText}>Ngừng kinh doanh</Text>
+                        {!newIsForSale ? (
+                            <MaterialCommunityIcons name="check-circle" size={24} color="#fea128" />
+                        ) : (
+                            <MaterialCommunityIcons
+                                name="checkbox-blank-circle-outline"
+                                size={24}
+                                color="#fea128"
+                            />
+                        )}
+                    </Pressable>
+                </View>
+            </View>
+        </RnModal>
     );
 
     return (
@@ -126,9 +290,9 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                         style={styles.gadgetImage}
                                         resizeMode="contain"
                                     />
-                                    {!gadget.isForSale && (
-                                        <View style={styles.soldOutWatermark}>
-                                            <Text style={styles.soldOutText}>Ngừng kinh doanh</Text>
+                                    {gadget.status !== "Active" && (
+                                        <View style={styles.statusWatermark}>
+                                            <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
                                         </View>
                                     )}
                                 </View>
@@ -156,38 +320,64 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     </View>
                 </View>
 
-
-
-                {/* Product Info */}
-                <View style={styles.productInfo}>
-                    <Text style={styles.productName}>{gadget.name}</Text>
+                {/* Gadget Info */}
+                <View style={styles.gadgetInfo}>
+                    <Text style={styles.gadgetName}>{gadget.name}</Text>
                     {gadget.discountPercentage > 0 ? (
                         <>
                             <View style={styles.priceContainer}>
-                                <Text style={styles.originalPrice}>
-                                    {gadget.price.toLocaleString('vi-VN')} ₫
-                                </Text>
+                                <View style={{
+                                    flexDirection: "row",
+                                    gap: 10,
+                                    alignItems: "center"
+                                }}>
+                                    <Text style={styles.originalPrice}>
+                                        {gadget.price.toLocaleString('vi-VN')} ₫
+                                    </Text>
+                                    {gadget.discountPercentage > 0 && (
+                                        <View style={styles.discountBadge}>
+                                            <Text style={styles.discountBadgeText}>-{gadget.discountPercentage}%</Text>
+                                        </View>
+                                    )}
+
+                                </View>
                                 <Text style={styles.discountPrice}>
                                     {gadget.discountPrice.toLocaleString('vi-VN')} ₫
                                 </Text>
                             </View>
-                            {gadget.discountPercentage > 0 && (
-                                <View style={styles.discountBadge}>
-                                    <Text style={styles.discountBadgeText}>-{gadget.discountPercentage}%</Text>
-                                </View>
-                            )}
                             {gadget.discountExpiredDate && (
-                                <Text style={styles.discountExpiry}>
-                                    Ưu đãi còn đến: {formatVietnamDate(gadget.discountExpiredDate)}
-                                </Text>
+                                <View style={{
+                                    flexDirection: "row",
+                                    gap: 10
+                                }}>
+                                    <Text style={styles.discountExpiry}>
+                                        Ưu đãi còn đến:
+                                    </Text>
+                                    <Text style={{
+                                        color: "red",
+                                        fontWeight: "bold"
+                                    }}>
+                                        {formatVietnamDate(gadget.discountExpiredDate)}
+                                    </Text>
+                                </View>
                             )}
                         </>
                     ) : (
-                        <Text style={styles.productPrice}>
+                        <Text style={styles.gadgetPrice}>
                             {gadget.price.toLocaleString('vi-VN')} ₫
                         </Text>
                     )}
-                    <Text style={styles.condition}>Tình trạng: {gadget.condition}</Text>
+                    <Text style={styles.condition}>Tình trạng:</Text>
+                    <Text style={{
+                        backgroundColor: "#F9F9F9",
+                        padding: 10,
+                        height: ScreenHeight / 10,
+                        borderWidth: 1,
+                        borderColor: "grey",
+                        borderRadius: 10
+                    }}>
+                        {gadget.condition}
+                    </Text>
                 </View>
 
                 {/* Tabs */}
@@ -297,43 +487,59 @@ export default function GadgetSellerDetail({ route, navigation }) {
 
             {/* Bottom Bar */}
             <View View style={styles.bottomBar} >
+                {/* Gadget quantity */}
                 <View style={styles.quantityContainer}>
                     <Text style={styles.quantityText}>Kho:</Text>
-                    <TextInput style={{
-                        backgroundColor: "#F9F9F9",
-                        borderRadius: 10,
-                        width: 50,
-                        textAlign: "center"
-                    }} value={gadget.quantity.toString()} keyboardType='number-pad' />
+                    <TextInput
+                        style={{
+                            backgroundColor: "#F9F9F9",
+                            borderRadius: 10,
+                            width: 50,
+                            textAlign: "center"
+                        }} value={newQuantity.toString()} keyboardType='number-pad'
+                        onChangeText={(text) => {
+                            setNewQuantity(text)
+                        }}
+                    />
                 </View>
+
+                {/* Gadget status */}
                 <TouchableOpacity
                     style={[
                         {
-                            backgroundColor: gadget.isForSale ? "rgba(77, 218, 98,0.5)" : "rgba(210, 65, 82,0.5)",
-                            borderColor: gadget.isForSale ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
+                            backgroundColor: newIsForSale ? "rgba(77, 218, 98,0.5)" : "rgba(210, 65, 82,0.5)",
+                            borderColor: newIsForSale ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
                         },
                         styles.gadgetStatusBtn
                     ]}
                     onPress={() => {
-                        // Add to cart logic here
+                        setIsForSaleModalVisible(true)
                     }}
                 >
-                    <Text style={styles.gadgetStatusTxt}>{gadget.isForSale ? "Đang kinh doanh" : "Ngừng kinh doanh"}</Text>
+                    <Text style={styles.gadgetStatusTxt}>{newIsForSale ? "Đang kinh doanh" : "Ngừng kinh doanh"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                    disabled={(newIsForSale == gadget.isForSale && newQuantity == gadget.quantity) || isFetching}
                     onPress={() => {
                         //TODO: handle call api patch
+                        handleUpdateGadget();
                     }}
                 >
                     <Ionicons
                         name="checkbox"
                         size={55}
-                        color="rgb(77, 218, 98)"
+                        color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
                     />
                 </TouchableOpacity>
             </View >
 
             <ImageGalleryModal />
+            <ChooseForSaleModal />
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
         </LinearGradient >
     );
 }
@@ -382,6 +588,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+        borderWidth: 1,
+        borderColor: "rgba(254, 169, 40, 0.5)"
     },
     brandLogo: {
         width: 40,
@@ -389,25 +597,24 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     discountBadge: {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        backgroundColor: '#ff4444',
+        backgroundColor: '#F9F9F9',
         paddingHorizontal: 12,
-        paddingVertical: 6,
+        paddingVertical: 4,
         borderRadius: 4,
         zIndex: 1,
+        borderWidth: 0.5,
+        borderColor: "grey"
     },
     discountBadgeText: {
-        color: 'white',
+        color: 'grey',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '500',
     },
     priceContainer: {
         marginBottom: 8,
     },
     originalPrice: {
-        fontSize: 16,
+        fontSize: 17,
         color: '#999',
         textDecorationLine: 'line-through',
         marginBottom: 4,
@@ -415,7 +622,7 @@ const styles = StyleSheet.create({
     discountPrice: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#ff4444',
+        color: '#fea128',
     },
     discountExpiry: {
         fontSize: 14,
@@ -442,33 +649,35 @@ const styles = StyleSheet.create({
         height: ScreenHeight / 2,
         borderRadius: 8,
     },
-    soldOutWatermark: {
+    statusWatermark: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 10,
         borderRadius: 15,
+        paddingHorizontal: 15
     },
-    soldOutText: {
-        color: 'white',
-        fontSize: 24,
-        fontWeight: 'bold',
+    statusText: {
+        color: 'red',
+        fontSize: 20,
+        fontWeight: '500',
         textTransform: 'uppercase',
     },
-    productInfo: {
-        padding: 16,
+    gadgetInfo: {
+        paddingHorizontal: 16,
+        paddingVertical: 10
     },
-    productName: {
+    gadgetName: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: '500',
         marginBottom: 8,
     },
-    productPrice: {
+    gadgetPrice: {
         fontSize: 20,
         color: '#fea128',
         fontWeight: 'bold',
@@ -637,5 +846,20 @@ const styles = StyleSheet.create({
         right: 16,
         zIndex: 1,
         padding: 8,
+    },
+    modalContent: {
+        backgroundColor: "white",
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+    },
+    modalOption: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    modalOptionText: {
+        fontSize: 16,
     },
 });

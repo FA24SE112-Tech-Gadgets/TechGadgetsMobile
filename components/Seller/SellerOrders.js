@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -6,192 +6,214 @@ import {
     StyleSheet,
     Image,
     TextInput,
-    TouchableOpacity,
     ActivityIndicator,
-    Dimensions,
+    Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
-import { useNavigation } from '@react-navigation/native';
-
-const { width: screenWidth } = Dimensions.get('window');
-
-const bannerArr = [
-    { id: '1', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/fd03b255-bb6c-4cfd-84cb-269df900b4b2.png' },
-    { id: '2', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/512a8bb8-b561-45c5-b40a-637c5734b098.png' },
-    { id: '3', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/f4a9f07b-7b35-4c9b-9893-01c1669e8d38.png' },
-    { id: '4', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/ad5f0c4e-066f-4448-b8a2-42df939462c5.png' },
-];
+import { useDebounce } from 'use-debounce';
+import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import Modal from "react-native-modal";
+import LottieView from 'lottie-react-native';
+import ErrModal from '../CustomComponents/ErrModal';
+import SellerOrderItem from './SellerOrder/SellerOrderItem';
 
 export default function SellerOrders() {
-    const [categories, setCategories] = useState([]);
-    const [gadgets, setGadgets] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [sellerOrders, setSellerOrders] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const [favorites, setFavorites] = useState({});
-    const flatListRef = useRef();
-    const navigation = useNavigation();
+    const [searchBounceString] = useDebounce(searchQuery, 1000);
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [sortOption, setSortOption] = useState("PRICE");
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    const [stringErr, setStringErr] = useState("");
+    const [isError, setIsError] = useState(false);
 
-    const fetchCategories = async () => {
-        try {
-            const response = await api.get('/categories');
-            setCategories(response.data.items);
-            response.data.items.forEach((category) => {
-                fetchGadgets(category.id);
-            });
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [isFetching, setIsFetching] = useState(false);
+    const [hasMoreData, setHasMoreData] = useState(true);
 
-    const fetchGadgets = async (categoryId) => {
-        try {
-            const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
-            setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
-        } catch (error) {
-            console.error('Error fetching gadgets:', error);
-        }
-    };
-
-    const toggleFavorite = (gadgetId) => {
-        setFavorites(prev => ({
-            ...prev,
-            [gadgetId]: !prev[gadgetId]
-        }));
-    };
-
-    const renderGadget = ({ item }) => (
-        <TouchableOpacity
-            style={[styles.gadgetCard, { backgroundColor: '#FFFFFF' }]}
-            onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.id })}
-        >
-            <View style={styles.imageContainer}>
-                <Image
-                    source={{ uri: item.thumbnailUrl }}
-                    style={styles.gadgetImage}
-                    resizeMode="contain"
-                />
-                {!item.isForSale && (
-                    <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
-                    </View>
-                )}
-                {item.discountPercentage > 0 && (
-                    <View style={styles.discountBadge}>
-                        <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
-                    </View>
-                )}
-                <TouchableOpacity
-                    style={styles.favoriteButton}
-                    onPress={() => toggleFavorite(item.id)}
-                >
-                    <AntDesign
-                        name={favorites[item.id] ? "heart" : "hearto"}
-                        size={24}
-                        color={favorites[item.id] ? "red" : "black"}
-                    />
-                </TouchableOpacity>
-            </View>
-            <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
-            <View style={styles.priceContainer}>
-                {item.discountPercentage > 0 ? (
-                    <>
-                        <Text style={styles.originalPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
-                        <Text style={styles.discountPrice}>{item.discountPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
-                        {/* {item.discountExpiredDate && (
-                <Text style={styles.expiryDate}>
-                  HSD: {new Date(item.discountExpiredDate).toLocaleDateString('vi-VN')}
-                </Text>
-              )} */}
-                    </>
-                ) : (
-                    <Text style={styles.gadgetPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
-                )}
-            </View>
-        </TouchableOpacity>
-    );
-
-    const renderCategory = ({ item }) => {
-        const categoryGadgets = gadgets[item.id] || [];
-
-        return (
-            <LinearGradient
-                colors={['#FFFFFF', '#fea92866']}
-                style={styles.categoryContainer}
-            >
-                <View style={styles.categoryHeader}>
-                    <Text style={styles.categoryName}>{item.name}</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.viewAllText}>Xem tất cả</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.categoryUnderline} />
-                <FlatList
-                    data={categoryGadgets.slice(0, 20)}
-                    renderItem={renderGadget}
-                    keyExtractor={(gadget) => gadget.id.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    initialNumToRender={5}
-                    maxToRenderPerBatch={5}
-                    contentContainerStyle={styles.gadgetList}
-                />
-            </LinearGradient>
-        );
-    };
-
-    const goToNextPage = () => {
-        const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
-        flatListRef.current.scrollToIndex({ index: nextSlide, animated: true });
-        setCurrentSlide(nextSlide);
-    };
+    const [isSearching, setIsSearching] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
-            const timerId = setInterval(() => {
-                goToNextPage();
-            }, 4000);
-
-            return () => {
-                clearInterval(timerId);
-            };
-        }, [currentSlide, bannerArr])
+            setSellerOrders([]);
+            setCurrentPage(1);
+        }, [])
     );
 
-    if (loading) {
+    const filter = sortOption == "PRICE" ? `SortColumn=price` : `SortColumn=name`;
+
+    // Gadget pagination
+    useFocusEffect(
+        useCallback(() => {
+            const init = async () => {
+                try {
+                    setIsFetching(true);
+                    const res = await api.get(
+                        `/seller-orders?Status=Cancelled&Page=${currentPage}&PageSize=10`
+                    );
+                    const newData = res.data.items;
+                    setHasMoreData(newData.length > 0);
+                    setIsFetching(false);
+
+                    if (newData.length == 0) {
+                        console.log("No more data to fetch");
+                        return; // Stop the process if there is no more data
+                    }
+
+                    setSellerOrders((prevArray) => [...prevArray, ...newData]);
+                } catch (error) {
+                    setIsError(true);
+                    setStringErr(
+                        error.response?.data?.reasons[0]?.message ?
+                            error.response.data.reasons[0].message
+                            :
+                            "Lỗi mạng vui lòng thử lại sau"
+                    );
+                }
+            };
+
+            if (currentPage >= 2) init();
+        }, [currentPage])
+    );
+
+    // Search sellerOrders
+    useFocusEffect(
+        useCallback(() => {
+            setCurrentPage(1);
+
+            if (searchBounceString === "") {
+                setIsSearching(false);
+            } else {
+                setIsSearching(true);
+            }
+
+            const fetchItems = async () => {
+                try {
+                    const res = await api.get(
+                        `/seller-orders?Status=Cancelled&Page=1&PageSize=10`
+                    );
+                    const newData = res.data.items;
+
+                    if (newData.length == 0) {
+                        setSellerOrders([])
+                        return; // Stop the process if there is no more data
+                    }
+
+                    setSellerOrders(newData);
+                } catch (error) {
+                    setStringErr(
+                        error.response?.data?.reasons[0]?.message ?
+                            error.response.data.reasons[0].message
+                            :
+                            "Lỗi mạng vui lòng thử lại sau"
+                    );
+                    setIsError(true);
+                }
+            };
+            fetchItems();
+        }, [searchBounceString])
+    );
+
+    const handleSortOption = (option) => {
+        if (option != sortOption) {
+            setSortOption(option);
+            setModalVisible(false);
+            setSellerOrders([]);
+            setCurrentPage(1);
+            const init = async () => {
+                try {
+                    const url =
+                        option == "PRICE"
+                            ? `/seller-orders?Status=Cancelled&Page=1&PageSize=10`
+                            : `/seller-orders?Status=Cancelled&Page=1&PageSize=10`;
+                    const res = await api.get(url);
+                    const newData = res.data.items;
+
+                    if (newData.length == 0) {
+                        console.log("No more data to fetch");
+                        return; // Stop the process if there is no more data
+                    }
+
+                    setSellerOrders(newData);
+                } catch (error) {
+                    setStringErr(
+                        error.response?.data?.reasons[0]?.message ?
+                            error.response.data.reasons[0].message
+                            :
+                            "Lỗi mạng vui lòng thử lại sau"
+                    );
+                    setIsError(true);
+                }
+            };
+
+            init();
+        }
+    };
+
+    const handleScroll = () => {
+        if (!isFetching && hasMoreData) {
+            setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+        }
+    };
+
+    const renderFooter = () => {
+        if (!isFetching) return null;
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
+            <View style={{
+                padding: 5,
+                alignItems: 'center'
+            }}>
+                <ActivityIndicator color={"#ed8900"} />
             </View>
         );
-    }
+    };
 
     return (
-        <View style={styles.container}>
-            <LinearGradient
-                colors={['#FFFFFF', '#fea92866']}
-                style={styles.header}
-            >
+        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
+            {/* Search bar */}
+            <View style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                gap: 5,
+                alignItems: "center"
+            }}>
                 <View
                     style={{
-                        height: 40,
-                        width: 40,
+                        flexDirection: "row",
+                        backgroundColor: "#F9F9F9",
+                        alignItems: "center",
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        columnGap: 12,
+                        borderRadius: 6,
+                        height: ScreenWidth / 9,
+                        flex: 1
+                    }}
+                >
+                    <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
+                    <TextInput
+                        placeholder={"Tìm kiếm sản phẩm"}
+                        returnKeyType="search"
+                        style={{ fontSize: 20 }}
+                        value={searchQuery}
+                        onChangeText={(query) => setSearchQuery(query)}
+                    />
+                </View>
+
+                {/* Logo */}
+                <View
+                    style={{
+                        height: 43,
+                        width: 43,
                         overflow: 'hidden',
                         borderRadius: 50,
                         justifyContent: "center",
                         alignItems: "center",
-                        marginRight: 8,
                     }}
                 >
                     <Image
@@ -202,234 +224,274 @@ export default function SellerOrders() {
                         source={logo}
                     />
                 </View>
-                <View style={styles.searchContainer}>
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Tìm kiếm"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
-                    <TouchableOpacity style={styles.searchButton}>
-                        <AntDesign name="search1" size={24} color="white" />
-                    </TouchableOpacity>
-                </View>
-            </LinearGradient>
+            </View>
 
-            <View style={styles.bannerContainer}>
-                <FlatList
-                    data={bannerArr}
-                    ref={flatListRef}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item }) => (
-                        <Image
-                            style={styles.bannerImage}
-                            source={{ uri: item.image }}
-                        />
-                    )}
-                    keyExtractor={(item) => item.id}
+            {/* Filter Sort */}
+            <View style={{ flexDirection: "row", marginTop: 10 }}>
+                <SortModal
+                    modalVisible={modalVisible}
+                    setModalVisible={setModalVisible}
+                    sortOption={sortOption}
+                    handleSortOption={handleSortOption}
+                    disabled={sellerOrders.length == 0}
                 />
             </View>
 
-            <FlatList
-                data={categories}
-                renderItem={renderCategory}
-                keyExtractor={(item) => item.id}
-                style={styles.categoryList}
+            <View
+                style={{
+                    height: ScreenHeight / 1.16,
+                }}
+            >
+                {sellerOrders.length === 0 ? (
+                    <View
+                        style={{
+                            flex: 1,
+                            height: ScreenHeight / 1.5,
+                        }}
+                    >
+                        <View
+                            style={{
+                                flex: 1,
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <LottieView
+                                source={require("../../assets/animations/catRole.json")}
+                                style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                                autoPlay
+                                loop
+                                speed={0.8}
+                            />
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    width: ScreenWidth / 1.5,
+                                    textAlign: "center",
+                                }}
+                            >
+                                {isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
+                            </Text>
+                        </View>
+                    </View>
+                ) : (
+                    <View style={{ marginBottom: 20, marginTop: 16 }}>
+                        <FlatList
+                            data={sellerOrders}
+                            keyExtractor={item => item.id}
+                            renderItem={({ item, index }) => (
+                                <Pressable
+                                    onPress={() =>
+                                        navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                    }
+                                >
+                                    <SellerOrderItem
+                                        {...item}
+                                    />
+                                    {index < sellerOrders.length - 1 && (
+                                        <Divider style={{ marginVertical: 14 }} />
+                                    )}
+                                </Pressable>
+                            )}
+                            onEndReached={handleScroll}
+                            onEndReachedThreshold={0.5}
+                            ListFooterComponent={renderFooter}
+                            initialNumToRender={10}
+                            showsVerticalScrollIndicator={false}
+                            overScrollMode="never"
+                        />
+                    </View>
+                )}
+            </View>
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
             />
-        </View>
+        </LinearGradient>
     )
 }
 
+const SortModal = ({
+    modalVisible,
+    setModalVisible,
+    sortOption,
+    handleSortOption,
+    disabled,
+}) => {
+    return (
+        <View>
+            <Pressable
+                style={[
+                    styles.sortButton,
+                    {
+                        backgroundColor: disabled ? "#cccccc" : "#ed8900",
+                        borderColor: disabled ? "#999999" : "#ed8900",
+                    },
+                ]}
+                onPress={() => setModalVisible(true)}
+                disabled={disabled}
+            >
+                <Text style={styles.sortButtonText}>
+                    {sortOption == "Success" ? "Đã giao" : sortOption == "Pending" ? "Chờ xử lý" : "Đã hủy"}
+                </Text>
+                <Icon
+                    type="material-community"
+                    name="chevron-down"
+                    size={24}
+                    color="white"
+                />
+            </Pressable>
+
+            {/* choose Giá thấp nhất/ Đánh giá cao nhất */}
+            <Modal
+                isVisible={modalVisible}
+                onBackdropPress={() => setModalVisible(false)}
+                onSwipeComplete={() => setModalVisible(false)}
+                useNativeDriverForBackdrop
+                swipeDirection={"down"}
+                propagateSwipe={true}
+                style={{
+                    justifyContent: 'flex-end',
+                    margin: 0,
+                }}
+            >
+                <View>
+                    <View style={styles.modalContent}>
+                        {/* Thanh hồng trên cùng */}
+                        <View
+                            style={{
+                                alignItems: "center",
+                                paddingBottom: 12,
+                            }}
+                        >
+                            <View
+                                style={{
+                                    width: ScreenWidth / 7,
+                                    height: ScreenHeight / 100,
+                                    backgroundColor: "#ed8900",
+                                    borderRadius: 30,
+                                }}
+                            />
+                        </View>
+
+                        {/* Lọc theo */}
+                        <View style={[styles.modalOption]}>
+                            <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
+                        </View>
+
+                        {/* Đã giao */}
+                        <Pressable
+                            style={styles.modalOption}
+                            onPress={() => handleSortOption("Success")}
+                        >
+                            <Text style={styles.modalOptionText}>Đã giao</Text>
+                            {sortOption === "PRICE" ? (
+                                <Icon
+                                    type="material-community"
+                                    name="check-circle"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            ) : (
+                                <Icon
+                                    type="material-community"
+                                    name="checkbox-blank-circle-outline"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            )}
+                        </Pressable>
+
+                        {/* Chờ xử lý */}
+                        <Pressable
+                            style={styles.modalOption}
+                            onPress={() => handleSortOption("Pending")}
+                        >
+                            <Text style={styles.modalOptionText}>Chờ xử lý</Text>
+                            {sortOption === "Pending" ? (
+                                <Icon
+                                    type="material-community"
+                                    name="check-circle"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            ) : (
+                                <Icon
+                                    type="material-community"
+                                    name="checkbox-blank-circle-outline"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            )}
+                        </Pressable>
+
+                        {/* Đã hủy */}
+                        <Pressable
+                            style={styles.modalOption}
+                            onPress={() => handleSortOption("Cancelled")}
+                        >
+                            <Text style={styles.modalOptionText}>Đã hủy</Text>
+                            {sortOption === "Cancelled" ? (
+                                <Icon
+                                    type="material-community"
+                                    name="check-circle"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            ) : (
+                                <Icon
+                                    type="material-community"
+                                    name="checkbox-blank-circle-outline"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            )}
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
+        </View>
+    );
+};
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fafafa',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    logo: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-        width: 45,
-        height: 45,
-        borderRadius: 80,
-        overflow: 'hidden',
-    },
-    searchContainer: {
-        flex: 1,
-        flexDirection: 'row',
-    },
-    searchInput: {
-        flex: 1,
-        height: 40,
-        borderColor: 'black',
-        borderWidth: 1,
-        borderRadius: 20,
-        paddingLeft: 15,
-        marginRight: 10,
-        fontSize: 16,
-    },
-    searchButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 40,
-        height: 40,
-        backgroundColor: '#fea128',
-        borderRadius: 20,
-    },
-    imageContainer: {
-        position: 'relative',
-        width: '100%',
-        height: 120,
-        marginBottom: 15,
-    },
-    watermarkContainer: {
-        position: 'absolute',
-        top: 30,
-        left: -8,
-        right: -8,
-        bottom: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        transform: [{ rotate: '0deg' }],
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 1,
-    },
-    watermarkText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        padding: 4,
-    },
-    discountBadge: {
-        position: 'absolute',
-        top: 5,
-        left: 5,
-        backgroundColor: '#ff4444',
+    sortButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        columnGap: 4,
         paddingHorizontal: 8,
         paddingVertical: 4,
-        borderRadius: 4,
+        borderColor: "#FB6562",
+        borderWidth: 2,
+        borderRadius: 20,
+        backgroundColor: "#FB6562",
     },
-    discountText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: 'bold',
+    sortButtonText: {
+        fontWeight: "bold",
+        fontSize: 18,
+        color: "white",
     },
-    priceContainer: {
-        flexDirection: 'column',
-    },
-    originalPrice: {
-        fontSize: 14,
-        color: '#999',
-        textDecorationLine: 'line-through',
-        marginBottom: 2,
-    },
-    discountPrice: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#ed8900',
-    },
-    expiryDate: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 2,
-    },
-    bannerContainer: {
-        height: screenWidth * 0.5,
-        marginBottom: 15,
-    },
-    bannerImage: {
-        width: screenWidth,
-        height: screenWidth * 0.5,
-    },
-    categoryList: {
+    modalOverlay: {
         flex: 1,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
-    categoryContainer: {
-        marginBottom: 15,
-        paddingTop: 15,
-        paddingBottom: 20,
-        borderRadius: 10,
+    modalContent: {
+        backgroundColor: "white",
+        paddingVertical: 16,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
     },
-    categoryHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        marginBottom: 10,
+    modalOption: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
-    categoryName: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    viewAllText: {
-        color: '#fea128',
+    modalOptionText: {
         fontSize: 16,
-    },
-    categoryUnderline: {
-        height: 2,
-        backgroundColor: '#fea92866',
-        marginStart: 10,
-        marginBottom: 15,
-    },
-    gadgetList: {
-        paddingHorizontal: 10,
-    },
-    gadgetCard: {
-        width: (screenWidth - 40) / 3,
-        marginHorizontal: 5,
-        borderRadius: 10,
-        padding: 10,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    gadgetImage: {
-        width: '100%',
-        height: 120,
-        borderRadius: 10,
-        marginBottom: 15,
-    },
-    gadgetName: {
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 5,
-        color: '#333',
-    },
-    gadgetPrice: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#ed8900',
-    },
-    favoriteButton: {
-        position: 'absolute',
-        top: 5,
-        right: 5,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        borderRadius: 15,
-        width: 30,
-        height: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
     },
 });
