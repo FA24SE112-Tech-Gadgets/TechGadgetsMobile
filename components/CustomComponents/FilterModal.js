@@ -212,7 +212,7 @@ export default function FilterModal({ filterModalVisible, handleCloseFilterModal
                     }
                     setDataTag((prevArray) => [...prevArray, ...newData]);
                 } catch (error) {
-                    console.error(error);
+                    console.log(error);
                 }
             };
             if (currentPage >= 1) {

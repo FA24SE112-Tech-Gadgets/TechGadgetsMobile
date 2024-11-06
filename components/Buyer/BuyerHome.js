@@ -50,7 +50,7 @@ export default function BuyerHome() {
         fetchGadgets(category.id);
       });
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.log('Error fetching categories:', error);
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function BuyerHome() {
       const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
       setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
     } catch (error) {
-      console.error('Error fetching gadgets:', error);
+      console.log('Error fetching gadgets:', error);
     }
   };
 

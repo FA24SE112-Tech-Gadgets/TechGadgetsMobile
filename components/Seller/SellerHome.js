@@ -46,7 +46,7 @@ export default function SellerHome() {
             });
             setIsFetching(false);
         } catch (error) {
-            console.error('Error fetching categories:', error);
+            console.log('Error fetching categories:', error);
             setStringErr(
                 error.response?.data?.reasons[0]?.message ?
                     error.response.data.reasons[0].message
@@ -69,7 +69,7 @@ export default function SellerHome() {
                 return updatedGadgets;
             });
         } catch (error) {
-            console.error('Error fetching gadgets:', error);
+            console.log('Error fetching gadgets:', error);
             setStringErr(
                 error.response?.data?.reasons[0]?.message ?
                     error.response.data.reasons[0].message
@@ -161,11 +161,13 @@ export default function SellerHome() {
         );
     };
 
+    //Reset to default state
     useFocusEffect(
         useCallback(() => {
             setCategories([]);
             setGadgets({});
             setCurrentPage(1);
+            setSearchQuery("");
         }, [])
     );
 
@@ -203,7 +205,7 @@ export default function SellerHome() {
                     <TextInput
                         placeholder={"Tìm kiếm sản phẩm"}
                         returnKeyType="search"
-                        style={{ fontSize: 20 }}
+                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
                         value={searchQuery}
                         onChangeText={(query) => setSearchQuery(query)}
                     />

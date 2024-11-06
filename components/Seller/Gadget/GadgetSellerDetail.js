@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -6,7 +6,6 @@ import {
     Image,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
     Modal,
     FlatList,
     TextInput,
@@ -21,8 +20,7 @@ import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import RnModal from "react-native-modal";
 import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
-
-const { width } = Dimensions.get('window');
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function GadgetSellerDetail({ route, navigation }) {
     const [gadget, setGadget] = useState(null);
@@ -51,29 +49,36 @@ export default function GadgetSellerDetail({ route, navigation }) {
         return `${day}/${month}/${year}`;
     };
 
-    useEffect(() => {
-        fetchGadgetDetail();
-    }, []);
+    // Fetch gadget detail
+    useFocusEffect(
+        useCallback(() => {
+            fetchGadgetDetail();
+        }, [])
+    );
 
     //Reset new quantity, new IsForSale
-    useEffect(() => {
-        if (gadget?.quantity) {
-            setNewQuantity(gadget.quantity);
-        } else {
-            setNewQuantity(0);
-        }
+    useFocusEffect(
+        useCallback(() => {
+            if (gadget?.quantity) {
+                setNewQuantity(gadget.quantity);
+            } else {
+                setNewQuantity(0);
+            }
 
-        if (gadget?.isForSale) {
-            setNewIsForSale(gadget.isForSale);
-        } else {
-            setNewIsForSale(false);
-        }
-    }, [gadget]);
+            if (gadget?.isForSale) {
+                setNewIsForSale(gadget.isForSale);
+            } else {
+                setNewIsForSale(false);
+            }
+        }, [gadget])
+    );
 
     // Reset expanded state when switching tabs
-    useEffect(() => {
-        setIsContentExpanded(false);
-    }, [activeTab]);
+    useFocusEffect(
+        useCallback(() => {
+            setIsContentExpanded(false);
+        }, [activeTab])
+    );
 
     const fetchGadgetDetail = async () => {
         try {
@@ -82,8 +87,13 @@ export default function GadgetSellerDetail({ route, navigation }) {
             setGadget(response.data);
             setIsFetching(false);
         } catch (error) {
-            console.error('Error fetching gadget details:', error);
-            setStringErr(error.reasons != null && error.reasons?.length > 0 ? error?.reasons[0]?.message : "Lỗi mạng vui lòng thử lại sau");
+            console.log('Error fetching gadget details:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
             setIsError(true);
             setIsFetching(false);
         }
@@ -95,7 +105,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
             try {
                 await api.put(`/gadgets/${route.params.gadgetId}/${newIsForSale ? "set-for-sale" : "set-not-for-sale"}`);
             } catch (error) {
-                console.error('Error updating gadget details:', error);
+                console.log('Error updating gadget details:', error);
                 setStringErr(
                     error.response?.data?.reasons[0]?.message ?
                         error.response.data.reasons[0].message
@@ -181,7 +191,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     )}
                     keyExtractor={(item, index) => index.toString()}
                     getItemLayout={(data, index) => (
-                        { length: width, offset: width * index, index }
+                        { length: ScreenWidth, offset: ScreenWidth * index, index }
                     )}
                 />
             </View>
@@ -566,8 +576,8 @@ const styles = StyleSheet.create({
     },
     mainimageBtn: {
         position: 'relative',
-        width: width,
-        height: width,
+        width: ScreenWidth,
+        height: ScreenWidth,
     },
     mainImage: {
         width: '100%',
@@ -837,7 +847,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.9)',
     },
     modalImage: {
-        width: width,
+        width: ScreenWidth,
         height: '100%',
     },
     closeButton: {

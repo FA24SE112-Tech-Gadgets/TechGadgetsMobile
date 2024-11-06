@@ -4,7 +4,6 @@ import useAuth from "../../utils/useAuth";
 import { Avatar, Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
-import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
 import { Feather, FontAwesome } from '@expo/vector-icons';
@@ -15,8 +14,6 @@ export default function SellerProfile() {
   const navigation = useNavigation();
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const { t } = useTranslation();
 
   const {
     logout,
@@ -62,7 +59,7 @@ export default function SellerProfile() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
-              {user.seller.shopName?.charAt(0)}
+              {user.seller?.shopName?.charAt(0)}
             </Text>
           </View>
         )}
@@ -71,7 +68,7 @@ export default function SellerProfile() {
           numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
           ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
         >
-          {user.seller.shopName}
+          {user.seller?.shopName}
         </Text>
       </View>
 

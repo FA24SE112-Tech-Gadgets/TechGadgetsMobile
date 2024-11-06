@@ -40,10 +40,13 @@ export default function SellerGadgetByCategory({ navigation, route }) {
 
     const [isSearching, setIsSearching] = useState(false);
 
+    //Reset to default state
     useFocusEffect(
         useCallback(() => {
             setGadgets([]);
             setCurrentPage(1);
+            setSearchQuery("");
+            setSortOption("PRICE");
         }, [])
     );
 
@@ -201,7 +204,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     <TextInput
                         placeholder={"Tìm kiếm sản phẩm"}
                         returnKeyType="search"
-                        style={{ fontSize: 20 }}
+                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
                         value={searchQuery}
                         onChangeText={(query) => setSearchQuery(query)}
                     />

@@ -57,6 +57,7 @@ export default function App() {
           }
         },
         SellerGadgetByCategory: "SellerGadgetByCategory",
+        SellerOrderDetail: "SellerOrderDetail",
         GadgetSellerDetail: "GadgetSellerDetail",
         GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",

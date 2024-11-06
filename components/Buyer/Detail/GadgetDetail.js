@@ -49,7 +49,7 @@ export default function GadgetDetail({ route, navigation }) {
       const response = await api.get(`/gadgets/${route.params.gadgetId}`);
       setGadget(response.data);
     } catch (error) {
-      console.error('Error fetching gadget details:', error);
+      console.log('Error fetching gadget details:', error);
     }
   };
 

@@ -1,9 +1,11 @@
 import Clipboard from "@react-native-clipboard/clipboard";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ToastAndroid } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Snackbar } from "react-native-paper";
 
-const SellerOrderItem = ({ id, customer, amount, status, createdAt }) => {
+const SellerOrderItem = ({ id, customer, amount, status, createdAt, setSnackbarVisible, setSnackbarMessage }) => {
+
     function formatCurrency(number) {
         // Convert the number to a string
         if (number) {
@@ -18,7 +20,8 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt }) => {
 
     const copyToClipboard = (text) => {
         Clipboard.setString(text);
-        ToastAndroid.show("Sao chép thành công", ToastAndroid.CENTER);
+        setSnackbarMessage("Sao chép thành công");
+        setSnackbarVisible(true);
     };
 
     const formatVietnamDate = (time) => {
@@ -96,7 +99,8 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt }) => {
 
                 <View style={{
                     flexDirection: "row",
-                    gap: 5
+                    gap: 5,
+                    alignItems: "center"
                 }}>
                     <Text style={styles.sellerOrderTxt}>
                         Tình trạng:
@@ -104,7 +108,14 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt }) => {
 
                     <Text style={[{
                         color: status === "Success" ? "#50C346" : status === "Pending" ? "#FFC100" : "#C40C0C",
-                        fontSize: 16
+                        fontSize: 16,
+                        fontWeight: "500",
+                        backgroundColor: "#f9f9f9",
+                        paddingHorizontal: 10,
+                        paddingVertical: 5,
+                        borderRadius: 10,
+                        borderWidth: 0.5,
+                        borderColor: "rgba(0, 0, 0, 0.5)"
                     }]} numberOfLines={1} ellipsizeMode="tail">
                         {status === "Success" ? "Đã giao" : status === "Pending" ? "Chờ xử lý" : "Đã hủy"}
                     </Text>

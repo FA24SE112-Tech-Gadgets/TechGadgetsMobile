@@ -10,7 +10,7 @@ import {
     Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
 import { useDebounce } from 'use-debounce';
@@ -19,16 +19,22 @@ import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
 import ErrModal from '../CustomComponents/ErrModal';
 import SellerOrderItem from './SellerOrder/SellerOrderItem';
+import { Snackbar } from 'react-native-paper';
 
 export default function SellerOrders() {
-    const [sellerOrders, setSellerOrders] = useState({});
+    const [sellerOrders, setSellerOrders] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+
+    const navigation = useNavigation();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchBounceString] = useDebounce(searchQuery, 1000);
 
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const [modalVisible, setModalVisible] = useState(false);
-    const [sortOption, setSortOption] = useState("PRICE");
+    const [sortOption, setSortOption] = useState("Pending");
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
@@ -38,23 +44,26 @@ export default function SellerOrders() {
 
     const [isSearching, setIsSearching] = useState(false);
 
+    //Reset sort option and search query
     useFocusEffect(
         useCallback(() => {
-            setSellerOrders([]);
+            setSortOption("Pending")
+            setSearchQuery("");
             setCurrentPage(1);
+            setSellerOrders([]);
         }, [])
     );
 
-    const filter = sortOption == "PRICE" ? `SortColumn=price` : `SortColumn=name`;
+    const filter = sortOption == "Success" ? `Status=Success` : sortOption == "Pending" ? `Status=Pending` : `Status=Cancelled`;
 
-    // Gadget pagination
+    // Seller order pagination
     useFocusEffect(
         useCallback(() => {
             const init = async () => {
                 try {
                     setIsFetching(true);
                     const res = await api.get(
-                        `/seller-orders?Status=Cancelled&Page=${currentPage}&PageSize=10`
+                        `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
                     setHasMoreData(newData.length > 0);
@@ -95,7 +104,7 @@ export default function SellerOrders() {
             const fetchItems = async () => {
                 try {
                     const res = await api.get(
-                        `/seller-orders?Status=Cancelled&Page=1&PageSize=10`
+                        `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
                     );
                     const newData = res.data.items;
 
@@ -128,9 +137,10 @@ export default function SellerOrders() {
             const init = async () => {
                 try {
                     const url =
-                        option == "PRICE"
-                            ? `/seller-orders?Status=Cancelled&Page=1&PageSize=10`
-                            : `/seller-orders?Status=Cancelled&Page=1&PageSize=10`;
+                        option == "Success"
+                            ? `/seller-orders?Status=Success&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
+                            : option == "Pending" ? `/seller-orders?Status=Pending&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
+                                : `/seller-orders?Status=Cancelled&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`;
                     const res = await api.get(url);
                     const newData = res.data.items;
 
@@ -197,9 +207,9 @@ export default function SellerOrders() {
                 >
                     <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
                     <TextInput
-                        placeholder={"Tìm kiếm sản phẩm"}
+                        placeholder={"Nhập sđt"}
                         returnKeyType="search"
-                        style={{ fontSize: 20 }}
+                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
                         value={searchQuery}
                         onChangeText={(query) => setSearchQuery(query)}
                     />
@@ -233,13 +243,13 @@ export default function SellerOrders() {
                     setModalVisible={setModalVisible}
                     sortOption={sortOption}
                     handleSortOption={handleSortOption}
-                    disabled={sellerOrders.length == 0}
+                    disabled={isError}
                 />
             </View>
 
             <View
                 style={{
-                    height: ScreenHeight / 1.16,
+                    height: ScreenHeight / 1.25,
                 }}
             >
                 {sellerOrders.length === 0 ? (
@@ -270,7 +280,7 @@ export default function SellerOrders() {
                                     textAlign: "center",
                                 }}
                             >
-                                {isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
+                                {isSearching ? "Không tìm thấy đơn hàng nào" : "Không có đơn hàng nào"}
                             </Text>
                         </View>
                     </View>
@@ -282,11 +292,13 @@ export default function SellerOrders() {
                             renderItem={({ item, index }) => (
                                 <Pressable
                                     onPress={() =>
-                                        navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                        navigation.navigate('SellerOrderDetail', { sellerOrderId: item.id })
                                     }
                                 >
                                     <SellerOrderItem
                                         {...item}
+                                        setSnackbarMessage={setSnackbarMessage}
+                                        setSnackbarVisible={setSnackbarVisible}
                                     />
                                     {index < sellerOrders.length - 1 && (
                                         <Divider style={{ marginVertical: 14 }} />
@@ -303,6 +315,15 @@ export default function SellerOrders() {
                     </View>
                 )}
             </View>
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 1 }}
+            >
+                {snackbarMessage}
+            </Snackbar>
 
             <ErrModal
                 stringErr={stringErr}
@@ -387,7 +408,7 @@ const SortModal = ({
                             onPress={() => handleSortOption("Success")}
                         >
                             <Text style={styles.modalOptionText}>Đã giao</Text>
-                            {sortOption === "PRICE" ? (
+                            {sortOption === "Success" ? (
                                 <Icon
                                     type="material-community"
                                     name="check-circle"
