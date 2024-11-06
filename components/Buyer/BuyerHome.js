@@ -34,7 +34,7 @@ export default function BuyerHome() {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [favorites, setFavorites] = useState({});
   const [currentPage, setCurrentPage] = useState(1);

@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Modal,
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Feather } from '@expo/vector-icons';
+import { Snackbar } from 'react-native-paper';
+import Modal from 'react-native-modal';
 import api from '../../Authorization/api';
 
 const { width } = Dimensions.get('window');
@@ -23,23 +24,24 @@ export default function GadgetDetail({ route, navigation }) {
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [buyNowModalVisible, setBuyNowModalVisible] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
   const formatVietnamDate = (time) => {
     const date = new Date(time);
     const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
     const day = vietnamTime.getUTCDate().toString().padStart(2, '0');
-    const month = (vietnamTime.getUTCMonth() + 1).toString().padStart(2, '0'); // Tháng bắt đầu từ 0
+    const month = (vietnamTime.getUTCMonth() + 1).toString().padStart(2, '0');
     const year = vietnamTime.getUTCFullYear();
 
     return `${day}/${month}/${year}`;
   };
 
-
-
   useEffect(() => {
     fetchGadgetDetail();
   }, []);
 
-  // Reset expanded state when switching tabs
   useEffect(() => {
     setIsContentExpanded(false);
   }, [activeTab]);
@@ -53,20 +55,53 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
+  const addToCart = async () => {
+    try {
+      const response = await api.put('/cart/old', {
+        gadgetId: gadget.id,
+        quantity: quantity
+      });
+      setSnackbarMessage('Sản phẩm đã được thêm vào giỏ hàng');
+      setSnackbarVisible(true);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setSnackbarMessage('Không thể thêm sản phẩm vào giỏ hàng');
+      setSnackbarVisible(true);
+    }
+  };
+
+  const buyNow = async () => {
+    try {
+      const response = await api.post('/order/now', {
+        gadgetId: gadget.id,
+        quantity: quantity
+      });
+      setBuyNowModalVisible(false);
+      setSnackbarMessage('Đơn hàng đã được tạo thành công');
+      setSnackbarVisible(true);
+    } catch (error) {
+      console.error('Error buying now:', error);
+      setBuyNowModalVisible(false);
+      setSnackbarMessage('Không thể tạo đơn hàng');
+      setSnackbarVisible(true);
+    }
+  };
+
   if (!gadget) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text>Đang tải...</Text>
       </View>
     );
   }
 
   const ImageGalleryModal = () => (
     <Modal
-      animationType="slide"
-      transparent={true}
-      visible={imageModalVisible}
-      onRequestClose={() => setImageModalVisible(false)}
+      isVisible={imageModalVisible}
+      onBackdropPress={() => setImageModalVisible(false)}
+      onBackButtonPress={() => setImageModalVisible(false)}
+      useNativeDriver
+      hideModalContentWhileAnimating
     >
       <View style={styles.modalContainer}>
         <TouchableOpacity
@@ -97,6 +132,44 @@ export default function GadgetDetail({ route, navigation }) {
     </Modal>
   );
 
+  const BuyNowModal = () => (
+    <Modal
+      isVisible={buyNowModalVisible}
+      onBackdropPress={() => setBuyNowModalVisible(false)}
+      onBackButtonPress={() => setBuyNowModalVisible(false)}
+      useNativeDriver
+      hideModalContentWhileAnimating
+    >
+      <View style={styles.buyNowModalContent}>
+        <Text style={styles.buyNowModalTitle}>Xác nhận mua hàng</Text>
+        <Image
+          source={{ uri: gadget.thumbnailUrl }}
+          style={styles.buyNowModalImage}
+          resizeMode="contain"
+        />
+        <Text style={styles.buyNowModalProductName}>{gadget.name}</Text>
+        <Text style={styles.buyNowModalQuantity}>Số lượng: {quantity}</Text>
+        <Text style={styles.buyNowModalPrice}>
+          Tổng tiền: {((gadget.discountPrice || gadget.price) * quantity).toLocaleString('vi-VN')} ₫
+        </Text>
+        <View style={styles.buyNowModalButtons}>
+          <TouchableOpacity
+            style={[styles.buyNowModalButton, styles.buyNowModalCancelButton]}
+            onPress={() => setBuyNowModalVisible(false)}
+          >
+            <Text style={styles.buyNowModalButtonText}>Hủy</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.buyNowModalButton, styles.buyNowModalConfirmButton]}
+            onPress={buyNow}
+          >
+            <Text style={styles.buyNowModalButtonText}>Xác nhận</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
       <ScrollView>
@@ -112,13 +185,11 @@ export default function GadgetDetail({ route, navigation }) {
               <Text style={styles.discountBadgeText}>-{gadget.discountPercentage}%</Text>
             </View>
           )}
-          {/* Watermark "Ngừng kinh doanh" if isForSale is false */}
           {!gadget.isForSale && (
             <View style={styles.soldOutWatermark}>
               <Text style={styles.soldOutText}>Ngừng kinh doanh</Text>
             </View>
           )}
-          {/* Back Button */}
           <View style={styles.header}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -127,8 +198,6 @@ export default function GadgetDetail({ route, navigation }) {
               <AntDesign name="arrowleft" size={24} color="white" />
             </TouchableOpacity>
           </View>
-
-          {/* Brand Logo */}
           <View style={styles.brandLogoContainer}>
             <Image
               source={{ uri: gadget.brand.logoUrl }}
@@ -220,7 +289,6 @@ export default function GadgetDetail({ route, navigation }) {
                       </Text>
                     </View>
                   </View>
-
                   {index < (isContentExpanded ? gadget.specificationValues.length - 1 : 3) && (
                     <View style={styles.separator} />
                   )}
@@ -245,30 +313,34 @@ export default function GadgetDetail({ route, navigation }) {
             </View>
           ) : (
             <View style={styles.descContainer}>
-              {gadget.gadgetDescriptions
-                .sort((a, b) => a.index - b.index)
-                .slice(0, isContentExpanded ? undefined : 2)
-                .map((desc, index) => (
-                  <View key={index} style={styles.descriptionItem}>
-                    {desc.type === 'Image' ? (
-                      <Image
-                        source={{ uri: desc.value }}
-                        style={styles.descriptionImage}
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      <Text
-                        style={[
-                          styles.descriptionText,
-                          desc.type === 'BoldText' && styles.boldText,
-                        ]}
-                      >
-                        {desc.value}
-                      </Text>
-                    )}
-                  </View>
-                ))}
-              {gadget.gadgetDescriptions.length > 2 && (
+              {gadget.gadgetDescriptions && gadget.gadgetDescriptions.length > 0 ? (
+                gadget.gadgetDescriptions
+                  .sort((a, b) => a.index - b.index)
+                  .slice(0, isContentExpanded ? undefined : 2)
+                  .map((desc, index) => (
+                    <View key={index} style={styles.descriptionItem}>
+                      {desc.type === 'Image' ? (
+                        <Image
+                          source={{ uri: desc.value }}
+                          style={styles.descriptionImage}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <Text
+                          style={[
+                            styles.descriptionText,
+                            desc.type === 'BoldText' && styles.boldText,
+                          ]}
+                        >
+                          {desc.value}
+                        </Text>
+                      )}
+                    </View>
+                  ))
+              ) : (
+                <Text style={styles.noReviewText}>Chưa có bài viết đánh giá nào</Text>
+              )}
+              {gadget.gadgetDescriptions && gadget.gadgetDescriptions.length > 2 && (
                 <TouchableOpacity
                   style={styles.expandButton}
                   onPress={() => setIsContentExpanded(!isContentExpanded)}
@@ -296,32 +368,41 @@ export default function GadgetDetail({ route, navigation }) {
             onPress={() => setQuantity(Math.max(1, quantity - 1))}
             style={styles.quantityButton}
           >
-            <AntDesign name="minus" size={20} color="black" />
+            <AntDesign name="minus" size={20} color="#333" />
           </TouchableOpacity>
           <Text style={styles.quantityText}>{quantity}</Text>
           <TouchableOpacity
             onPress={() => setQuantity(Math.min(gadget.quantity, quantity + 1))}
             style={styles.quantityButton}
           >
-            <AntDesign name="plus" size={20} color="black" />
+            <AntDesign name="plus" size={20} color="#333" />
           </TouchableOpacity>
         </View>
         <TouchableOpacity
-          style={styles.addToCartButton}
-          onPress={() => {
-            // Add to cart logic here
-          }}
+          style={styles.cartButton}
+          onPress={addToCart}
         >
-          <LinearGradient
-            colors={['#FFFFFF', '#fecc80']}
-            style={styles.addToCartGradient}
-          >
-            <Text style={styles.addToCartText}>Thêm vào giỏ hàng</Text>
-          </LinearGradient>
+          <Feather name="shopping-cart" size={24} color="#fea128" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buyNowButton}
+          onPress={() => setBuyNowModalVisible(true)}
+        >
+          <Text style={styles.buyNowButtonText}>Mua ngay</Text>
         </TouchableOpacity>
       </View>
 
       <ImageGalleryModal />
+      <BuyNowModal />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={1500}
+        wrapperStyle={{ bottom: 0, zIndex: 1 }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </LinearGradient>
   );
 }
@@ -551,40 +632,53 @@ const styles = StyleSheet.create({
   boldText: {
     fontWeight: 'bold',
   },
+  noReviewText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
+  },
   bottomBar: {
     flexDirection: 'row',
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     backgroundColor: 'white',
+    alignItems: 'center',
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-  },
-  quantityButton: {
-    padding: 8,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
+    marginRight: 12,
+  },
+  quantityButton: {
+    padding: 8,
   },
   quantityText: {
     paddingHorizontal: 16,
     fontSize: 18,
   },
-  addToCartButton: {
-    flex: 1,
+  cartButton: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#fea128',
+    borderRadius: 8,
+    marginRight: 12,
   },
-  addToCartGradient: {
-    padding: 16,
+  buyNowButton: {
+    flex: 1,
+    backgroundColor: '#fea128',
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  addToCartText: {
+  buyNowButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fea128',
   },
   modalContainer: {
     flex: 1,
@@ -600,5 +694,58 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 1,
     padding: 8,
+  },
+  buyNowModalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buyNowModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  buyNowModalImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
+  buyNowModalProductName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  buyNowModalQuantity: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  buyNowModalPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fea128',
+    marginBottom: 15,
+  },
+  buyNowModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  buyNowModalButton: {
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  buyNowModalCancelButton: {
+    backgroundColor: '#ddd',
+  },
+  buyNowModalConfirmButton: {
+    backgroundColor: '#fea128',
+  },
+  buyNowModalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
