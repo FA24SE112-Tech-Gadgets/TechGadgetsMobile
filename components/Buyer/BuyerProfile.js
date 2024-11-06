@@ -172,7 +172,7 @@ export default function BuyerProfile() {
         <Divider />
 
         {/* Quản lý yêu cầu */}
-        <Pressable
+        {/* <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -200,6 +200,42 @@ export default function BuyerProfile() {
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
               Quản lý yêu cầu
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+        </Pressable>
+        <Divider /> */}
+
+           {/* Ví của tôi*/}
+           <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => {
+            navigation.navigate("BuyerWallet");
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <FontAwesome
+                name="money"
+                size={23}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Ví của tôi
             </Text>
           </View>
 

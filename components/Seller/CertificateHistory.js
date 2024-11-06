@@ -1,16 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Pressable, Modal, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Pressable, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator } from 'react-native';
 import api from '../Authorization/api';
 import CertificateDetail from './CertificateDetail';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from '@react-navigation/native';
 import useAuth from "../../utils/useAuth";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import ErrModal from '../CustomComponents/ErrModal';
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
+
+  const [stringErr, setStringErr] = useState("");
+  const [isError, setIsError] = useState(false);
+
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPopupNotiOpen, setIsPopupNotiOpen] = useState(false);
@@ -19,42 +30,71 @@ const CertificateHistory = () => {
   } = useAuth();
   const navigation = useNavigation();
 
-  // useEffect(() => {
-  //   const fetchApplications = async () => {
-  //     try {
-  //       const response = await api.get("/seller-applications");
-  //       setApplications(response.data.items);
-  //       setLoading(false);
-  //     } catch (err) {
-  //       setError('Không thể lấy danh sách đơn đăng ký');
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchApplications();
-  // }, []);
+  //Reset sort option and search query
+  useFocusEffect(
+    useCallback(() => {
+      setCurrentPage(1);
+      setApplications([]);
+    }, [])
+  );
 
+  // Seller application pagination
   useFocusEffect(
     useCallback(() => {
       const fetchApplications = async () => {
         try {
-          const response = await api.get("/seller-applications");
+          setIsFetching(true);
+          const response = await api.get(`/seller-applications?Page=${currentPage}&PageSize=10`);
           const newApplications = response.data.items;
-          setApplications(response.data.items);
-          setApplications(newApplications);
+          setHasMoreData(newApplications.length > 0);
           setLoading(false);
+          setIsFetching(false);
+
+          if (newApplications.length == 0) {
+            console.log("No more data to fetch");
+            return; // Stop the process if there is no more data
+          }
+
+          setApplications(newApplications);
           const approvedApp = newApplications.find(app => app.status === 'Approved');
           if (approvedApp) {
             setIsPopupNotiOpen(true);
           }
 
         } catch (err) {
-          setError('Không thể lấy danh sách đơn đăng ký');
+          setStringErr(
+            err.response?.data?.reasons[0]?.message ?
+              err.response.data.reasons[0].message
+              :
+              "Lỗi mạng vui lòng thử lại sau"
+          );
+          setIsError(true);
+          setIsFetching(false);
           setLoading(false);
         }
       };
       fetchApplications();
-    }, [])
+    }, [currentPage])
   );
+
+  const handleScroll = () => {
+    if (!isFetching && hasMoreData) {
+      setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+    }
+  };
+
+  const renderFooter = () => {
+    if (!isFetching) return null;
+    return (
+      <View style={{
+        padding: 5,
+        alignItems: 'center'
+      }}>
+        <ActivityIndicator color={"#ed8900"} />
+      </View>
+    );
+  };
+
   const handleLogout = () => {
     logout();
     navigation.navigate('Login');
@@ -65,15 +105,44 @@ const CertificateHistory = () => {
       setSelectedApplication(response.data);
       setIsPopupOpen(true);
     } catch (err) {
-      console.error('Không thể lấy chi tiết đơn đăng ký', err);
+      console.log('Không thể lấy chi tiết đơn đăng ký', err);
     }
   };
 
   if (loading) return (
-    <View style={styles.loadingContainer}>
-      <View style={styles.loadingIndicator} />
-      <Text style={styles.loadingText}>Loading...</Text>
-    </View>
+    <LinearGradient colors={['#F9F9F9', '#fea92866']} style={styles.loadingContainer}>
+      <View
+        style={{
+          flex: 1,
+          height: ScreenHeight / 1.5,
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <LottieView
+            source={require("../../assets/animations/catRole.json")}
+            style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+            autoPlay
+            loop
+            speed={0.8}
+          />
+          <Text
+            style={{
+              fontSize: 18,
+              width: ScreenWidth / 1.5,
+              textAlign: "center",
+            }}
+          >
+            Đang lấy dữ liệu
+          </Text>
+        </View>
+      </View>
+    </LinearGradient>
   );
 
   if (error) return (
@@ -97,44 +166,79 @@ const CertificateHistory = () => {
           autoPlay
           loop={false}
         />
-
-        <ScrollView style={styles.scrollView}>
-          <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
-          {applications.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Bạn chưa có đơn nào chờ xét duyệt</Text>
+        <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
+        {applications.length === 0 ? (
+          <View
+            style={{
+              flex: 1,
+              height: ScreenHeight / 1.5,
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LottieView
+                source={require("../../assets/animations/catRole.json")}
+                style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                autoPlay
+                loop
+                speed={0.8}
+              />
+              <Text
+                style={{
+                  fontSize: 18,
+                  width: ScreenWidth / 1.5,
+                  textAlign: "center",
+                }}
+              >
+                Không có đơn nào
+              </Text>
             </View>
-          ) : (
-            <View style={styles.tableContainer}>
-              <View style={styles.tableHeader}>
-                <Text style={styles.tableHeaderText}>Tên Cửa Hàng</Text>
-                <Text style={styles.tableHeaderText}>Mô Hình Kinh Doanh</Text>
-                <Text style={styles.tableHeaderText}>Trạng Thái</Text>
-                <Text style={styles.tableHeaderText}>Ngày Tạo</Text>
-                <Text style={styles.tableHeaderText}>Hành Động</Text>
-              </View>
-              {applications.map((app) => (
-                <View key={app.id} style={styles.tableRow}>
-                  <Text style={styles.tableCellText}>{app.shopName}</Text>
+          </View>
+        ) : (
+          <View style={styles.tableContainer}>
+            <View style={styles.tableHeader}>
+              <Text style={styles.tableHeaderText}>Tên Cửa Hàng</Text>
+              <Text style={styles.tableHeaderText}>Mô Hình Kinh Doanh</Text>
+              <Text style={styles.tableHeaderText}>Trạng Thái</Text>
+              <Text style={styles.tableHeaderText}>Ngày Tạo</Text>
+              <Text style={styles.tableHeaderText}>Hành Động</Text>
+            </View>
+            <FlatList
+              data={applications}
+              keyExtractor={item => item.id}
+              renderItem={({ item, index }) => (
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableCellText}>{item.shopName}</Text>
                   <Text style={styles.tableCellText}>
-                    {app.businessModel === 'BusinessHousehold' ? 'Hộ Kinh Doanh' :
-                      app.businessModel === 'Personal' ? 'Cá Nhân' :
-                        app.businessModel === 'Company' ? 'Công Ty' : app.businessModel}
+                    {item.businessModel === 'BusinessHousehold' ? 'Hộ Kinh Doanh' :
+                      item.businessModel === 'Personal' ? 'Cá Nhân' :
+                        item.businessModel === 'Company' ? 'Công Ty' : item.businessModel}
                   </Text>
-                  <View style={[styles.statusContainer, app.status === 'Pending' ? styles.pendingStatus : app.status === 'Approved' ? styles.approvedStatus : styles.rejectedStatus]}>
+                  <View style={[styles.statusContainer, item.status === 'Pending' ? styles.pendingStatus : item.status === 'Approved' ? styles.approvedStatus : styles.rejectedStatus]}>
                     <Text style={styles.statusText}>
-                      {app.status === 'Pending' ? 'Đang Chờ' : app.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}
+                      {item.status === 'Pending' ? 'Đang Chờ' : item.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}
                     </Text>
                   </View>
-                  <Text style={styles.tableCellText}>{new Date(app.createdAt).toLocaleString()}</Text>
-                  <TouchableOpacity onPress={() => handleViewDetails(app.id)} style={styles.actionButton}>
+                  <Text style={styles.tableCellText}>{new Date(item.createdAt).toLocaleString()}</Text>
+                  <TouchableOpacity onPress={() => handleViewDetails(item.id)} style={styles.actionButton}>
                     <Text style={styles.actionButtonText}>Xem</Text>
                   </TouchableOpacity>
                 </View>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+              )}
+              onEndReached={handleScroll}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={renderFooter}
+              initialNumToRender={10}
+              showsVerticalScrollIndicator={false}
+              overScrollMode="never"
+            />
+          </View>
+        )}
       </LinearGradient>
       <Modal
         visible={isPopupNotiOpen}
@@ -155,6 +259,11 @@ const CertificateHistory = () => {
         </TouchableWithoutFeedback>
       </Modal>
 
+      <ErrModal
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
 
       {isPopupOpen && selectedApplication && (
         <CertificateDetail

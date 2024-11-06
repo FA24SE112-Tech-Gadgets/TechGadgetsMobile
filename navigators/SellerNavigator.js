@@ -5,11 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../utils/useAuth';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import SellerProfile from '../components/Seller/SellerProfile';
-import { Icon as IconRneui } from "@rneui/base";
 import AuthRoute from '../components/Authorization/AuthRoute';
 import SellerHome from '../components/Seller/SellerHome';
-import SellerVouchers from '../components/Seller/SellerVouchers';
-import SellerMarketing from '../components/Seller/SellerMarketing';
+import SellerOrders from '../components/Seller/SellerOrders';
 import SellerNotification from '../components/Seller/SellerNotification';
 const Tab = createBottomTabNavigator();
 
@@ -68,36 +66,21 @@ const SellerNavigator = () => {
                 {() => (
                     <AuthRoute>
                         <SellerHome />
-                     </AuthRoute>
-                )}
-            </Tab.Screen>
-            <Tab.Screen
-                name='SellerVouchers'
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="discount" size={+size} color={color} />
-                    ),
-                    tabBarLabel: "Mã giảm giá"
-                }}
-            >
-                {() => (
-                    <AuthRoute>
-                        <SellerVouchers />
                     </AuthRoute>
                 )}
             </Tab.Screen>
             <Tab.Screen
-                name='SellerMarketing'
+                name='SellerOrders'
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <IconRneui type="material-community" name="chart-box-outline" size={+size} color={color} />
+                        <Ionicons name="document-text-sharp" size={+size} color={color} />
                     ),
-                    tabBarLabel: "Marketing"
+                    tabBarLabel: "Đơn hàng"
                 }}
             >
                 {() => (
                     <AuthRoute>
-                        <SellerMarketing />
+                        <SellerOrders />
                     </AuthRoute>
                 )}
             </Tab.Screen>

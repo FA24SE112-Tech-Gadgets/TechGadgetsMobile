@@ -4,9 +4,8 @@ import useAuth from "../../utils/useAuth";
 import { Avatar, Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
-import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
 import { Feather, FontAwesome } from '@expo/vector-icons';
 
 export default function SellerProfile() {
@@ -16,9 +15,8 @@ export default function SellerProfile() {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const { t } = useTranslation();
-
   const {
+    logout,
     user,
   } = useAuth();
 
@@ -60,13 +58,17 @@ export default function SellerProfile() {
               justifyContent: "center",
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-              {user.fullName?.charAt(0)}
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
+              {user.seller?.shopName?.charAt(0)}
             </Text>
           </View>
         )}
-        <Text style={{ fontSize: 24, fontWeight: "500", color: "white" }}>
-          {user.fullName}
+        <Text
+          style={{ fontSize: 24, fontWeight: "500", color: "white", overflow: "hidden", width: ScreenWidth / 1.3 }}
+          numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
+          ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
+        >
+          {user.seller?.shopName}
         </Text>
       </View>
 
@@ -224,10 +226,16 @@ export default function SellerProfile() {
         </Pressable>
       </View>
 
-      {/* Quay về trang mua sắm */}
+      {/* Đăng xuất */}
       <Pressable
         onPress={() => {
-          navigation.replace("StackBuyerHome")
+          logout();
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,  // Starts at the first screen in the stack
+              routes: [{ name: 'Login' }],  // Replace 'Login' with the name of your Login screen
+            })
+          );
         }}
       >
         <View
@@ -237,19 +245,10 @@ export default function SellerProfile() {
             alignItems: "center",
             backgroundColor: "#ed8900",
             borderRadius: 10,
-            flexDirection: "row",
-            justifyContent: "center",
-            gap: 10
           }}
         >
-          <Feather
-            name="shopping-bag"
-            size={20}
-            color={"white"}
-          />
-
-          <Text style={{ fontSize: 18, fontWeight: "500", color: "white" }}>
-            Quay về trang mua sắm
+          <Text style={{ fontSize: 15, fontWeight: "500", color: "white" }}>
+            Đăng xuất
           </Text>
         </View>
       </Pressable>
