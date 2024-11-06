@@ -9,7 +9,7 @@ const LoadingScreen = () => {
 				style={{ width: '100%', height: '100%', position: 'absolute' }}
 				autoPlay
 				loop
-				speed={0.8}
+				speed={1.5}
 			/>
 		</View>
 	);

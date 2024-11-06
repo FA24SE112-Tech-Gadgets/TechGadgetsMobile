@@ -20,11 +20,17 @@ import BusinessRegistrationCertificate from "../components/Seller/BusinessRegist
 import CertificateHistory from "../components/Seller/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
+import CategoryGadgets from "../components/Buyer/CategoryGadgets";
+import BuyerWallet from "../components/Buyer/BuyerWallet";
+import DepositHistory from "../components/Buyer/DepositHistory";
+import RefundHistory from "../components/Buyer/RefundHistory";
+import PaymentHistory from "../components/Buyer/PaymentHistory";
 import SellerGadgetByCategory from "../components/Seller/SellerGadgetByCategory";
 import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
 import SellerOrderDetail from "../components/Seller/SellerOrder/SellerOrderDetail";
 import SellerProfile from "../components/Seller/SellerProfile";
 import useAuth from "../utils/useAuth";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -141,7 +147,9 @@ const RootNavigator = () => {
         component={GadgetDetail}
         options={{ headerShown: false }}
       />
-
+      <Stack.Screen name="CategoryGadgets"
+        component={CategoryGadgets}
+      />
       <Stack.Screen name="AboutTechGadget" >
         {() => (
           <AuthRoute>
@@ -153,6 +161,34 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <BuyerPersonal />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="BuyerWallet" >
+        {() => (
+          <AuthRoute>
+            <BuyerWallet />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="DepositHistory" >
+        {() => (
+          <AuthRoute>
+            <DepositHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="RefundHistory" >
+        {() => (
+          <AuthRoute>
+            <RefundHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="PaymentHistory" >
+        {() => (
+          <AuthRoute>
+            <PaymentHistory />
           </AuthRoute>
         )}
       </Stack.Screen>

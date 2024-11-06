@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,11 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
+import { Icon } from "@rneui/base";
 import api from "../Authorization/api";
 import logo from "../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
-
+import { useDebounce } from 'use-debounce';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -30,31 +31,30 @@ const bannerArr = [
 export default function BuyerHome() {
   const [categories, setCategories] = useState([]);
   const [gadgets, setGadgets] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [favorites, setFavorites] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
   const flatListRef = useRef();
   const navigation = useNavigation();
 
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await api.get('/categories');
       setCategories(response.data.items);
-      response.data.items.forEach((category) => {
+      for (const category of response.data.items) {
         fetchGadgets(category.id);
-      });
+      }
     } catch (error) {
       console.log('Error fetching categories:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const fetchGadgets = async (categoryId) => {
     try {
@@ -65,6 +65,42 @@ export default function BuyerHome() {
     }
   };
 
+  const searchGadgets = useCallback(async () => {
+    if (!debouncedSearchQuery) {
+      setSearchResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
+      setSearchResults(response.data.items);
+    } catch (error) {
+      console.error('Error searching gadgets:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearchQuery, currentPage]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setCategories([]);
+      setGadgets({});
+      setSearchResults([]);
+      setCurrentPage(1);
+      fetchCategories();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (debouncedSearchQuery) {
+        searchGadgets();
+      } else {
+        setSearchResults([]);
+      }
+    }, [debouncedSearchQuery])
+  );
+
   const toggleFavorite = (gadgetId) => {
     setFavorites(prev => ({
       ...prev,
@@ -72,15 +108,15 @@ export default function BuyerHome() {
     }));
   };
 
-  const renderGadget = ({ item }) => (
+  const renderGadget = ({ item, isSearchResult = false }) => (
     <TouchableOpacity
-      style={[styles.gadgetCard, { backgroundColor: '#FFFFFF' }]}
+      style={[styles.gadgetCard, isSearchResult && styles.searchResultCard]}
       onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.id })}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, isSearchResult && styles.searchResultImageContainer]}>
         <Image
           source={{ uri: item.thumbnailUrl }}
-          style={styles.gadgetImage}
+          style={[styles.gadgetImage, isSearchResult && styles.searchResultImage]}
           resizeMode="contain"
         />
         {!item.isForSale && (
@@ -104,20 +140,15 @@ export default function BuyerHome() {
           />
         </TouchableOpacity>
       </View>
-      <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
+      <Text style={[styles.gadgetName, isSearchResult && styles.searchResultName]} numberOfLines={2}>{item.name}</Text>
       <View style={styles.priceContainer}>
         {item.discountPercentage > 0 ? (
           <>
-            <Text style={styles.originalPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
-            <Text style={styles.discountPrice}>{item.discountPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
-            {/* {item.discountExpiredDate && (
-              <Text style={styles.expiryDate}>
-                HSD: {new Date(item.discountExpiredDate).toLocaleDateString('vi-VN')}
-              </Text>
-            )} */}
+            <Text style={[styles.originalPrice, isSearchResult && styles.searchResultOriginalPrice]}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
+            <Text style={[styles.discountPrice, isSearchResult && styles.searchResultDiscountPrice]}>{item.discountPrice.toLocaleString().replace(/,/g, '.')} ₫</Text>
           </>
         ) : (
-          <Text style={styles.gadgetPrice}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
+          <Text style={[styles.gadgetPrice, isSearchResult && styles.searchResultPrice]}>{item.price.toLocaleString().replace(/,/g, '.')} ₫</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -126,6 +157,10 @@ export default function BuyerHome() {
   const renderCategory = ({ item }) => {
     const categoryGadgets = gadgets[item.id] || [];
 
+    if (categoryGadgets.length <= 0) {
+      return null;
+    }
+
     return (
       <LinearGradient
         colors={['#FFFFFF', '#fea92866']}
@@ -133,7 +168,7 @@ export default function BuyerHome() {
       >
         <View style={styles.categoryHeader}>
           <Text style={styles.categoryName}>{item.name}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('CategoryGadgets', { categoryId: item.id, categoryName: item.name })}>
             <Text style={styles.viewAllText}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
@@ -152,10 +187,22 @@ export default function BuyerHome() {
     );
   };
 
+  const renderSearchResults = () => (
+    <FlatList
+      data={searchResults}
+      renderItem={({ item }) => renderGadget({ item, isSearchResult: true })}
+      keyExtractor={(item) => item.id.toString()}
+      numColumns={2}
+      contentContainerStyle={styles.searchResultsList}
+    />
+  );
+
   const goToNextPage = () => {
-    const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
-    flatListRef.current.scrollToIndex({ index: nextSlide, animated: true });
-    setCurrentSlide(nextSlide);
+    if (flatListRef.current) {
+      const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
+      flatListRef.current.scrollToIndex({ index: nextSlide, animated: true });
+      setCurrentSlide(nextSlide);
+    }
   };
 
   useFocusEffect(
@@ -184,61 +231,65 @@ export default function BuyerHome() {
         colors={['#FFFFFF', '#fea92866']}
         style={styles.header}
       >
-        <View
-          style={{
-            height: 40,
-            width: 40,
-            overflow: 'hidden',
-            borderRadius: 50,
-            justifyContent: "center",
-            alignItems: "center",
-            marginRight: 8,
-          }}
-        >
-          <Image
-            style={{
-              width: 48,
-              height: 48,
-            }}
-            source={logo}
-          />
-        </View>
         <View style={styles.searchContainer}>
+          <Icon type="font-awesome" name="search" size={23} color="#ed8900" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm"
+            placeholder="Tìm kiếm sản phẩm"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          <TouchableOpacity style={styles.searchButton}>
-            <AntDesign name="search1" size={24} color="white" />
-          </TouchableOpacity>
+        </View>
+        <View style={styles.logo}>
+          <Image source={logo} style={styles.logoImage} />
         </View>
       </LinearGradient>
 
-      <View style={styles.bannerContainer}>
-        <FlatList
-          data={bannerArr}
-          ref={flatListRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <Image
-              style={styles.bannerImage}
-              source={{ uri: item.image }}
+      {searchQuery ? (
+        searchResults.length > 0 ? (
+          renderSearchResults()
+        ) : (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsText}>Không tìm thấy từ khóa của bạn</Text>
+          </View>
+        )
+      ) : (
+        <>
+          <View style={styles.bannerContainer}>
+            <FlatList
+              data={bannerArr}
+              ref={flatListRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <Image
+                  style={styles.bannerImage}
+                  source={{ uri: item.image }}
+                />
+              )}
+              keyExtractor={(item) => item.id}
+              onLayout={() => {
+                if (flatListRef.current) {
+                  flatListRef.current.scrollToIndex({ index: 0, animated: false });
+                }
+              }}
+              getItemLayout={(data, index) => ({
+                length: screenWidth,
+                offset: screenWidth * index,
+                index,
+              })}
             />
-          )}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
+          </View>
 
-      <FlatList
-        data={categories}
-        renderItem={renderCategory}
-        keyExtractor={(item) => item.id}
-        style={styles.categoryList}
-      />
+          <FlatList
+            data={categories}
+            renderItem={renderCategory}
+            keyExtractor={(item) => item.id}
+            style={styles.categoryList}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -260,36 +311,32 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
-  logo: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    width: 45,
-    height: 45,
-    borderRadius: 80,
-    overflow: 'hidden',
-  },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9F9F9',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    height: screenWidth / 9,
   },
   searchInput: {
     flex: 1,
-    height: 40,
-    borderColor: 'black',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingLeft: 15,
-    marginRight: 10,
     fontSize: 16,
+    marginLeft: 10,
   },
-  searchButton: {
+  logo: {
+    width: 43,
+    height: 43,
+    borderRadius: 21.5,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 40,
-    height: 40,
-    backgroundColor: '#fea128',
-    borderRadius: 20,
+    marginLeft: 10,
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
   },
   imageContainer: {
     position: 'relative',
@@ -344,11 +391,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ed8900',
   },
-  expiryDate: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
   bannerContainer: {
     height: screenWidth * 0.5,
     marginBottom: 15,
@@ -393,7 +435,7 @@ const styles = StyleSheet.create({
   },
   gadgetCard: {
     width: (screenWidth - 40) / 3,
-    marginHorizontal: 5,
+    marginHorizontal:  5,
     borderRadius: 10,
     padding: 10,
     shadowColor: "#000",
@@ -404,6 +446,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    backgroundColor: '#FFFFFF',
   },
   gadgetImage: {
     width: '100%',
@@ -432,5 +475,40 @@ const styles = StyleSheet.create({
     height: 30,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  searchResultsList: {
+    paddingHorizontal: 10,
+  },
+  searchResultCard: {
+    width: (screenWidth - 30) / 2,
+    marginHorizontal: 5,
+    marginBottom: 10,
+  },
+  searchResultImageContainer: {
+    height: 180,
+  },
+  searchResultImage: {
+    height: 180,
+  },
+  searchResultName: {
+    fontSize: 16,
+  },
+  searchResultOriginalPrice: {
+    fontSize: 14,
+  },
+  searchResultDiscountPrice: {
+    fontSize: 18,
+  },
+  searchResultPrice: {
+    fontSize: 18,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
