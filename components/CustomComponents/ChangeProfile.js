@@ -67,7 +67,7 @@ export default function ChangeProfile() {
         avatarUrl: userData.avatarUrl || '',
       });
     } catch (error) {
-      console.error('Error fetching customer data:', error);
+      console.log('Error fetching customer data:', error);
       setStringErr('Không thể tải thông tin khách hàng');
       setIsError(true);
     }
@@ -166,7 +166,7 @@ export default function ChangeProfile() {
         console.log('User canceled the document selection');
       }
     } catch (error) {
-      console.error('Error picking document:', error);
+      console.log('Error picking document:', error);
       setStringErr('Có lỗi xảy ra khi chọn file. Vui lòng thử lại.');
       setIsError(true);
     }
@@ -337,8 +337,8 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     fontWeight: '500',
-    backgroundColor: '#fea92866', 
-    padding: 5, 
+    backgroundColor: '#fea92866',
+    padding: 5,
     borderRadius: 5,
   },
   input: {

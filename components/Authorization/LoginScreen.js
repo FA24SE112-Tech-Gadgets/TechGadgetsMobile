@@ -153,7 +153,7 @@ const LoginScreen = () => {
 
       navigation.replace('StackBuyerHome');
     } catch (error) {
-      console.error('API call error:', error);
+      console.log('API call error:', error);
     }
   };
 

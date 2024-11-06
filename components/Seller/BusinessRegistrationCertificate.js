@@ -181,10 +181,10 @@ export default function BusinessRegistrationCertificate() {
         const errorMessage = error.response.data.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
         Alert.alert('Lỗi', errorMessage);
       } else if (error.request) {
-        console.error('Request error:', error.request);
+        console.log('Request error:', error.request);
         Alert.alert('Lỗi', 'Không thể kết nối với máy chủ.');
       } else {
-        console.error('Error:', error.message);
+        console.log('Error:', error.message);
         Alert.alert('Lỗi', 'Đã xảy ra lỗi.');
       }
     }
