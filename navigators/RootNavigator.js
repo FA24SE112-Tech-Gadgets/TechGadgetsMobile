@@ -30,6 +30,7 @@ import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
 import SellerOrderDetail from "../components/Seller/SellerOrder/SellerOrderDetail";
 import SellerProfile from "../components/Seller/SellerProfile";
 import useAuth from "../utils/useAuth";
+import { WalletTrackingScreen } from "../components/Seller/WalletTracking/WalletTrackingScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -260,6 +261,13 @@ const RootNavigator = () => {
         {({ navigation, route }) => (
           <AuthRoute>
             <SellerOrderDetail navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="WalletTrackingScreen" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <WalletTrackingScreen navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

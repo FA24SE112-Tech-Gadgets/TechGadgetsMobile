@@ -62,7 +62,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData.length > 0);
+                    setHasMoreData(newData == null || res.data.hasNextPage);
                     setIsFetching(false);
 
                     if (newData.length == 0) {
