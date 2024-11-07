@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../utils/useAuth';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import SellerProfile from '../components/Seller/SellerProfile';
+import SellerProfile from '../components/Seller/SellerProfile/SellerProfile';
 import AuthRoute from '../components/Authorization/AuthRoute';
-import SellerHome from '../components/Seller/SellerHome';
-import SellerOrders from '../components/Seller/SellerOrders';
-import SellerNotification from '../components/Seller/SellerNotification';
+import SellerHome from '../components/Seller/SellerHome/SellerHome';
+import SellerOrders from '../components/Seller/SellerOrder/SellerOrders';
+import SellerNotification from '../components/Seller/SellerNotification/SellerNotification';
 const Tab = createBottomTabNavigator();
 
 const SellerNavigator = () => {

@@ -1,10 +1,10 @@
 import { View, Text, Pressable, TextInput } from "react-native";
 import React, { useCallback, useState } from "react";
-import useAuth from "../../utils/useAuth";
+import useAuth from "../../../utils/useAuth";
 import { Avatar, Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
-import ErrModal from "../CustomComponents/ErrModal";
+import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 
@@ -297,7 +297,7 @@ export default function SellerProfile() {
             if (user.seller == null) {
               handleOpenError("Vui lòng đăng ký thông tin người bán để sử dụng tính năng này.")
             } else {
-
+              navigation.navigate("SellerOrderReviews");
             }
           }}
         >

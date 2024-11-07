@@ -12,23 +12,26 @@ import api from "../../Authorization/api";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import LottieView from "lottie-react-native";
-import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
-import WalletTrackingItem from "./WalletTrackingItem";
+import ReviewItem from "./ReviewItem";
+import { Snackbar } from "react-native-paper";
 
-export function WalletTrackingScreen({ route, navigation }) {
-    const { t } = useTranslation();
-
+export function SellerOrderReviewsScreen({ route, navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
-    const [sortOption, setSortOption] = useState("DESC");
+    const [sortOption, setSortOption] = useState("NotReply");
 
     const [isFetching, setIsFetching] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
 
-    const [walletTrackings, setWalletTrackings] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const [createReplied, setIsCreateReplied] = useState(false);
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
@@ -36,35 +39,40 @@ export function WalletTrackingScreen({ route, navigation }) {
     //Reset to default state
     useFocusEffect(
         useCallback(() => {
-            setWalletTrackings([]);
+            setReviews([]);
             setCurrentPage(1);
-            setSortOption("DESC");
+            setSortOption("NotReply");
+            setIsCreateReplied(false);
         }, [])
     );
 
-    const filter = sortOption == "DESC" ? `SortByDate=DESC` : `SortByDate=ASC`;
+    const filter = sortOption == "NotReply" ? `FilterBy=NotReply` : `FilterBy=Replied`;
 
     const handleSortOption = (option) => {
         if (option != sortOption) {
             setSortOption(option);
             setModalVisible(false);
-            setWalletTrackings([]);
-            setCurrentPage(1);
+            setReviews([]);
             const init = async () => {
                 try {
+                    setIsFetching(true);
                     const url =
-                        option == "DESC"
-                            ? `/wallet-trackings?SortByDate=DESC&Page=${currentPage}&PageSize=10`
-                            : `/wallet-trackings?SortByDate=ASC&Page=${currentPage}&PageSize=10`;
+                        option == "NotReply"
+                            ? `/reviews/seller-order-items?SortByDate=DESC&FilterBy=NotReply&Page=1&PageSize=10`
+                            : `/reviews/seller-order-items?SortByDate=DESC&FilterBy=Replied&Page=1&PageSize=10`;
                     const res = await api.get(url);
                     const newData = res.data.items;
 
-                    if (newData != null || !res.data.hasNextPage) {
-                        console.log("No more data to fetch");
+                    setReviews(newData);
+                    setCurrentPage(2);
+
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                        setHasMoreData(false);
+                        console.log("No more data to fetch2");
                         return; // Stop the process if there is no more data
                     }
 
-                    setWalletTrackings(newData);
+                    setIsFetching(false);
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -80,26 +88,38 @@ export function WalletTrackingScreen({ route, navigation }) {
         }
     };
 
-    //Fetch wallet trackings
+    //For refresh page when send reply
+    useFocusEffect(
+        useCallback(() => {
+            if (createReplied) {
+                setReviews([]);
+                setCurrentPage(1);
+                handleSortOption(sortOption);
+                setIsCreateReplied(false);
+            }
+        }, [createReplied])
+    );
+
+    //Fetch reviews pagination
     useFocusEffect(
         useCallback(() => {
             const init = async () => {
                 try {
                     setIsFetching(true);
-                    const res = await api.get(
-                        `/wallet-trackings?${filter}&Page=${currentPage}&PageSize=10`
-                    );
 
+                    const res = await api.get(
+                        `/reviews/seller-order-items?SortByDate=DESC&${filter}&Page=${currentPage}&PageSize=10`
+                    );
                     const newData = res.data.items;
 
-                    setHasMoreData(newData != null || res.data.hasNextPage);
-                    setIsFetching(false);
+                    setHasMoreData(res.data.hasNextPage || newData.length > 0);
 
-                    setWalletTrackings((prevArray) => [...prevArray, ...newData]);
-                    if (newData != null || !res.data.hasNextPage) {
+                    setIsFetching(false);
+                    if (!(res.data.hasNextPage || newData.length > 0)) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
+                    setReviews((prevArray) => [...prevArray, ...newData]);
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -115,13 +135,13 @@ export function WalletTrackingScreen({ route, navigation }) {
     );
 
     const handleScroll = () => {
-        if (!isFetching && hasMoreData) {
+        if (!isFetching) {
             setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
         }
     };
 
     const renderFooter = () => {
-        if (!isFetching) return null;
+        if (!isFetching && !hasMoreData) return null;
         return (
             <View style={{
                 padding: 5,
@@ -163,7 +183,7 @@ export function WalletTrackingScreen({ route, navigation }) {
                 <Text style={{
                     fontSize: 18,
                     fontWeight: "500"
-                }}>Lịch sử giao dịch</Text>
+                }}>Danh sách đánh giá</Text>
             </View>
 
             <View style={{ paddingHorizontal: 10, height: ScreenHeight / 1.2 }}>
@@ -174,11 +194,11 @@ export function WalletTrackingScreen({ route, navigation }) {
                         setModalVisible={setModalVisible}
                         sortOption={sortOption}
                         handleSortOption={handleSortOption}
-                        disabled={walletTrackings.length == 0}
+                        disabled={isError}
                     />
                 </View>
 
-                {walletTrackings.length == 0 ? (
+                {reviews.length == 0 ? (
                     <View
                         style={{
                             flex: 1,
@@ -206,21 +226,28 @@ export function WalletTrackingScreen({ route, navigation }) {
                                     textAlign: "center",
                                 }}
                             >
-                                {t("no-transaction-history")}
+                                Không có đánh giá nào
                             </Text>
                         </View>
                     </View>
                 ) : (
                     <View style={{ marginTop: 16 }}>
                         <FlatList
-                            data={walletTrackings}
-                            keyExtractor={item => item.id}
+                            data={reviews}
+                            keyExtractor={item => item.review.id}
                             renderItem={({ item, index }) => (
                                 <>
-                                    <WalletTrackingItem
+                                    <ReviewItem
                                         {...item}
+                                        sortOption={sortOption}
+                                        setIsError={setIsError}
+                                        setStringErr={setStringErr}
+                                        createReplied={createReplied}
+                                        setIsCreateReplied={setIsCreateReplied}
+                                        setSnackbarMessage={setSnackbarMessage}
+                                        setSnackbarVisible={setSnackbarVisible}
                                     />
-                                    {index < walletTrackings.length - 1 && (
+                                    {index < reviews.length - 1 && (
                                         <Divider style={{ marginVertical: 14 }} />
                                     )}
                                 </>
@@ -235,6 +262,15 @@ export function WalletTrackingScreen({ route, navigation }) {
                     </View>
                 )}
             </View>
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 1 }}
+            >
+                {snackbarMessage}
+            </Snackbar>
 
             <ErrModal
                 stringErr={stringErr}
@@ -276,7 +312,7 @@ const SortModal = ({
                     fontSize: 18,
                     color: "white",
                 }}>
-                    {sortOption == "DESC" ? "Ngày gần nhất" : "Ngày xa nhất"}
+                    {sortOption == "NotReply" ? "Chưa phản hồi" : "Đã phản hồi"}
                 </Text>
                 <Icon
                     type="material-community"
@@ -286,7 +322,7 @@ const SortModal = ({
                 />
             </Pressable>
 
-            {/* choose Ngày gần nhất/ Ngày xa nhất */}
+            {/* choose Chưa phản hồi/ Đã phản hồi */}
             <Modal
                 isVisible={modalVisible}
                 onBackdropPress={() => setModalVisible(false)}
@@ -334,7 +370,7 @@ const SortModal = ({
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
                         </View>
 
-                        {/* Giá thấp nhất */}
+                        {/* Chưa phản hồi */}
                         <Pressable
                             style={{
                                 flexDirection: "row",
@@ -343,12 +379,12 @@ const SortModal = ({
                                 paddingHorizontal: 16,
                                 paddingVertical: 12,
                             }}
-                            onPress={() => handleSortOption("DESC")}
+                            onPress={() => handleSortOption("NotReply")}
                         >
                             <Text style={{
                                 fontSize: 16,
-                            }}>Ngày gần nhất</Text>
-                            {sortOption === "DESC" ? (
+                            }}>Chưa phản hồi</Text>
+                            {sortOption === "NotReply" ? (
                                 <Icon
                                     type="material-community"
                                     name="check-circle"
@@ -365,7 +401,7 @@ const SortModal = ({
                             )}
                         </Pressable>
 
-                        {/* Name alphabet */}
+                        {/* Đã phản hồi */}
                         <Pressable
                             style={{
                                 flexDirection: "row",
@@ -374,12 +410,12 @@ const SortModal = ({
                                 paddingHorizontal: 16,
                                 paddingVertical: 12,
                             }}
-                            onPress={() => handleSortOption("ASC")}
+                            onPress={() => handleSortOption("Replied")}
                         >
                             <Text style={{
                                 fontSize: 16,
-                            }}>Ngày xa nhất</Text>
-                            {sortOption === "ASC" ? (
+                            }}>Đã phản hồi</Text>
+                            {sortOption === "Replied" ? (
                                 <Icon
                                     type="material-community"
                                     name="check-circle"

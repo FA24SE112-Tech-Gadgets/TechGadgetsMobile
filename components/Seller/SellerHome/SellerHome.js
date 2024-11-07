@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
-import api from "../Authorization/api";
-import logo from "../../assets/adaptive-icon.png";
+import api from "../../Authorization/api";
+import logo from "../../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
-import ErrModal from '../CustomComponents/ErrModal';
+import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -247,7 +247,7 @@ export default function SellerHome() {
                         }}
                     >
                         <LottieView
-                            source={require("../../assets/animations/catRole.json")}
+                            source={require("../../../assets/animations/catRole.json")}
                             style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
                             autoPlay
                             loop

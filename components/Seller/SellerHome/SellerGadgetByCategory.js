@@ -11,14 +11,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
-import api from "../Authorization/api";
-import logo from "../../assets/adaptive-icon.png";
+import api from "../../Authorization/api";
+import logo from "../../../assets/adaptive-icon.png";
 import { useDebounce } from 'use-debounce';
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
-import GadgetItem from './Gadget/GadgetItem';
-import ErrModal from '../CustomComponents/ErrModal';
+import GadgetItem from '../Gadget/GadgetItem';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 export default function SellerGadgetByCategory({ navigation, route }) {
     const { categoryId } = route.params;
@@ -62,10 +62,10 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData == null || res.data.hasNextPage);
+                    setHasMoreData(newData != null || res.data.hasNextPage);
                     setIsFetching(false);
 
-                    if (newData.length == 0) {
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
@@ -104,7 +104,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     );
                     const newData = res.data.items;
 
-                    if (newData.length == 0) {
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         setGadgets([])
                         return; // Stop the process if there is no more data
                     }
@@ -139,7 +139,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     const res = await api.get(url);
                     const newData = res.data.items;
 
-                    if (newData.length == 0) {
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
@@ -262,7 +262,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                             }}
                         >
                             <LottieView
-                                source={require("../../assets/animations/catRole.json")}
+                                source={require("../../../assets/animations/catRole.json")}
                                 style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
                                 autoPlay
                                 loop

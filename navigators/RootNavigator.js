@@ -25,13 +25,13 @@ import BuyerWallet from "../components/Buyer/BuyerWallet";
 import DepositHistory from "../components/Buyer/DepositHistory";
 import RefundHistory from "../components/Buyer/RefundHistory";
 import PaymentHistory from "../components/Buyer/PaymentHistory";
-import SellerGadgetByCategory from "../components/Seller/SellerGadgetByCategory";
+import SellerGadgetByCategory from "../components/Seller/SellerHome/SellerGadgetByCategory";
 import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
 import SellerOrderDetail from "../components/Seller/SellerOrder/SellerOrderDetail";
-import SellerProfile from "../components/Seller/SellerProfile";
+import SellerProfile from "../components/Seller/SellerProfile/SellerProfile";
 import useAuth from "../utils/useAuth";
 import { WalletTrackingScreen } from "../components/Seller/WalletTracking/WalletTrackingScreen";
-
+import { SellerOrderReviewsScreen } from "../components/Seller/SellerOrderReviews/SellerOrderReviewsScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -268,6 +268,13 @@ const RootNavigator = () => {
         {({ navigation, route }) => (
           <AuthRoute>
             <WalletTrackingScreen navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SellerOrderReviews" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <SellerOrderReviewsScreen navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

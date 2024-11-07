@@ -170,11 +170,11 @@ export default function SellerOrderDetail({ route, navigation }) {
                     );
                     const newData = res.data.items;
 
-                    setHasMoreData(newData == null || res.data.hasNextPage);
+                    setHasMoreData(newData != null || res.data.hasNextPage);
                     setIsFetching(false);
 
                     setGadgets((prevArray) => [...prevArray, ...newData]);
-                    if (newData == null || !res.data.hasNextPage) {
+                    if (newData != null || !res.data.hasNextPage) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
