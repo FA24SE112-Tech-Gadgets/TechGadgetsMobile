@@ -16,6 +16,7 @@ import Modal from 'react-native-modal';
 import api from '../../Authorization/api';
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,8 @@ export default function GadgetDetail({ route, navigation }) {
   const [buyNowModalVisible, setBuyNowModalVisible] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [stringErr, setStringErr] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const formatVietnamDate = (time) => {
     const date = new Date(time);
@@ -83,9 +86,8 @@ export default function GadgetDetail({ route, navigation }) {
       setSnackbarVisible(true);
     } catch (error) {
       console.log('Error buying now:', error);
-      setBuyNowModalVisible(false);
-      setSnackbarMessage('Không thể tạo đơn hàng');
-      setSnackbarVisible(true);
+      setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      setIsError(true);
     }
   };
 
@@ -442,6 +444,11 @@ export default function GadgetDetail({ route, navigation }) {
       >
         {snackbarMessage}
       </Snackbar>
+      <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
     </LinearGradient>
   );
 }

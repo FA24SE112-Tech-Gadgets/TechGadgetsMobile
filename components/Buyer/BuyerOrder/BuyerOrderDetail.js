@@ -98,11 +98,12 @@ export default function BuyerOrderDetail({ route, navigate }) {
                     );
                     const newData = res.data.items;
 
-                    setHasMoreData(newData == null || newData.hasNextPage);
+                    setHasMoreData(res.data.hasNextPage);
                     setIsFetching(false);
-
-                    setGadgets((prevArray) => [...prevArray, ...newData]);
-                    if (newData == null || !newData.hasNextPage) {
+                    if (newData && newData.length > 0) {
+                        setGadgets((prevArray) => [...prevArray, ...newData]);
+                    };
+                    if (!res.data.hasNextPage) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
@@ -122,6 +123,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
         }, [currentPage])
     );
 
+    //Reset to default state
     useFocusEffect(
         useCallback(() => {
             setGadgets([]);
@@ -142,7 +144,6 @@ export default function BuyerOrderDetail({ route, navigate }) {
     };
 
     const renderFooter = () => {
-        if (!buyerOrder) return null;
         return (
             <>
                 <View style={styles.needHelpContainer}>
@@ -235,7 +236,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
                     loop
                     speed={0.8}
                 />
-                <Text style={styles.loadingText}>Đang tải dữ liệu</Text>
+                <Text style={styles.loadingText}>Đang load dữ liệu</Text>
             </LinearGradient>
         );
     }
@@ -245,7 +246,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
             <View style={styles.contentContainer}>
                 <FlatList
                     data={gadgets}
-                    keyExtractor={(item, index) => `${item.gadgetId}-${index}`}
+                    keyExtractor={item => item.gadgetId}
                     renderItem={({ item, index }) => (
                         <Pressable onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadgetId })}>
                             <BuyerOrderGadgetItem

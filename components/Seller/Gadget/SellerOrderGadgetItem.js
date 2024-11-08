@@ -38,7 +38,6 @@ const SellerOrderGadgetItem = ({ thumbnailUrl, name, price, quantity, discountPr
                         style={styles.image}
                     >
                     </ImageBackground>
-                    {/* <Image source={{ uri: thumbnailUrl }} style={styles.image} /> */}
                     {discountPercentage > 0 && (
                         <View style={styles.discountBadge}>
                             <Text style={styles.discountText}>-{discountPercentage}%</Text>

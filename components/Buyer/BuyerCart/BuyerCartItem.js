@@ -345,6 +345,18 @@ const BuyerCartItem = () => {
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
+             {/* Header */}
+             <View style={styles.header}>
+                                        {/* Back Button */}
+                                        <TouchableOpacity
+                                            onPress={() => navigation.goBack()}
+                                            style={styles.backButton}
+                                        >
+                                            <AntDesign name="arrowleft" size={24} color="black" />
+                                        </TouchableOpacity>
+
+                                        <Text style={styles.headerTxt}>Giỏ hàng của tôi</Text>
+                                    </View>
             <FlatList
                 data={sellers}
                 renderItem={renderShopItem}
@@ -482,6 +494,28 @@ const styles = StyleSheet.create({
         fontSize: 18,
         width: ScreenWidth / 1.5,
         textAlign: "center",
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        padding: 16,
+        borderWidth: 1,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        borderColor: 'rgb(254, 169, 40)',
+        backgroundColor: 'rgba(254, 169, 40, 0.3)',
+    },
+    backButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: "rgba(254, 161, 40, 0.5)",
+        borderWidth: 1,
+        borderColor: "rgb(254, 161, 40)",
+    },
+    headerTxt: {
+        fontSize: 18,
+        fontWeight: "500"
     },
     headerContainer: {
         flexDirection: 'row',

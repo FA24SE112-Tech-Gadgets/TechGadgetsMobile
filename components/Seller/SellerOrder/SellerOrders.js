@@ -10,27 +10,31 @@ import {
     Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
-import { useFocusEffect } from '@react-navigation/native';
-import api from "../Authorization/api";
-import logo from "../../assets/adaptive-icon.png";
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import api from "../../Authorization/api";
+import logo from "../../../assets/adaptive-icon.png";
 import { useDebounce } from 'use-debounce';
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
-import GadgetItem from './Gadget/GadgetItem';
-import ErrModal from '../CustomComponents/ErrModal';
+import ErrModal from '../../CustomComponents/ErrModal';
+import SellerOrderItem from './../SellerOrder/SellerOrderItem';
+import { Snackbar } from 'react-native-paper';
 
-export default function SellerGadgetByCategory({ navigation, route }) {
-    const { categoryId } = route.params;
-
-    const [gadgets, setGadgets] = useState({});
+export default function SellerOrders() {
+    const [sellerOrders, setSellerOrders] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+
+    const navigation = useNavigation();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchBounceString] = useDebounce(searchQuery, 1000);
 
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const [modalVisible, setModalVisible] = useState(false);
-    const [sortOption, setSortOption] = useState("PRICE");
+    const [sortOption, setSortOption] = useState("Pending");
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
@@ -40,45 +44,45 @@ export default function SellerGadgetByCategory({ navigation, route }) {
 
     const [isSearching, setIsSearching] = useState(false);
 
-    //Reset to default state
+    //Reset sort option and search query
     useFocusEffect(
         useCallback(() => {
-            setGadgets([]);
-            setCurrentPage(1);
+            setSortOption("Pending")
             setSearchQuery("");
-            setSortOption("PRICE");
+            setCurrentPage(1);
+            setSellerOrders([]);
         }, [])
     );
 
-    const filter = sortOption == "PRICE" ? `SortColumn=price` : `SortColumn=name`;
+    const filter = sortOption == "Success" ? `Status=Success` : sortOption == "Pending" ? `Status=Pending` : `Status=Cancelled`;
 
-    // Gadget pagination
+    // Seller order pagination
     useFocusEffect(
         useCallback(() => {
             const init = async () => {
                 try {
                     setIsFetching(true);
                     const res = await api.get(
-                        `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${currentPage}&PageSize=10`
+                        `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData.length > 0);
+                    setHasMoreData(newData != null || res.data.hasNextPage);
                     setIsFetching(false);
 
-                    if (newData.length == 0) {
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
 
-                    setGadgets((prevArray) => [...prevArray, ...newData]);
+                    setSellerOrders((prevArray) => [...prevArray, ...newData]);
                 } catch (error) {
+                    setIsError(true);
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
                             error.response.data.reasons[0].message
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
-                    setIsError(true);
                 }
             };
 
@@ -86,7 +90,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
         }, [currentPage])
     );
 
-    // Search gadgets
+    // Search sellerOrders
     useFocusEffect(
         useCallback(() => {
             setCurrentPage(1);
@@ -100,24 +104,24 @@ export default function SellerGadgetByCategory({ navigation, route }) {
             const fetchItems = async () => {
                 try {
                     const res = await api.get(
-                        `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=1&PageSize=10`
+                        `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
                     );
                     const newData = res.data.items;
 
-                    if (newData.length == 0) {
-                        setGadgets([])
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                        setSellerOrders([])
                         return; // Stop the process if there is no more data
                     }
 
-                    setGadgets(newData);
+                    setSellerOrders(newData);
                 } catch (error) {
-                    setIsError(true);
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
                             error.response.data.reasons[0].message
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsError(true);
                 }
             };
             fetchItems();
@@ -128,31 +132,32 @@ export default function SellerGadgetByCategory({ navigation, route }) {
         if (option != sortOption) {
             setSortOption(option);
             setModalVisible(false);
-            setGadgets([]);
+            setSellerOrders([]);
             setCurrentPage(1);
             const init = async () => {
                 try {
                     const url =
-                        option == "PRICE"
-                            ? `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&SortColumn=price&Page=1&PageSize=10`
-                            : `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&SortColumn=name&Page=1&PageSize=10`;
+                        option == "Success"
+                            ? `/seller-orders?Status=Success&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
+                            : option == "Pending" ? `/seller-orders?Status=Pending&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
+                                : `/seller-orders?Status=Cancelled&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`;
                     const res = await api.get(url);
                     const newData = res.data.items;
 
-                    if (newData.length == 0) {
+                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
 
-                    setGadgets(newData);
+                    setSellerOrders(newData);
                 } catch (error) {
-                    setIsError(true);
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
                             error.response.data.reasons[0].message
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsError(true);
                 }
             };
 
@@ -202,7 +207,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                 >
                     <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
                     <TextInput
-                        placeholder={"Tìm kiếm sản phẩm"}
+                        placeholder={"Nhập sđt"}
                         returnKeyType="search"
                         style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
                         value={searchQuery}
@@ -238,16 +243,16 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     setModalVisible={setModalVisible}
                     sortOption={sortOption}
                     handleSortOption={handleSortOption}
-                    disabled={gadgets.length == 0}
+                    disabled={isError}
                 />
             </View>
 
             <View
                 style={{
-                    height: ScreenHeight / 1.16,
+                    height: ScreenHeight / 1.25,
                 }}
             >
-                {gadgets.length === 0 ? (
+                {sellerOrders.length === 0 ? (
                     <View
                         style={{
                             flex: 1,
@@ -262,7 +267,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                             }}
                         >
                             <LottieView
-                                source={require("../../assets/animations/catRole.json")}
+                                source={require("../../../assets/animations/catRole.json")}
                                 style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
                                 autoPlay
                                 loop
@@ -275,25 +280,27 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                                     textAlign: "center",
                                 }}
                             >
-                                {isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
+                                {isSearching ? "Không tìm thấy đơn hàng nào" : "Không có đơn hàng nào"}
                             </Text>
                         </View>
                     </View>
                 ) : (
                     <View style={{ marginBottom: 20, marginTop: 16 }}>
                         <FlatList
-                            data={gadgets}
+                            data={sellerOrders}
                             keyExtractor={item => item.id}
                             renderItem={({ item, index }) => (
                                 <Pressable
                                     onPress={() =>
-                                        navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                        navigation.navigate('SellerOrderDetail', { sellerOrderId: item.id })
                                     }
                                 >
-                                    <GadgetItem
+                                    <SellerOrderItem
                                         {...item}
+                                        setSnackbarMessage={setSnackbarMessage}
+                                        setSnackbarVisible={setSnackbarVisible}
                                     />
-                                    {index < gadgets.length - 1 && (
+                                    {index < sellerOrders.length - 1 && (
                                         <Divider style={{ marginVertical: 14 }} />
                                     )}
                                 </Pressable>
@@ -308,6 +315,15 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     </View>
                 )}
             </View>
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 1 }}
+            >
+                {snackbarMessage}
+            </Snackbar>
 
             <ErrModal
                 stringErr={stringErr}
@@ -339,7 +355,7 @@ const SortModal = ({
                 disabled={disabled}
             >
                 <Text style={styles.sortButtonText}>
-                    {sortOption == "PRICE" ? "Giá thấp nhất" : "Tên"}
+                    {sortOption == "Success" ? "Đã giao" : sortOption == "Pending" ? "Chờ xử lý" : "Đã hủy"}
                 </Text>
                 <Icon
                     type="material-community"
@@ -349,7 +365,7 @@ const SortModal = ({
                 />
             </Pressable>
 
-            {/* choose Giá thấp nhất/ Tên alphabet */}
+            {/* choose Giá thấp nhất/ Đánh giá cao nhất */}
             <Modal
                 isVisible={modalVisible}
                 onBackdropPress={() => setModalVisible(false)}
@@ -386,13 +402,13 @@ const SortModal = ({
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
                         </View>
 
-                        {/* Giá thấp nhất */}
+                        {/* Đã giao */}
                         <Pressable
                             style={styles.modalOption}
-                            onPress={() => handleSortOption("PRICE")}
+                            onPress={() => handleSortOption("Success")}
                         >
-                            <Text style={styles.modalOptionText}>Giá thấp nhất</Text>
-                            {sortOption === "PRICE" ? (
+                            <Text style={styles.modalOptionText}>Đã giao</Text>
+                            {sortOption === "Success" ? (
                                 <Icon
                                     type="material-community"
                                     name="check-circle"
@@ -409,13 +425,36 @@ const SortModal = ({
                             )}
                         </Pressable>
 
-                        {/* Name alphabet */}
+                        {/* Chờ xử lý */}
                         <Pressable
                             style={styles.modalOption}
-                            onPress={() => handleSortOption("NAME")}
+                            onPress={() => handleSortOption("Pending")}
                         >
-                            <Text style={styles.modalOptionText}>Tên</Text>
-                            {sortOption === "NAME" ? (
+                            <Text style={styles.modalOptionText}>Chờ xử lý</Text>
+                            {sortOption === "Pending" ? (
+                                <Icon
+                                    type="material-community"
+                                    name="check-circle"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            ) : (
+                                <Icon
+                                    type="material-community"
+                                    name="checkbox-blank-circle-outline"
+                                    size={24}
+                                    color="#ed8900"
+                                />
+                            )}
+                        </Pressable>
+
+                        {/* Đã hủy */}
+                        <Pressable
+                            style={styles.modalOption}
+                            onPress={() => handleSortOption("Cancelled")}
+                        >
+                            <Text style={styles.modalOptionText}>Đã hủy</Text>
+                            {sortOption === "Cancelled" ? (
                                 <Icon
                                     type="material-community"
                                     name="check-circle"

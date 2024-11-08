@@ -1,24 +1,59 @@
-import { View, Text, Pressable } from "react-native";
-import React, { useState } from "react";
-import useAuth from "../../utils/useAuth";
+import { View, Text, Pressable, TextInput } from "react-native";
+import React, { useCallback, useState } from "react";
+import useAuth from "../../../utils/useAuth";
 import { Avatar, Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
-import ErrModal from "../CustomComponents/ErrModal";
+import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 
 export default function SellerProfile() {
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
   const navigation = useNavigation();
 
+  const [walletOpen, setWalletOpen] = useState(false);
+  const [walletAmount, setWalletAmount] = useState("0 ₫");
+  const [showWalletAmount, setShowWalletAmount] = useState(false);
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  function formatCurrency(number) {
+    // Convert the number to a string
+    if (number) {
+      let numberString = number.toString();
+
+      // Regular expression to add dot as thousand separator
+      let formattedString = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
+
+      return formattedString;
+    }
+  }
+
+  const handleOpenError = (message) => {
+    setStringErr(message);
+    setIsError(true);
+  }
 
   const {
     logout,
     user,
   } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      setWalletOpen(false);
+      setShowWalletAmount(false);
+      if (user?.wallet) {
+        if (user?.wallet.amount > 0) {
+          setWalletAmount(formatCurrency(user.wallet.amount));
+        }
+      } else {
+        setWalletAmount("0 ₫");
+      }
+    }, [])
+  );
 
   return (
     <View>
@@ -35,7 +70,7 @@ export default function SellerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user.imageUrl ? (
+        {user?.imageUrl ? (
           <Image
             source={{
               uri: user.imageUrl,
@@ -59,7 +94,7 @@ export default function SellerProfile() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
-              {user.seller?.shopName?.charAt(0)}
+              {user.seller !== null ? user.seller?.shopName?.charAt(0) : "G"}
             </Text>
           </View>
         )}
@@ -68,7 +103,7 @@ export default function SellerProfile() {
           numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
           ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
         >
-          {user.seller?.shopName}
+          {user.seller !== null ? user.seller?.shopName : "Người dùng hệ thống"}
         </Text>
       </View>
 
@@ -111,10 +146,10 @@ export default function SellerProfile() {
         </Pressable>
         <Divider />
 
-        {/* Quản lý yêu cầu */}
+        {/* Ví của tôi */}
         <Pressable
           onPress={() => {
-
+            setWalletOpen(!walletOpen);
           }}
         >
           <View
@@ -139,18 +174,156 @@ export default function SellerProfile() {
                   width: 25,
                 }}
               >
-                <FontAwesome
-                  name="wpforms"
+                <Ionicons
+                  name="wallet-outline"
                   size={23}
                 />
               </View>
               <Text style={{ fontSize: 15, fontWeight: "500" }}>
-                Quản lý yêu cầu
+                Ví của tôi
               </Text>
             </View>
 
-            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+            <Icon type="antdesign" name={walletOpen ? "down" : "right"} color={"#ed8900"} size={20} />
           </View>
+        </Pressable>
+
+        {
+          walletOpen ?
+            <>
+              <View style={{
+                width: ScreenWidth / 1.18,
+                alignSelf: "flex-end",
+                gap: 10
+              }}>
+                {/* Số dư ví */}
+                <View style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}>
+                  {/* Số dư ví */}
+                  <View style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    alignItems: "center"
+                  }}>
+                    <Text style={{
+                      fontSize: 16
+                    }}>Số dư ví:</Text>
+                    <TextInput
+                      style={{
+                        fontSize: 16,
+                        color: "black"
+                      }}
+                      editable={false}
+                      secureTextEntry={showWalletAmount ? false : true}
+                      value={walletAmount}
+                      onChangeText={(text) => setPassword(text)}
+                    />
+                  </View>
+
+                  {/* Eye btn */}
+                  <Pressable
+                    onPress={() => setShowWalletAmount(!showWalletAmount)}
+                  >
+                    <Ionicons
+                      name={!showWalletAmount ? "eye-off-sharp" : "eye-sharp"}
+                      size={20}
+                      color="rgba(0, 0, 0, 0.5)"
+                    />
+                  </Pressable>
+                </View>
+
+                {/* Lịch sử giao dịch */}
+                <Pressable
+                  onPress={() => {
+                    if (user.seller == null) {
+                      handleOpenError("Vui lòng đăng ký thông tin người bán để sử dụng tính năng này.")
+                    } else {
+                      navigation.navigate("WalletTrackingScreen");
+                    }
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        columnGap: 6,
+                      }}
+                    >
+                      <View
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: 25,
+                          width: 25,
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name="history"
+                          size={23}
+                        />
+                      </View>
+                      <Text style={{ fontSize: 15, fontWeight: "500" }}>
+                        Lịch sử giao dịch
+                      </Text>
+                    </View>
+
+                    <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+                  </View>
+                </Pressable>
+              </View>
+              <Divider />
+            </>
+            :
+            <Divider />
+        }
+
+        {/* Đánh giá sản phẩm */}
+        <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => {
+            if (user.seller == null) {
+              handleOpenError("Vui lòng đăng ký thông tin người bán để sử dụng tính năng này.")
+            } else {
+              navigation.navigate("SellerOrderReviews");
+            }
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <Icon
+                type="ant-design"
+                name="staro"
+                size={24}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Đánh giá sản phẩm
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
         </Pressable>
         <Divider />
 

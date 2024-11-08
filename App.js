@@ -58,6 +58,8 @@ export default function App() {
         },
         SellerGadgetByCategory: "SellerGadgetByCategory",
         SellerOrderDetail: "SellerOrderDetail",
+        WalletTrackingScreen: "WalletTrackingScreen",
+        SellerOrderReviews: "SellerOrderReviews",
         GadgetSellerDetail: "GadgetSellerDetail",
         GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",
