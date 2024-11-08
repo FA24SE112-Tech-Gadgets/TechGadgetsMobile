@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Icon } from "@rneui/base";
-import Clipboard from "@react-native-clipboard/clipboard";
 
 const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, setSnackbarVisible, setSnackbarMessage }) => {
   const formatCurrency = (number) => {
@@ -9,12 +8,6 @@ const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, se
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
     }
     return "";
-  };
-
-  const copyToClipboard = (text) => {
-    Clipboard.setString(text);
-    setSnackbarMessage("Sao chép thành công");
-    setSnackbarVisible(true);
   };
 
   const formatVietnamDate = (time) => {

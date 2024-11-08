@@ -35,7 +35,7 @@ export default function BuyerOrders() {
     const [hasMoreData, setHasMoreData] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
 
-     //Reset sort option
+    //Reset sort option
     useFocusEffect(
         useCallback(() => {
             setSortOption("Pending");
@@ -56,15 +56,16 @@ export default function BuyerOrders() {
                         `/seller-orders?${filter}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData.length > 0);
+                    setHasMoreData(res.data.hasNextPage);
                     setIsFetching(false);
-
-                    if (newData.length === 0) {
-                        console.log("No more data to fetch");
-                        return;
+                    
+                    if (newData && newData.length > 0) {
+                        setBuyerOrders((prevArray) => [...prevArray, ...newData]);
                     }
-
-                    setBuyerOrders((prevArray) => [...prevArray, ...newData]);
+                    if (!res.data.hasNextPage) {
+                        console.log("No more data to fetch");
+                        return; // Stop the process if there is no more data
+                    }
                 } catch (error) {
                     console.log('Error fetching buyer orders:', error);
                     setSnackbarMessage("Không thể tải đơn hàng. Vui lòng thử lại sau.");
@@ -72,7 +73,7 @@ export default function BuyerOrders() {
                 }
             };
 
-            if (currentPage >= 2) init();
+            if (currentPage >= 1) init();
         }, [currentPage])
     );
 
@@ -82,6 +83,7 @@ export default function BuyerOrders() {
             setModalVisible(false);
             setBuyerOrders([]);
             setCurrentPage(1);
+
             const init = async () => {
                 try {
                     const url =
@@ -89,21 +91,24 @@ export default function BuyerOrders() {
                             ? `/seller-orders?Status=Success&Page=1&PageSize=10`
                             : option == "Pending" ? `/seller-orders?Status=Pending&Page=1&PageSize=10`
                                 : `/seller-orders?Status=Cancelled&Page=1&PageSize=10`;
+                                
                     const res = await api.get(url);
                     const newData = res.data.items;
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
+                    if (newData && newData.length > 0) {
+                        setBuyerOrders((prevArray) => [...prevArray, ...newData]);
                     }
 
-                    setBuyerOrders(newData);
+                    if (!res.data.hasNextPage) {
+                        return;
+                    }
+
                 } catch (error) {
+                    console.log("Error fetching data:", error);
                     setStringErr(
-                        error.response?.data?.reasons[0]?.message ?
-                            error.response.data.reasons[0].message
-                            :
-                            "Lỗi mạng vui lòng thử lại sau"
+                        error.response?.data?.reasons[0]?.message
+                            ? error.response.data.reasons[0].message
+                            : "Lỗi mạng vui lòng thử lại sau"
                     );
                     setIsError(true);
                 }
