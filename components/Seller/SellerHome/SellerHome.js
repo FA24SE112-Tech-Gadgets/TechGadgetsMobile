@@ -23,7 +23,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 export default function SellerHome() {
     const [categories, setCategories] = useState([]);
-    const [gadgets, setGadgets] = useState({});
+    const [gadgets, setGadgets] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState("");

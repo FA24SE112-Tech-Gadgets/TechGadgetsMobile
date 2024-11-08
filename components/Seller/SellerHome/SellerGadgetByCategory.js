@@ -23,7 +23,7 @@ import ErrModal from '../../CustomComponents/ErrModal';
 export default function SellerGadgetByCategory({ navigation, route }) {
     const { categoryId } = route.params;
 
-    const [gadgets, setGadgets] = useState({});
+    const [gadgets, setGadgets] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +36,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
     const [isError, setIsError] = useState(false);
 
     const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
 
     const [isSearching, setIsSearching] = useState(false);
@@ -51,42 +52,6 @@ export default function SellerGadgetByCategory({ navigation, route }) {
     );
 
     const filter = sortOption == "PRICE" ? `SortColumn=price` : `SortColumn=name`;
-
-    // Gadget pagination
-    useFocusEffect(
-        useCallback(() => {
-            const init = async () => {
-                try {
-                    setIsFetching(true);
-                    const res = await api.get(
-                        `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${currentPage}&PageSize=10`
-                    );
-                    const newData = res.data.items;
-                    setHasMoreData(res.data.hasNextPage);
-                    setIsFetching(false);
-
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
-
-                    if (newData && newData.length > 0) {
-                        setGadgets((prevArray) => [...prevArray, ...newData]);
-                    }
-                } catch (error) {
-                    setStringErr(
-                        error.response?.data?.reasons[0]?.message ?
-                            error.response.data.reasons[0].message
-                            :
-                            "Lỗi mạng vui lòng thử lại sau"
-                    );
-                    setIsError(true);
-                }
-            };
-
-            if (currentPage >= 2) init();
-        }, [currentPage])
-    );
 
     // Search gadgets
     useFocusEffect(
@@ -134,21 +99,23 @@ export default function SellerGadgetByCategory({ navigation, route }) {
             setCurrentPage(1);
             const init = async () => {
                 try {
+                    setIsFetching(true);
                     const url =
                         option == "PRICE"
                             ? `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&SortColumn=price&Page=1&PageSize=10`
                             : `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&SortColumn=name&Page=1&PageSize=10`;
                     const res = await api.get(url);
+                    setIsFetching(false);
                     const newData = res.data.items;
-
-                    if (!res.data.hasNextPage) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
 
                     if (newData && newData.length > 0) {
                         setGadgets(newData);
                     }
+
+                    if (!res.data.hasNextPage) {
+                        setHasMoreData(false);
+                    }
+
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -164,10 +131,61 @@ export default function SellerGadgetByCategory({ navigation, route }) {
         }
     };
 
-    const handleScroll = () => {
-        if (!isFetching && hasMoreData) {
-            setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+    // Gadget pagination
+    const fetchGadgets = async (page) => {
+        try {
+            setIsFetching(true);
+            const res = await api.get(
+                `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${page}&PageSize=10`
+            );
+            setIsFetching(false);
+
+            const newData = res.data.items;
+
+            if (newData && newData.length > 0) {
+                const allGadgets = [
+                    ...gadgets,
+                    ...newData.filter(
+                        (newGadget) =>
+                            !gadgets.some(
+                                (existingGadget) =>
+                                    existingGadget.id === newGadget.id
+                            )
+                    ),
+                ];
+                setGadgets(allGadgets);
+            }
+
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
         }
+    }
+
+    const handleScroll = () => {
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchGadgets(nextPage); // Gọi fetchGadgets với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchGadgets(currentPage); // Gọi fetchGadgets nhưng không tăng currentPage
+        }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchGadgets(1); // Fetch new data (page 1)
+        setRefreshing(false);
     };
 
     const renderFooter = () => {
@@ -181,6 +199,25 @@ export default function SellerGadgetByCategory({ navigation, route }) {
             </View>
         );
     };
+
+    //For refresh page when send reply
+    useFocusEffect(
+        useCallback(() => {
+            if (refreshing) {
+                setGadgets([]);
+                setCurrentPage(1);
+                fetchGadgets(1);
+                setRefreshing(false);
+            }
+        }, [refreshing])
+    );
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchGadgets(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
@@ -302,12 +339,14 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                                     )}
                                 </Pressable>
                             )}
-                            onEndReached={handleScroll}
-                            onEndReachedThreshold={0.5}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
                             ListFooterComponent={renderFooter}
                             initialNumToRender={10}
                             showsVerticalScrollIndicator={false}
                             overScrollMode="never"
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
                         />
                     </View>
                 )}
