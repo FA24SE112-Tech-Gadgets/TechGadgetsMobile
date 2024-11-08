@@ -63,10 +63,11 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                     setIsFetching(false);
                     const newData = res.data.items;
 
-                    setReviews(newData);
-                    // setCurrentPage(2);
+                    if (newData && newData.length > 0) {
+                        setReviews(newData);
+                    }
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                    if (!res.data.hasNextPage) {
                         setHasMoreData(false);
                         console.log("No more data to fetch2");
                     }
