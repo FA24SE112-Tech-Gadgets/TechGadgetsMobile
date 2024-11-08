@@ -69,7 +69,6 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
 
                     if (!res.data.hasNextPage) {
                         setHasMoreData(false);
-                        console.log("No more data to fetch2");
                     }
 
                 } catch (error) {

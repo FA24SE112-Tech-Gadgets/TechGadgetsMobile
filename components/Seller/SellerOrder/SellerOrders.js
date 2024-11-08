@@ -40,6 +40,7 @@ export default function SellerOrders() {
     const [isError, setIsError] = useState(false);
 
     const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
 
     const [isSearching, setIsSearching] = useState(false);
@@ -55,42 +56,6 @@ export default function SellerOrders() {
     );
 
     const filter = sortOption == "Success" ? `Status=Success` : sortOption == "Pending" ? `Status=Pending` : `Status=Cancelled`;
-
-    // Seller order pagination
-    useFocusEffect(
-        useCallback(() => {
-            const init = async () => {
-                try {
-                    setIsFetching(true);
-                    const res = await api.get(
-                        `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=${currentPage}&PageSize=10`
-                    );
-                    const newData = res.data.items;
-                    setHasMoreData(res.data.hasNextPage);
-                    setIsFetching(false);
-
-                    if (!res.data.hasNextPage) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
-
-                    if (newData && newData.length > 0) {
-                        setSellerOrders((prevArray) => [...prevArray, ...newData]);
-                    }
-                } catch (error) {
-                    setIsError(true);
-                    setStringErr(
-                        error.response?.data?.reasons[0]?.message ?
-                            error.response.data.reasons[0].message
-                            :
-                            "Lỗi mạng vui lòng thử lại sau"
-                    );
-                }
-            };
-
-            if (currentPage >= 2) init();
-        }, [currentPage])
-    );
 
     // Search sellerOrders
     useFocusEffect(
@@ -130,28 +95,69 @@ export default function SellerOrders() {
         }, [searchBounceString])
     );
 
+    // Seller order pagination
+    const fetchSellerOrders = async (page) => {
+        try {
+            setIsFetching(true);
+            const res = await api.get(
+                `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=${page}&PageSize=10`
+            );
+            setIsFetching(false);
+
+            const newData = res.data.items;
+
+            if (newData && newData.length > 0) {
+                const allSellerOrders = [
+                    ...sellerOrders,
+                    ...newData.filter(
+                        (newSellerOrder) =>
+                            !sellerOrders.some(
+                                (existingSellerOrder) =>
+                                    existingSellerOrder.id === newSellerOrder.id
+                            )
+                    ),
+                ];
+                setSellerOrders(allSellerOrders);
+            }
+
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setIsError(true);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+        }
+    }
+
     const handleSortOption = (option) => {
         if (option != sortOption) {
             setSortOption(option);
             setModalVisible(false);
             setSellerOrders([]);
-            setCurrentPage(1);
             const init = async () => {
                 try {
+                    setIsFetching(true);
                     const url =
                         option == "Success"
                             ? `/seller-orders?Status=Success&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
                             : option == "Pending" ? `/seller-orders?Status=Pending&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
                                 : `/seller-orders?Status=Cancelled&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`;
                     const res = await api.get(url);
+                    setIsFetching(false);
                     const newData = res.data.items;
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
+                    if (newData && newData.length > 0) {
+                        setSellerOrders(newData);
                     }
 
-                    setSellerOrders(newData);
+                    if (!res.data.hasNextPage) {
+                        setHasMoreData(false);
+                    }
+
                 } catch (error) {
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
@@ -168,9 +174,22 @@ export default function SellerOrders() {
     };
 
     const handleScroll = () => {
-        if (!isFetching && hasMoreData) {
-            setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchSellerOrders(nextPage); // Gọi fetchSellerOrders với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchSellerOrders(currentPage); // Gọi fetchSellerOrders nhưng không tăng currentPage
         }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchSellerOrders(1); // Fetch new data (page 1)
+        setRefreshing(false);
     };
 
     const renderFooter = () => {
@@ -184,6 +203,25 @@ export default function SellerOrders() {
             </View>
         );
     };
+
+    //For refresh page when send reply
+    useFocusEffect(
+        useCallback(() => {
+            if (refreshing) {
+                setSellerOrders([]);
+                setCurrentPage(1);
+                fetchSellerOrders(1);
+                setRefreshing(false);
+            }
+        }, [refreshing])
+    );
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchSellerOrders(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
@@ -307,12 +345,14 @@ export default function SellerOrders() {
                                     )}
                                 </Pressable>
                             )}
-                            onEndReached={handleScroll}
-                            onEndReachedThreshold={0.5}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
                             ListFooterComponent={renderFooter}
                             initialNumToRender={10}
                             showsVerticalScrollIndicator={false}
                             overScrollMode="never"
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
                         />
                     </View>
                 )}
@@ -322,7 +362,7 @@ export default function SellerOrders() {
                 visible={snackbarVisible}
                 onDismiss={() => setSnackbarVisible(false)}
                 duration={1500}
-                wrapperStyle={{ bottom: 0, zIndex: 1 }}
+                wrapperStyle={{ bottom: 0, zIndex: 1, alignSelf: "center" }}
             >
                 {snackbarMessage}
             </Snackbar>
