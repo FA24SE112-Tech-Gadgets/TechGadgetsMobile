@@ -17,8 +17,8 @@ export default function ReviewItem({
     sortOption,
     setStringErr,
     setIsError,
-    createReplied,
-    setIsCreateReplied,
+    refreshing,
+    setRefreshing,
     setSnackbarVisible,
     setSnackbarMessage
 }) {
@@ -44,7 +44,7 @@ export default function ReviewItem({
             setIsReplying(false);
             setSnackbarMessage(sortOption === "NotReply" ? "Phản hồi thành công" : "Sửa thành công");
             setSnackbarVisible(true);
-            setIsCreateReplied(!createReplied);
+            setRefreshing(!refreshing);
         } catch (error) {
             setIsReplying(false);
             setIsError(true);

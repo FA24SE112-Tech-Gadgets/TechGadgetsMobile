@@ -66,15 +66,17 @@ export default function SellerOrders() {
                         `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData != null || res.data.hasNextPage);
+                    setHasMoreData(res.data.hasNextPage);
                     setIsFetching(false);
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                    if (!res.data.hasNextPage) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
 
-                    setSellerOrders((prevArray) => [...prevArray, ...newData]);
+                    if (newData && newData.length > 0) {
+                        setSellerOrders((prevArray) => [...prevArray, ...newData]);
+                    }
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -108,7 +110,7 @@ export default function SellerOrders() {
                     );
                     const newData = res.data.items;
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                    if (newData == null || newData.length == 0) {
                         setSellerOrders([])
                         return; // Stop the process if there is no more data
                     }
