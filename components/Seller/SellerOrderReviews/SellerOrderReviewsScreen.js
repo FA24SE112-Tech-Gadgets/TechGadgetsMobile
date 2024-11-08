@@ -23,6 +23,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
     const [sortOption, setSortOption] = useState("NotReply");
 
     const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
 
     const [reviews, setReviews] = useState([]);
@@ -30,8 +31,6 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
 
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-
-    const [createReplied, setIsCreateReplied] = useState(false);
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
@@ -42,7 +41,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
             setReviews([]);
             setCurrentPage(1);
             setSortOption("NotReply");
-            setIsCreateReplied(false);
+            setRefreshing(false);
         }, [])
     );
 
@@ -61,18 +60,17 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                             ? `/reviews/seller-order-items?SortByDate=DESC&FilterBy=NotReply&Page=1&PageSize=10`
                             : `/reviews/seller-order-items?SortByDate=DESC&FilterBy=Replied&Page=1&PageSize=10`;
                     const res = await api.get(url);
+                    setIsFetching(false);
                     const newData = res.data.items;
 
                     setReviews(newData);
-                    setCurrentPage(2);
+                    // setCurrentPage(2);
 
                     if (newData == null || !res.data.hasNextPage || newData.length == 0) {
                         setHasMoreData(false);
                         console.log("No more data to fetch2");
-                        return; // Stop the process if there is no more data
                     }
 
-                    setIsFetching(false);
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -91,57 +89,73 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
     //For refresh page when send reply
     useFocusEffect(
         useCallback(() => {
-            if (createReplied) {
+            if (refreshing) {
                 setReviews([]);
                 setCurrentPage(1);
-                handleSortOption(sortOption);
-                setIsCreateReplied(false);
+                fetchReviews(1);
+                setRefreshing(false);
             }
-        }, [createReplied])
+        }, [refreshing])
     );
 
-    //Fetch reviews pagination
-    useFocusEffect(
-        useCallback(() => {
-            const init = async () => {
-                try {
-                    setIsFetching(true);
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchReviews(1); // Fetch new data (page 1)
+        setRefreshing(false);
+    };
 
-                    const res = await api.get(
-                        `/reviews/seller-order-items?SortByDate=DESC&${filter}&Page=${currentPage}&PageSize=10`
-                    );
-                    const newData = res.data.items;
+    // Fetch reviews function
+    const fetchReviews = async (page) => {
+        try {
+            setIsFetching(true);
+            const res = await api.get(
+                `/reviews/seller-order-items?SortByDate=DESC&${filter}&Page=${page}&PageSize=10`
+            );
+            setIsFetching(false);
 
-                    setHasMoreData(res.data.hasNextPage || newData.length > 0);
+            const newData = res.data.items;
 
-                    setIsFetching(false);
-                    if (!(res.data.hasNextPage || newData.length > 0)) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
-                    setReviews((prevArray) => [...prevArray, ...newData]);
-                } catch (error) {
-                    setIsError(true);
-                    setStringErr(
-                        error.response?.data?.reasons[0]?.message
-                            ? error.response.data.reasons[0].message
-                            : "Lỗi mạng vui lòng thử lại sau"
-                    );
-                }
-            };
+            if (newData && newData.length > 0) {
+                const allReviews = [
+                    ...reviews,
+                    ...newData.filter(
+                        (newReview) =>
+                            !reviews.some(
+                                (existingReview) =>
+                                    existingReview.review.id === newReview.review.id
+                            )
+                    ),
+                ];
+                setReviews(allReviews);
+            }
 
-            if (currentPage >= 1) init();
-        }, [currentPage])
-    );
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setIsError(true);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message
+                    ? error.response.data.reasons[0].message
+                    : "Lỗi mạng vui lòng thử lại sau"
+            );
+        }
+    };
 
     const handleScroll = () => {
-        if (!isFetching) {
-            setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchReviews(nextPage); // Gọi fetchReviews với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchReviews(currentPage); // Gọi fetchReviews nhưng không tăng currentPage
         }
     };
 
     const renderFooter = () => {
-        if (!isFetching && !hasMoreData) return null;
+        if (!isFetching) return null;
         return (
             <View style={{
                 padding: 5,
@@ -151,6 +165,13 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
             </View>
         );
     };
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchReviews(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={{ flex: 1 }}>
@@ -242,8 +263,8 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                                         sortOption={sortOption}
                                         setIsError={setIsError}
                                         setStringErr={setStringErr}
-                                        createReplied={createReplied}
-                                        setIsCreateReplied={setIsCreateReplied}
+                                        refreshing={refreshing}
+                                        setRefreshing={setRefreshing}
                                         setSnackbarMessage={setSnackbarMessage}
                                         setSnackbarVisible={setSnackbarVisible}
                                     />
@@ -252,12 +273,14 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                                     )}
                                 </>
                             )}
-                            onEndReached={handleScroll}
-                            onEndReachedThreshold={0.5}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
                             ListFooterComponent={renderFooter}
                             initialNumToRender={10}
                             showsVerticalScrollIndicator={false}
                             overScrollMode="never"
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
                         />
                     </View>
                 )}

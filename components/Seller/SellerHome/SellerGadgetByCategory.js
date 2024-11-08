@@ -62,7 +62,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
-                    setHasMoreData(newData != null || res.data.hasNextPage);
+                    setHasMoreData(res.data.hasNextPage);
                     setIsFetching(false);
 
                     if (newData == null || !res.data.hasNextPage || newData.length == 0) {
@@ -70,7 +70,9 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         return; // Stop the process if there is no more data
                     }
 
-                    setGadgets((prevArray) => [...prevArray, ...newData]);
+                    if (newData && newData.length > 0) {
+                        setGadgets((prevArray) => [...prevArray, ...newData]);
+                    }
                 } catch (error) {
                     setStringErr(
                         error.response?.data?.reasons[0]?.message ?
@@ -104,7 +106,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     );
                     const newData = res.data.items;
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                    if (newData == null || newData.length == 0) {
                         setGadgets([])
                         return; // Stop the process if there is no more data
                     }
@@ -139,12 +141,14 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     const res = await api.get(url);
                     const newData = res.data.items;
 
-                    if (newData == null || !res.data.hasNextPage || newData.length == 0) {
+                    if (!res.data.hasNextPage) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
 
-                    setGadgets(newData);
+                    if (newData && newData.length > 0) {
+                        setGadgets(newData);
+                    }
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
