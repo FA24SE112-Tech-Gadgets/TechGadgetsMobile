@@ -21,6 +21,7 @@ import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
 import { Snackbar } from 'react-native-paper';
 import BuyerOrderItem from './BuyerOrderItem';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 export default function BuyerOrders() {
     const [buyerOrders, setBuyerOrders] = useState([]);
@@ -32,8 +33,11 @@ export default function BuyerOrders() {
     const [modalVisible, setModalVisible] = useState(false);
     const [sortOption, setSortOption] = useState("Pending");
     const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [stringErr, setStringErr] = useState("");
+    const [isError, setIsError] = useState(false);
 
     //Reset sort option
     useFocusEffect(
@@ -47,45 +51,84 @@ export default function BuyerOrders() {
 
     const filter = sortOption === "Success" ? `Status=Success` : sortOption === "Pending" ? `Status=Pending` : `Status=Cancelled`;
 
-    useFocusEffect(
-        useCallback(() => {
-            const init = async () => {
-                try {
-                    setIsFetching(true);
-                    const res = await api.get(
-                        `/seller-orders?${filter}&Page=${currentPage}&PageSize=10`
-                    );
-                    const newData = res.data.items;
-                    setHasMoreData(res.data.hasNextPage);
-                    setIsFetching(false);
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         const init = async () => {
+    //             try {
+    //                 setIsFetching(true);
+    //                 const res = await api.get(
+    //                     `/seller-orders?${filter}&Page=${currentPage}&PageSize=10`
+    //                 );
+    //                 const newData = res.data.items;
+    //                 setHasMoreData(res.data.hasNextPage);
+    //                 setIsFetching(false);
                     
-                    if (newData && newData.length > 0) {
-                        setBuyerOrders((prevArray) => [...prevArray, ...newData]);
-                    }
-                    if (!res.data.hasNextPage) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
-                } catch (error) {
-                    console.log('Error fetching buyer orders:', error);
-                    setSnackbarMessage("Không thể tải đơn hàng. Vui lòng thử lại sau.");
-                    setSnackbarVisible(true);
-                }
-            };
+    //                 if (newData && newData.length > 0) {
+    //                     setBuyerOrders((prevArray) => [...prevArray, ...newData]);
+    //                 }
+    //                 if (!res.data.hasNextPage) {
+    //                     console.log("No more data to fetch");
+    //                     return; // Stop the process if there is no more data
+    //                 }
+    //             } catch (error) {
+    //                 console.log('Error fetching buyer orders:', error);
+    //                 setSnackbarMessage("Không thể tải đơn hàng. Vui lòng thử lại sau.");
+    //                 setSnackbarVisible(true);
+    //             }
+    //         };
 
-            if (currentPage >= 1) init();
-        }, [currentPage])
-    );
+    //         if (currentPage >= 1) init();
+    //     }, [currentPage])
+    // );
+
+ // Seller order pagination
+ const fetchBuyerOrders = async (page) => {
+    try {
+        setIsFetching(true);
+        const res = await api.get(
+            `/seller-orders?${filter}&Page=${page}&PageSize=10`
+        );
+        setIsFetching(false);
+
+        const newData = res.data.items;
+
+        if (newData && newData.length > 0) {
+            const allBuyerOrders = [
+                ...buyerOrders,
+                ...newData.filter(
+                    (newBuyerOrder) =>
+                        !buyerOrders.some(
+                            (existingBuyerOrder) =>
+                                existingBuyerOrder.id === newBuyerOrder.id
+                        )
+                ),
+            ];
+            setBuyerOrders(allBuyerOrders);
+        }
+
+        // Update hasMoreData status
+        setHasMoreData(res.data.hasNextPage);
+    } catch (error) {
+        setIsError(true);
+        setStringErr(
+            error.response?.data?.reasons[0]?.message ?
+                error.response.data.reasons[0].message
+                :
+                "Lỗi mạng vui lòng thử lại sau"
+        );
+    }
+}
+
 
     const handleSortOption = (option) => {
         if (option != sortOption) {
             setSortOption(option);
             setModalVisible(false);
             setBuyerOrders([]);
-            setCurrentPage(1);
-
+           
             const init = async () => {
                 try {
+                    setIsFetching(true);
                     const url =
                         option == "Success"
                             ? `/seller-orders?Status=Success&Page=1&PageSize=10`
@@ -93,14 +136,15 @@ export default function BuyerOrders() {
                                 : `/seller-orders?Status=Cancelled&Page=1&PageSize=10`;
                                 
                     const res = await api.get(url);
+                    setIsFetching(false);
                     const newData = res.data.items;
 
                     if (newData && newData.length > 0) {
-                        setBuyerOrders((prevArray) => [...prevArray, ...newData]);
+                       setBuyerOrders(newData);
                     }
 
                     if (!res.data.hasNextPage) {
-                        return;
+                        setHasMoreData(false);
                     }
 
                 } catch (error) {
@@ -119,9 +163,22 @@ export default function BuyerOrders() {
     };
 
     const handleScroll = () => {
-        if (!isFetching && hasMoreData) {
-            setCurrentPage((prevPage) => prevPage + 1);
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchBuyerOrders(nextPage); // Gọi fetchBuyerOrders với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchBuyerOrders(currentPage); // Gọi fetchBuyerOrders nhưng không tăng currentPage
         }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchBuyerOrders(1); // Fetch new data (page 1)
+        setRefreshing(false);
     };
 
     const renderFooter = () => {
@@ -132,6 +189,25 @@ export default function BuyerOrders() {
             </View>
         );
     };
+ 
+  //For refresh page when send reply
+  useFocusEffect(
+    useCallback(() => {
+        if (refreshing) {
+            setBuyerOrders([]);
+            setCurrentPage(1);
+            fetchBuyerOrders(1);
+            setRefreshing(false);
+        }
+    }, [refreshing])
+);  
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchBuyerOrders(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
@@ -154,6 +230,7 @@ export default function BuyerOrders() {
                     setModalVisible={setModalVisible}
                     sortOption={sortOption}
                     handleSortOption={handleSortOption}
+                    disabled={isError}
                 />
             </View>
 
@@ -189,23 +266,31 @@ export default function BuyerOrders() {
                                 )}
                             </Pressable>
                         )}
-                        onEndReached={handleScroll}
-                        onEndReachedThreshold={0.5}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
                         ListFooterComponent={renderFooter}
                         initialNumToRender={10}
                         showsVerticalScrollIndicator={false}
+                        overScrollMode="never"
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
                     />
                 )}
             </View>
-
             <Snackbar
                 visible={snackbarVisible}
                 onDismiss={() => setSnackbarVisible(false)}
                 duration={1500}
-                style={styles.snackbar}
+                wrapperStyle={{ bottom: 0, zIndex: 1, alignSelf: "center" }}
             >
                 {snackbarMessage}
             </Snackbar>
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
         </LinearGradient>
     );
 }
@@ -278,7 +363,7 @@ const SortModal = ({
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
                         </View>
 
-                        {/* Đã giao */}
+                        {/* Thành công */}
                         <Pressable
                             style={styles.modalOption}
                             onPress={() => handleSortOption("Success")}
@@ -301,7 +386,7 @@ const SortModal = ({
                             )}
                         </Pressable>
 
-                        {/* Chờ xử lý */}
+                        {/* Đang chờ */}
                         <Pressable
                             style={styles.modalOption}
                             onPress={() => handleSortOption("Pending")}
