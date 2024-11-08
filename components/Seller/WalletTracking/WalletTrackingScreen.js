@@ -12,19 +12,17 @@ import api from "../../Authorization/api";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import LottieView from "lottie-react-native";
-import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
 import WalletTrackingItem from "./WalletTrackingItem";
 
 export function WalletTrackingScreen({ route, navigation }) {
-    const { t } = useTranslation();
-
     const [modalVisible, setModalVisible] = useState(false);
     const [sortOption, setSortOption] = useState("DESC");
 
     const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
 
     const [walletTrackings, setWalletTrackings] = useState([]);
@@ -52,19 +50,23 @@ export function WalletTrackingScreen({ route, navigation }) {
             setCurrentPage(1);
             const init = async () => {
                 try {
+                    setIsFetching(true);
                     const url =
                         option == "DESC"
                             ? `/wallet-trackings?SortByDate=DESC&Page=${currentPage}&PageSize=10`
                             : `/wallet-trackings?SortByDate=ASC&Page=${currentPage}&PageSize=10`;
                     const res = await api.get(url);
+                    setIsFetching(false);
                     const newData = res.data.items;
 
-                    if (newData != null || !res.data.hasNextPage) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
+                    if (newData && newData.length > 0) {
+                        setWalletTrackings(newData);
                     }
 
-                    setWalletTrackings(newData);
+                    if (!res.data.hasNextPage) {
+                        setHasMoreData(false);
+                    }
+
                 } catch (error) {
                     setIsError(true);
                     setStringErr(
@@ -81,43 +83,58 @@ export function WalletTrackingScreen({ route, navigation }) {
     };
 
     //Fetch wallet trackings
-    useFocusEffect(
-        useCallback(() => {
-            const init = async () => {
-                try {
-                    setIsFetching(true);
-                    const res = await api.get(
-                        `/wallet-trackings?${filter}&Page=${currentPage}&PageSize=10`
-                    );
+    const fetchWalletTrackings = async (page) => {
+        try {
+            setIsFetching(true);
+            const res = await api.get(
+                `/wallet-trackings?${filter}&Page=${page}&PageSize=10`
+            );
+            setIsFetching(false);
+            const newData = res.data.items;
 
-                    const newData = res.data.items;
+            if (newData && newData.length > 0) {
+                const allWalletTrackings = [
+                    ...walletTrackings,
+                    ...newData.filter(
+                        (newWalletTracking) =>
+                            !walletTrackings.some(
+                                (existingWalletTracking) =>
+                                    existingWalletTracking.id === newWalletTracking.id
+                            )
+                    ),
+                ];
+                setWalletTrackings(allWalletTrackings);
+            }
 
-                    setHasMoreData(newData != null || res.data.hasNextPage);
-                    setIsFetching(false);
-
-                    setWalletTrackings((prevArray) => [...prevArray, ...newData]);
-                    if (newData != null || !res.data.hasNextPage) {
-                        console.log("No more data to fetch");
-                        return; // Stop the process if there is no more data
-                    }
-                } catch (error) {
-                    setIsError(true);
-                    setStringErr(
-                        error.response?.data?.reasons[0]?.message
-                            ? error.response.data.reasons[0].message
-                            : "Lỗi mạng vui lòng thử lại sau"
-                    );
-                }
-            };
-
-            if (currentPage >= 1) init();
-        }, [currentPage])
-    );
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setIsError(true);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message
+                    ? error.response.data.reasons[0].message
+                    : "Lỗi mạng vui lòng thử lại sau"
+            );
+        }
+    }
 
     const handleScroll = () => {
-        if (!isFetching && hasMoreData) {
-            setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchWalletTrackings(nextPage); // Gọi fetchWalletTrackings với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchWalletTrackings(currentPage); // Gọi fetchWalletTrackings nhưng không tăng currentPage
         }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchWalletTrackings(1); // Fetch new data (page 1)
+        setRefreshing(false);
     };
 
     const renderFooter = () => {
@@ -131,6 +148,25 @@ export function WalletTrackingScreen({ route, navigation }) {
             </View>
         );
     };
+
+    //For refresh page when send reply
+    useFocusEffect(
+        useCallback(() => {
+            if (refreshing) {
+                setWalletTrackings([]);
+                setCurrentPage(1);
+                fetchWalletTrackings(1);
+                setRefreshing(false);
+            }
+        }, [refreshing])
+    );
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchWalletTrackings(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={{ flex: 1 }}>
@@ -206,7 +242,7 @@ export function WalletTrackingScreen({ route, navigation }) {
                                     textAlign: "center",
                                 }}
                             >
-                                {t("no-transaction-history")}
+                                Chưa có lịch sử giao dịch nào...
                             </Text>
                         </View>
                     </View>
@@ -225,12 +261,14 @@ export function WalletTrackingScreen({ route, navigation }) {
                                     )}
                                 </>
                             )}
-                            onEndReached={handleScroll}
-                            onEndReachedThreshold={0.5}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
                             ListFooterComponent={renderFooter}
                             initialNumToRender={10}
                             showsVerticalScrollIndicator={false}
                             overScrollMode="never"
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
                         />
                     </View>
                 )}
