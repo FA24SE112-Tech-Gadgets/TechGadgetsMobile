@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../Authorization/api';
+import api from '../../Authorization/api';
 
 const PaymentHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -24,7 +24,7 @@ const PaymentHistory = () => {
         setHasMore(false);
       }
     } catch (error) {
-      console.error('Error fetching payment history:', error);
+      console.log('Error fetching payment history:', error);
     } finally {
       setLoading(false);
     }

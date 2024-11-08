@@ -14,7 +14,7 @@ import {
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import Slider from '@react-native-community/slider';
-import api from "../Authorization/api";
+import api from "../../Authorization/api";
 
 const { width: screenWidth } = Dimensions.get('window');
 

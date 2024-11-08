@@ -14,6 +14,8 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import Modal from 'react-native-modal';
 import api from '../../Authorization/api';
+import LottieView from 'lottie-react-native';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
 
 const { width } = Dimensions.get('window');
 
@@ -57,14 +59,14 @@ export default function GadgetDetail({ route, navigation }) {
 
   const addToCart = async () => {
     try {
-      const response = await api.put('/cart/old', {
+      const response = await api.post('/cart', {
         gadgetId: gadget.id,
         quantity: quantity
       });
       setSnackbarMessage('Sản phẩm đã được thêm vào giỏ hàng');
       setSnackbarVisible(true);
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.log('Error adding to cart:', error);
       setSnackbarMessage('Không thể thêm sản phẩm vào giỏ hàng');
       setSnackbarVisible(true);
     }
@@ -80,7 +82,7 @@ export default function GadgetDetail({ route, navigation }) {
       setSnackbarMessage('Đơn hàng đã được tạo thành công');
       setSnackbarVisible(true);
     } catch (error) {
-      console.error('Error buying now:', error);
+      console.log('Error buying now:', error);
       setBuyNowModalVisible(false);
       setSnackbarMessage('Không thể tạo đơn hàng');
       setSnackbarVisible(true);
@@ -89,12 +91,40 @@ export default function GadgetDetail({ route, navigation }) {
 
   if (!gadget) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Đang tải...</Text>
-      </View>
+      <LinearGradient colors={['#fea92866', '#FFFFFF']}
+        style={{
+          flex: 1,
+          height: ScreenHeight / 1.5,
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <LottieView
+            source={require("../../../assets/animations/catRole.json")}
+            style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+            autoPlay
+            loop
+            speed={0.8}
+          />
+          <Text
+            style={{
+              fontSize: 18,
+              width: ScreenWidth / 1.5,
+              textAlign: "center",
+            }}
+          >
+            Đang load dữ liệu
+          </Text>
+        </View>
+      </LinearGradient>
     );
   }
-
+  /* View gadget images */
   const ImageGalleryModal = () => (
     <Modal
       isVisible={imageModalVisible}
@@ -118,7 +148,7 @@ export default function GadgetDetail({ route, navigation }) {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <Image
-              source={{ uri: item }}
+              source={{ uri: item.imageUrl }}
               style={styles.modalImage}
               resizeMode="contain"
             />
@@ -211,14 +241,14 @@ export default function GadgetDetail({ route, navigation }) {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailContainer}>
           {gadget.gadgetImages.map((image, index) => (
             <TouchableOpacity
-              key={index}
+              key={image.id}
               onPress={() => {
                 setSelectedImageIndex(index);
                 setImageModalVisible(true);
               }}
             >
               <Image
-                source={{ uri: image }}
+                source={{ uri: image.imageUrl }}
                 style={styles.thumbnail}
                 resizeMode="contain"
               />
@@ -385,10 +415,19 @@ export default function GadgetDetail({ route, navigation }) {
           <Feather name="shopping-cart" size={24} color="#fea128" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.buyNowButton}
-          onPress={() => setBuyNowModalVisible(true)}
+          style={[
+            styles.buyNowButton,
+            !gadget.isForSale && styles.disabledBuyNowButton
+          ]}
+          onPress={() => gadget.isForSale && setBuyNowModalVisible(true)}
+          disabled={!gadget.isForSale}
         >
-          <Text style={styles.buyNowButtonText}>Mua ngay</Text>
+          <Text style={[
+            styles.buyNowButtonText,
+            !gadget.isForSale && styles.disabledBuyNowButtonText
+          ]}>
+            {gadget.isForSale ? 'Mua ngay' : 'Ngừng kinh doanh'}
+          </Text>
         </TouchableOpacity>
       </View>
 

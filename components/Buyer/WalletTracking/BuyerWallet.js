@@ -17,9 +17,9 @@ import { Icon } from '@rneui/base';
 import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Modal from "react-native-modal";
-import ErrModal from '../CustomComponents/ErrModal';
+import ErrModal from '../../CustomComponents/ErrModal';
 import { Picker } from '@react-native-picker/picker';
-import api from '../Authorization/api';
+import api from '../../Authorization/api';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -42,7 +42,7 @@ export default function BuyerWallet() {
             const response = await api.get('/users/current');
             setBalance(response.data.wallet.amount);
         } catch (error) {
-            console.error('Error fetching balance:', error);
+            console.log('Error fetching balance:', error);
         }
     };
 
@@ -74,7 +74,7 @@ export default function BuyerWallet() {
                 fetchBalance(); // Refresh balance after successful deposit
             }
         } catch (error) {
-            console.error('Error checking deposit status:', error);
+            console.log('Error checking deposit status:', error);
         }
     }, [walletTrackingId]);
 
@@ -164,7 +164,7 @@ export default function BuyerWallet() {
                     <View style={styles.logoImageContainer}>
                         <Image
                             style={styles.logoImage}
-                            source={require('../../assets/adaptive-icon.png')}
+                            source={require('../../../assets/adaptive-icon.png')}
                         />
                     </View>
                     <MaskedView

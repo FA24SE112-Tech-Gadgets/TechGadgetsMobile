@@ -14,10 +14,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon } from "@rneui/base";
-import api from "../Authorization/api";
-import logo from "../../assets/adaptive-icon.png";
+import api from "../../Authorization/api";
+import logo from "../../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
+import LottieView from 'lottie-react-native';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -75,7 +77,7 @@ export default function BuyerHome() {
       const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
       setSearchResults(response.data.items);
     } catch (error) {
-      console.error('Error searching gadgets:', error);
+      console.log('Error searching gadgets:', error);
     } finally {
       setLoading(false);
     }
@@ -219,10 +221,38 @@ export default function BuyerHome() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
+      <LinearGradient colors={['#fea92866', '#FFFFFF']}
+          style={{
+              flex: 1,
+              height: ScreenHeight / 1.5,
+          }}
+      >
+          <View
+              style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+              }}
+          >
+              <LottieView
+                  source={require("../../../assets/animations/catRole.json")}
+                  style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                  autoPlay
+                  loop
+                  speed={0.8}
+              />
+              <Text
+                  style={{
+                      fontSize: 18,
+                      width: ScreenWidth / 1.5,
+                      textAlign: "center",
+                  }}
+              >
+                  Đang load dữ liệu
+              </Text>
+          </View>
+      </LinearGradient>
+  );
   }
 
   return (
