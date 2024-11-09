@@ -17,6 +17,7 @@ import api from '../../Authorization/api';
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
+import ReviewSummary from '../BuyerReview/ReviewSummary';
 
 const { width } = Dimensions.get('window');
 
@@ -391,6 +392,7 @@ export default function GadgetDetail({ route, navigation }) {
             </View>
           )}
         </View>
+        <ReviewSummary gadgetId={route.params.gadgetId} navigation={navigation} />
       </ScrollView>
 
       {/* Bottom Bar */}

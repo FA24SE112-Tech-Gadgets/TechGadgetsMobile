@@ -34,6 +34,7 @@ import BuyerCartItem from "../components/Buyer/BuyerCart/BuyerCartItem";
 import BuyerOrderDetail from "../components/Buyer/BuyerOrder/BuyerOrderDetail";
 import { WalletTrackingScreen } from "../components/Seller/WalletTracking/WalletTrackingScreen";
 import { SellerOrderReviewsScreen } from "../components/Seller/SellerOrderReviews/SellerOrderReviewsScreen";
+import ReviewList from "../components/Buyer/BuyerReview/ReviewList";
 
 
 const Stack = createNativeStackNavigator();
@@ -256,6 +257,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <PaymentFail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="ReviewList" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <ReviewList navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

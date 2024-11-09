@@ -15,6 +15,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import Slider from '@react-native-community/slider';
 import api from "../../Authorization/api";
+import LottieView from 'lottie-react-native';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -55,7 +57,7 @@ export default function CategoryGadgets({ route, navigation }) {
         setHasMore(newGadgets.length === 20);
       }
     } catch (error) {
-      console.error('Error fetching gadgets:', error);
+      console.log('Error fetching gadgets:', error);
       setNoResults(true);
     } finally {
       setLoading(false);
@@ -73,7 +75,7 @@ export default function CategoryGadgets({ route, navigation }) {
       const response = await api.get(`/brands/categories/${categoryId}?Page=1&PageSize=50`);
       setBrands(response.data.items);
     } catch (error) {
-      console.error('Error fetching brands:', error);
+      console.log('Error fetching brands:', error);
     }
   };
 
@@ -82,7 +84,7 @@ export default function CategoryGadgets({ route, navigation }) {
       const response = await api.get(`/gadget-filters/category/${categoryId}`);
       setFilters(response.data);
     } catch (error) {
-      console.error('Error fetching filters:', error);
+      console.log('Error fetching filters:', error);
     }
   };
 
@@ -321,11 +323,33 @@ export default function CategoryGadgets({ route, navigation }) {
         </TouchableOpacity>
       </View>
       {loading && page === 1 ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+       
+          <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+            <View style={styles.loadingContent}>
+              <LottieView
+                source={require("../../../assets/animations/catRole.json")}
+                style={styles.lottieAnimation}
+                autoPlay
+                loop
+                speed={0.8}
+              />
+              <Text style={styles.loadingText}>Đang load dữ liệu</Text>
+            </View>
+          </LinearGradient>
+        
       ) : noResults ? (
-        <View style={styles.noResultsContainer}>
-          <Text style={styles.noResultsText}>Không có sản phẩm bạn tìm kiếm</Text>
+        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+        <View style={styles.loadingContent}>
+          <LottieView
+            source={require("../../../assets/animations/catRole.json")}
+            style={styles.lottieAnimation}
+            autoPlay
+            loop
+            speed={0.8}
+          />
+          <Text style={styles.loadingText}>Không có sản phẩm bạn tìm kiếm</Text>
         </View>
+      </LinearGradient>
       ) : (
         <FlatList
           data={gadgets}
@@ -348,6 +372,24 @@ export default function CategoryGadgets({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    height: ScreenHeight / 1.5,
+  },
+  loadingContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lottieAnimation: {
+    width: ScreenWidth,
+    height: ScreenWidth / 1.5,
+  },
+  loadingText: {
+    fontSize: 18,
+    width: ScreenWidth / 1.5,
+    textAlign: "center",
   },
   header: {
     flexDirection: 'row',

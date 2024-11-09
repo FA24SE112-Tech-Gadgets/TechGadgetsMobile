@@ -81,7 +81,7 @@ export default function BuyerOrders() {
     //     }, [currentPage])
     // );
 
- // Seller order pagination
+ // Buyer order pagination
  const fetchBuyerOrders = async (page) => {
     try {
         setIsFetching(true);
