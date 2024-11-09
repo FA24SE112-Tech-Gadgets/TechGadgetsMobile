@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign } from '@expo/vector-icons';
@@ -38,7 +39,6 @@ export default function BuyerHome() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [favorites, setFavorites] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const flatListRef = useRef();
   const navigation = useNavigation();
@@ -61,7 +61,13 @@ export default function BuyerHome() {
   const fetchGadgets = async (categoryId) => {
     try {
       const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
-      setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+      setGadgets(prev => ({
+        ...prev,
+        [categoryId]: response.data.items.map(item => ({
+          ...item,
+          isFavorite: item.isFavorite || false // Ensure isFavorite is always present
+        }))
+      }));
     } catch (error) {
       console.log('Error fetching gadgets:', error);
     }
@@ -75,7 +81,10 @@ export default function BuyerHome() {
     setLoading(true);
     try {
       const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
-      setSearchResults(response.data.items);
+      setSearchResults(response.data.items.map(item => ({
+        ...item,
+        isFavorite: item.isFavorite || false // Ensure isFavorite is always present
+      })));
     } catch (error) {
       console.log('Error searching gadgets:', error);
     } finally {
@@ -103,11 +112,28 @@ export default function BuyerHome() {
     }, [debouncedSearchQuery])
   );
 
-  const toggleFavorite = (gadgetId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [gadgetId]: !prev[gadgetId]
-    }));
+  const toggleFavorite = async (gadgetId) => {
+    try {
+      await api.post(`/favorite-gadgets/${gadgetId}`);
+      // Update the gadget's isFavorite status in the state
+      setGadgets(prevGadgets => {
+        const updatedGadgets = { ...prevGadgets };
+        for (const categoryId in updatedGadgets) {
+          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget => 
+            gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+          );
+        }
+        return updatedGadgets;
+      });
+      // Also update in search results if present
+      setSearchResults(prevResults => 
+        prevResults.map(gadget => 
+          gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling favorite:', error);
+    }
   };
 
   const renderGadget = ({ item, isSearchResult = false }) => (
@@ -136,9 +162,9 @@ export default function BuyerHome() {
           onPress={() => toggleFavorite(item.id)}
         >
           <AntDesign
-            name={favorites[item.id] ? "heart" : "hearto"}
+            name={item.isFavorite ? "heart" : "hearto"}
             size={24}
-            color={favorites[item.id] ? "red" : "black"}
+            color={item.isFavorite ? "red" : "black"}
           />
         </TouchableOpacity>
       </View>
@@ -252,7 +278,7 @@ export default function BuyerHome() {
               </Text>
           </View>
       </LinearGradient>
-  );
+    );
   }
 
   return (

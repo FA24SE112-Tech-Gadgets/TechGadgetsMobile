@@ -11,6 +11,7 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import Slider from '@react-native-community/slider';
@@ -64,11 +65,16 @@ export default function CategoryGadgets({ route, navigation }) {
     }
   }, [categoryId, page, hasMore]);
 
-  useEffect(() => {
-    fetchGadgets();
-    fetchBrands();
-    fetchFilters();
-  }, [fetchGadgets]);
+  useFocusEffect(
+    useCallback(() => {
+      setGadgets([]);
+      setPage(1);
+      setHasMore(true);
+      fetchGadgets();
+      fetchBrands();
+      fetchFilters();
+    }, [])
+  );
 
   const fetchBrands = async () => {
     try {
@@ -88,11 +94,17 @@ export default function CategoryGadgets({ route, navigation }) {
     }
   };
 
-  const toggleFavorite = (gadgetId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [gadgetId]: !prev[gadgetId]
-    }));
+  const toggleFavorite = async (gadgetId) => {
+    try {
+      await api.post(`/favorite-gadgets/${gadgetId}`);
+      setGadgets(prevGadgets => 
+        prevGadgets.map(gadget => 
+          gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling favorite:', error);
+    }
   };
 
   const openFilterModal = () => {
@@ -147,11 +159,11 @@ export default function CategoryGadgets({ route, navigation }) {
           style={styles.favoriteButton}
           onPress={() => toggleFavorite(item.id)}
         >
-          <AntDesign
-            name={favorites[item.id] ? "heart" : "hearto"}
-            size={24}
-            color={favorites[item.id] ? "red" : "black"}
-          />
+         <AntDesign
+          name={item.isFavorite ? "heart" : "hearto"}
+          size={24}
+          color={item.isFavorite ? "red" : "black"}
+        />
         </TouchableOpacity>
       </View>
       <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
@@ -167,6 +179,7 @@ export default function CategoryGadgets({ route, navigation }) {
       </View>
     </TouchableOpacity>
   );
+
 
   const renderBrandItem = ({ item, index }) => (
     <TouchableOpacity
