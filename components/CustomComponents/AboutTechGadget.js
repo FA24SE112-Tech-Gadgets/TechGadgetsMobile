@@ -30,18 +30,6 @@ const AboutTechGadget = () => {
       introContent: t("vincent-intro-content")
     },
     {
-      avaURL: longPic,
-      jobTitle: "Co-Founder TechGadget",
-      intro: t("long-intro"),
-      introContent: t("long-intro-content")
-    },
-    {
-      avaURL: khanhPic,
-      jobTitle: "Founder TechGadget",
-      intro: t("khanh-intro"),
-      introContent: t("khanh-intro-content")
-    },
-    {
       avaURL: thuanPic,
       jobTitle: "Founder TechGadget",
       intro: t("thuan-intro"),
@@ -68,18 +56,26 @@ const AboutTechGadget = () => {
             justifyContent: "center",
             marginRight: 12,
             marginTop: 10,
-            paddingHorizontal: 14
           }}
         >
-          <Image
+          <View
             style={{
-              width: 70,
-              height: 70,
-              borderColor: "black",
-              marginRight: -12,
+              height: 43,
+              width: 43,
+              overflow: 'hidden',
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            source={logo}
-          />
+          >
+            <Image
+              style={{
+                width: 48,
+                height: 48,
+              }}
+              source={logo}
+            />
+          </View>
           <MaskedView
             maskElement={
               <Text
@@ -96,14 +92,13 @@ const AboutTechGadget = () => {
             <LinearGradient
               start={{ x: 0, y: 0 }}
               end={{ x: 0.6, y: 0.6 }}
-              colors={["rgba(250, 164, 147, 0.65)", "#FB5854"]}
+              colors={["#EDCD2B", "#EDCD2B", "rgba(0,0,0, 0.7)"]}
             >
               <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
                 TechGadget
               </Text>
             </LinearGradient>
           </MaskedView>
-          <Text style={{ color: "#505050" }}></Text>
         </View>
 
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>

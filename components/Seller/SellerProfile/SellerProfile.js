@@ -6,7 +6,8 @@ import Modal from "react-native-modal";
 import { Linking } from "react-native";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function SellerProfile() {
   const [stringErr, setStringErr] = useState("");
@@ -56,7 +57,7 @@ export default function SellerProfile() {
   );
 
   return (
-    <View>
+    <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1 }}>
       {/* Header */}
       <View
         style={{
@@ -397,6 +398,40 @@ export default function SellerProfile() {
 
           <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
         </Pressable>
+        <Divider />
+
+        {/* Về TechGadget */}
+        <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => navigation.navigate("AboutTechGadget")}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <Feather
+                name="triangle"
+                size={20}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Về TechGadget
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+        </Pressable>
       </View>
 
       {/* Đăng xuất */}
@@ -435,7 +470,7 @@ export default function SellerProfile() {
         isError={isError}
         setIsError={setIsError}
       />
-    </View>
+    </LinearGradient>
   );
 }
 

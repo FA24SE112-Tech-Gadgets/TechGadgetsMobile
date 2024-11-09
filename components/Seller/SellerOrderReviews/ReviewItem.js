@@ -1,12 +1,12 @@
 import { View, Text, TouchableOpacity, ImageBackground, TextInput, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
-import Clipboard from '@react-native-clipboard/clipboard';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import { Image } from 'react-native';
 import RenderStars from '../../CustomComponents/RenderStars';
 import useAuth from '../../../utils/useAuth';
 import { Feather } from '@expo/vector-icons';
 import api from '../../Authorization/api';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ReviewItem({
     gadgetId,
@@ -28,6 +28,8 @@ export default function ReviewItem({
 
     const [isReplying, setIsReplying] = useState(false);
     const [openEditField, setOpenEditField] = useState(false);
+
+    const navigation = useNavigation();
 
     const handleSendReply = async () => {
         try {
@@ -108,8 +110,24 @@ export default function ReviewItem({
                 )}
 
                 <View>
-                    {/* FullName */}
-                    <Text>{review?.customer.fullName}</Text>
+                    <View style={{
+                        flexDirection: "row",
+                        gap: 10,
+                        alignItems: "center"
+                    }}>
+                        {/* FullName */}
+                        <Text
+                            style={{
+                                width: ScreenWidth / 1.3
+                            }}
+                            numberOfLines={2}
+                            ellipsizeMode="tail"
+                        >{review?.customer.fullName}</Text>
+                        <Text style={{
+                            fontSize: 12,
+                            color: "rgba(0, 0, 0, 0.5)"
+                        }}>{review?.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
+                    </View>
 
                     {/* Number of stars */}
                     <View style={{ flexDirection: "row", columnGap: -4 }}>
@@ -136,7 +154,7 @@ export default function ReviewItem({
                     }}>{review?.content}</Text>
 
                     {/* Gadget */}
-                    <View style={{
+                    <TouchableOpacity style={{
                         flexDirection: "row",
                         gap: 10,
                         width: ScreenWidth / 1.25,
@@ -144,7 +162,9 @@ export default function ReviewItem({
                         borderRadius: 10,
                         alignItems: "center",
                         marginVertical: 10
-                    }}>
+                    }}
+                        onPress={() => { navigation.navigate('GadgetSellerDetail', { gadgetId: gadgetId }) }}
+                    >
                         {/* thumbnailUrl */}
                         <View style={{
                             width: ScreenWidth / 5.5,
@@ -174,7 +194,7 @@ export default function ReviewItem({
                             numberOfLines={2}
                             ellipsizeMode="tail"
                         >{name}</Text>
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Seller reply */}
                     {
@@ -210,10 +230,24 @@ export default function ReviewItem({
                                     paddingVertical: 5,
                                     borderRadius: 10
                                 }}>
-                                    {/* seller name */}
-                                    <Text style={{ fontWeight: "500", color: "black" }}>
-                                        {review.sellerReply !== null ? review.sellerReply.seller?.shopName : "Người dùng hệ thống"}
-                                    </Text>
+                                    <View style={{
+                                        flexDirection: "row",
+                                        gap: 10,
+                                        alignItems: "center"
+                                    }}>
+                                        {/* seller name */}
+                                        <Text
+                                            style={{ fontWeight: "500", color: "black", overflow: "hidden", width: review?.sellerReply.isUpdated ? (ScreenWidth / 3) : (ScreenWidth / 1.9) }}
+                                            numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
+                                            ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
+                                        >
+                                            {review.sellerReply !== null ? review.sellerReply.seller?.shopName : "Người dùng hệ thống"}
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 12,
+                                            color: "rgba(0, 0, 0, 0.8)"
+                                        }}>{review?.sellerReply.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
+                                    </View>
 
                                     {/* seller reply content */}
                                     <Text style={{ color: "black" }}>

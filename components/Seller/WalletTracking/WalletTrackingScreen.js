@@ -16,6 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
 import WalletTrackingItem from "./WalletTrackingItem";
+import { Snackbar } from "react-native-paper";
 
 export function WalletTrackingScreen({ route, navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
@@ -24,6 +25,9 @@ export function WalletTrackingScreen({ route, navigation }) {
     const [isFetching, setIsFetching] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
+
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
 
     const [walletTrackings, setWalletTrackings] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -255,6 +259,8 @@ export function WalletTrackingScreen({ route, navigation }) {
                                 <>
                                     <WalletTrackingItem
                                         {...item}
+                                        setSnackbarVisible={setSnackbarVisible}
+                                        setSnackbarMessage={setSnackbarMessage}
                                     />
                                     {index < walletTrackings.length - 1 && (
                                         <Divider style={{ marginVertical: 14 }} />
@@ -273,6 +279,15 @@ export function WalletTrackingScreen({ route, navigation }) {
                     </View>
                 )}
             </View>
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 1, alignSelf: "center" }}
+            >
+                {snackbarMessage}
+            </Snackbar>
 
             <ErrModal
                 stringErr={stringErr}
