@@ -32,7 +32,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import messaging from '@react-native-firebase/messaging';
+import useNotification from "../../utils/useNotification"
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
@@ -62,12 +62,7 @@ const LoginScreen = () => {
 
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
-  const [deviceToken, setDeviceToken] = useState("");
-
-  const getDeviceToken = async () => {
-    let token = await messaging().getToken();
-    setDeviceToken(token);
-  }
+  const { deviceToken } = useNotification();
 
   const { t } = useTranslation();
 
@@ -283,16 +278,6 @@ const LoginScreen = () => {
       }
       fetchFunction();
     }, [isLoggedIn])
-  );
-
-  //Get deviceToken for FCM
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        await messaging().registerDeviceForRemoteMessages();
-        await getDeviceToken();
-      })();
-    }, [])
   );
 
   return (

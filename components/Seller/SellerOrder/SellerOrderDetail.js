@@ -170,11 +170,13 @@ export default function SellerOrderDetail({ route, navigation }) {
                     );
                     const newData = res.data.items;
 
-                    setHasMoreData(newData == null || res.data.hasNextPage);
+                    setHasMoreData(res.data.hasNextPage);
                     setIsFetching(false);
 
-                    setGadgets((prevArray) => [...prevArray, ...newData]);
-                    if (newData == null || !res.data.hasNextPage) {
+                    if (newData && newData.length > 0) {
+                        setGadgets((prevArray) => [...prevArray, ...newData]);
+                    }
+                    if (!res.data.hasNextPage) {
                         console.log("No more data to fetch");
                         return; // Stop the process if there is no more data
                     }
@@ -407,7 +409,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             fontWeight: "500"
         },
         sellerOrderStatusContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 7,
             alignSelf: "center",
@@ -438,7 +440,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             fontWeight: "500"
         },
         sellerOrderAddressContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 3.5,
             alignSelf: "center",
@@ -475,7 +477,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             width: ScreenWidth / 1.3
         },
         needHelpContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 10,
             alignSelf: "center",

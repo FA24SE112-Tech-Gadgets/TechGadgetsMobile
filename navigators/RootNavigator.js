@@ -4,7 +4,7 @@ import LoginScreen from "../components/Authorization/LoginScreen";
 import RegisterScreen from "../components/Authorization/RegisterScreen";
 import SellerNavigator from "./SellerNavigator";
 import AboutTechGadget from "../components/CustomComponents/AboutTechGadget";
-import BuyerPersonal from "../components/Buyer/BuyerPersonal";
+import BuyerPersonal from "../components/Buyer/BuyerProfile/BuyerPersonal";
 import Policy from "../components/CustomComponents/Policy";
 import ChangeProfile from "../components/CustomComponents/ChangeProfile";
 import VerifyCodeScreen from "../components/Authorization/VerifyCodeScreen";
@@ -20,17 +20,22 @@ import BusinessRegistrationCertificate from "../components/Seller/BusinessRegist
 import CertificateHistory from "../components/Seller/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
 import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
-import CategoryGadgets from "../components/Buyer/CategoryGadgets";
-import BuyerWallet from "../components/Buyer/BuyerWallet";
-import DepositHistory from "../components/Buyer/DepositHistory";
-import RefundHistory from "../components/Buyer/RefundHistory";
-import PaymentHistory from "../components/Buyer/PaymentHistory";
-import SellerGadgetByCategory from "../components/Seller/SellerGadgetByCategory";
+import CategoryGadgets from "../components/Buyer/BuyerHome/CategoryGadgets";
+import BuyerWallet from "../components/Buyer/WalletTracking/BuyerWallet";
+import DepositHistory from "../components/Buyer/WalletTracking/DepositHistory";
+import RefundHistory from "../components/Buyer/WalletTracking/RefundHistory";
+import PaymentHistory from "../components/Buyer/WalletTracking/PaymentHistory";
+import SellerGadgetByCategory from "../components/Seller/SellerHome/SellerGadgetByCategory";
 import GadgetSellerDetail from "../components/Seller/Gadget/GadgetSellerDetail";
 import SellerOrderDetail from "../components/Seller/SellerOrder/SellerOrderDetail";
-import SellerProfile from "../components/Seller/SellerProfile";
+import SellerProfile from "../components/Seller/SellerProfile/SellerProfile";
 import useAuth from "../utils/useAuth";
+import BuyerCartItem from "../components/Buyer/BuyerCart/BuyerCartItem";
+import BuyerOrderDetail from "../components/Buyer/BuyerOrder/BuyerOrderDetail";
 import { WalletTrackingScreen } from "../components/Seller/WalletTracking/WalletTrackingScreen";
+import { SellerOrderReviewsScreen } from "../components/Seller/SellerOrderReviews/SellerOrderReviewsScreen";
+import ReviewList from "../components/Buyer/BuyerReview/ReviewList";
+import FavoriteList from "../components/Buyer/Favorite/FavoriteList";
 
 
 const Stack = createNativeStackNavigator();
@@ -193,6 +198,13 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
+      <Stack.Screen name="BuyerOrderDetail" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <BuyerOrderDetail navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
       <Stack.Screen name="Policy" >
         {() => (
           <AuthRoute>
@@ -204,6 +216,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <ChangeProfile />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="FavoriteList" >
+        {() => (
+          <AuthRoute>
+            <FavoriteList />
           </AuthRoute>
         )}
       </Stack.Screen>
@@ -228,6 +247,13 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
+      <Stack.Screen name="BuyerCartItem" >
+        {() => (
+          <AuthRoute>
+            <BuyerCartItem />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
       <Stack.Screen name="PaymentSuccess" >
         {() => (
           <AuthRoute>
@@ -239,6 +265,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <PaymentFail />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="ReviewList" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <ReviewList navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>
@@ -268,6 +301,13 @@ const RootNavigator = () => {
         {({ navigation, route }) => (
           <AuthRoute>
             <WalletTrackingScreen navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SellerOrderReviews" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <SellerOrderReviewsScreen navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

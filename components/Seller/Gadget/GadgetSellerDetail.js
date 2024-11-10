@@ -178,7 +178,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     renderItem={({ item }) => (
                         <>
                             <Image
-                                source={{ uri: item }}
+                                source={{ uri: item.imageUrl }}
                                 style={styles.modalImage}
                                 resizeMode="contain"
                             />
@@ -296,7 +296,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             >
                                 <View style={styles.gadgetImageItem}>
                                     <Image
-                                        source={{ uri: image }}
+                                        source={{ uri: image.imageUrl }}
                                         style={styles.gadgetImage}
                                         resizeMode="contain"
                                     />

@@ -1,38 +1,23 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../utils/useAuth';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import SellerProfile from '../components/Seller/SellerProfile';
+import SellerProfile from '../components/Seller/SellerProfile/SellerProfile';
 import AuthRoute from '../components/Authorization/AuthRoute';
-import SellerHome from '../components/Seller/SellerHome';
-import SellerOrders from '../components/Seller/SellerOrders';
-import SellerNotification from '../components/Seller/SellerNotification';
+import SellerHome from '../components/Seller/SellerHome/SellerHome';
+import SellerOrders from '../components/Seller/SellerOrder/SellerOrders';
+import SellerNotifications from '../components/Seller/SellerNotification/SellerNotifications';
+import useNotification from "../utils/useNotification"
 const Tab = createBottomTabNavigator();
 
 const SellerNavigator = () => {
-    const [cart, setCart] = useState([]);
-    const { isChanged, user, isLoggedIn } = useAuth();
-
-    useEffect(() => {
-        const loadCart = async () => {
-            const cartDB = await AsyncStorage.getItem('cart');
-            if (cartDB) {
-                let tmpCart = JSON.parse(cartDB);
-                tmpCart = tmpCart.filter((product) => {
-                    return product?.user === (user?._id ? user?._id : 'guest');
-                });
-                setCart([...tmpCart]);
-            }
-        };
-        loadCart();
-    }, [isChanged]);
+    const { isLoggedIn } = useAuth();
+    const { unreadNotifications, setUnreadNotifications, showNotification, setShowNotification } = useNotification();
 
     return (
         <Tab.Navigator
             initialRouteName='SellerHome'
-            screenOptions={{
+            screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarStyle: {
                     display: !isLoggedIn ? 'none' : 'flex',
@@ -49,7 +34,16 @@ const SellerNavigator = () => {
                 // tabBarItemStyle: {
                 // 	display: route.name === 'BackgroundTask' ? 'none' : 'flex',
                 // }
-            }}
+            })}
+            screenListeners={({ route }) => ({
+                tabPress: () => {
+                    if (route.name !== "SellerNotification") {
+                        setShowNotification(true);
+                    } else {
+                        setShowNotification(false);
+                    }
+                },
+            })}
         >
             <Tab.Screen
                 name='SellerHome'
@@ -75,7 +69,8 @@ const SellerNavigator = () => {
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="document-text-sharp" size={+size} color={color} />
                     ),
-                    tabBarLabel: "Đơn hàng"
+                    tabBarLabel: "Đơn hàng",
+
                 }}
             >
                 {() => (
@@ -93,12 +88,25 @@ const SellerNavigator = () => {
                     // tabBarItemStyle: {
                     //     borderTopRightRadius: 15,
                     // }
-                    tabBarLabel: "Thông báo"
+                    tabBarLabel: "Thông báo",
+                    tabBarBadge: unreadNotifications > 0 ? unreadNotifications : null,
+                    tabBarBadgeStyle: {
+                        display: showNotification ? "flex" : "none",
+                        backgroundColor: "#FF3D00",
+                        color: "white",
+                        fontSize: 12,
+                    }
+                }}
+                listeners={{
+                    tabPress: () => {
+                        // Đặt lại số thông báo chưa đọc khi người dùng nhấn vào tab "Thông báo"
+                        setUnreadNotifications(0);
+                    },
                 }}
             >
                 {() => (
                     <AuthRoute>
-                        <SellerNotification />
+                        <SellerNotifications />
                     </AuthRoute>
                 )}
             </Tab.Screen>

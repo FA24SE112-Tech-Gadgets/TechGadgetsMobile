@@ -1,8 +1,7 @@
 import Clipboard from "@react-native-clipboard/clipboard";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Snackbar } from "react-native-paper";
 
 const SellerOrderItem = ({ id, customer, amount, status, createdAt, setSnackbarVisible, setSnackbarMessage }) => {
 

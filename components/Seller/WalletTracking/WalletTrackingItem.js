@@ -2,13 +2,16 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import Clipboard from '@react-native-clipboard/clipboard';
 import { ScreenWidth } from '@rneui/base';
+import { useNavigation } from '@react-navigation/native';
 
-export default function WalletTrackingItem({ id, amount, type, status, createdAt }) {
+export default function WalletTrackingItem({ id, amount, type, status, sellerOrderId, createdAt, setSnackbarMessage, setSnackbarVisible }) {
     const copyToClipboard = (text) => {
         Clipboard.setString(text);
         setSnackbarMessage("Sao chép thành công");
         setSnackbarVisible(true);
     };
+
+    const navigation = useNavigation();
 
     function formatCurrency(number) {
         // Convert the number to a string
@@ -35,7 +38,11 @@ export default function WalletTrackingItem({ id, amount, type, status, createdAt
     };
 
     return (
-        <>
+        <TouchableOpacity onPress={() => {
+            if (sellerOrderId) {
+                navigation.navigate('SellerOrderDetail', { sellerOrderId: sellerOrderId })
+            }
+        }}>
             {/* Wallet tracking id */}
             <View style={{
                 flexDirection: "row",
@@ -109,6 +116,6 @@ export default function WalletTrackingItem({ id, amount, type, status, createdAt
                 >{status == "Success" ? "+ " : ""}{formatCurrency(amount)}</Text>
                 <Text style={{ fontWeight: "400" }}>{formatVietnamDate(createdAt)}</Text>
             </View >
-        </>
+        </TouchableOpacity>
     )
 }
