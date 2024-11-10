@@ -13,14 +13,14 @@ const AuthContext = createContext({
   setIsLoggedIn: () => { },
   setRole: () => { },
   login: async () => { },
-  logout: () => { },
+  logout: async () => { },
   setUser: () => { },
   isPayToWin: false,
   setIsPayToWin: () => { },
   fetchSubscription: async (status, page, limit) => { },
   currentPackage: {},
   setCurrentPackage: () => { },
-  fetchUser: () => { },
+  fetchUser: async () => { },
 });
 
 const AuthProvider = ({ children }) => {

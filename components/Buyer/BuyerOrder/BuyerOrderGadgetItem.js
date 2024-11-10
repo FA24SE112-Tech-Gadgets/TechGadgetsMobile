@@ -23,15 +23,9 @@ const BuyerOrderGadgetItem = ({ thumbnailUrl, name, price, quantity, discountPri
             ]}
             >
                 <View style={{
-                    width: ScreenWidth / 3.5,
-                    height: ScreenHeight / 11.5,
-                    borderRadius: 15,
-                    marginRight: 10,
-                    borderColor: "#ed8900",
-                    borderWidth: 2,
-                    justifyContent: "center",
+                    justifyContent: "space-between",
                     alignItems: "center",
-                    backgroundColor: "white"
+                    marginRight: 10
                 }}>
                     <ImageBackground
                         source={{ uri: thumbnailUrl }} // Replace with your image URL
@@ -52,9 +46,10 @@ const BuyerOrderGadgetItem = ({ thumbnailUrl, name, price, quantity, discountPri
                     </Text>
 
                     <Text style={[styles.name, {
-                        fontSize: 16,
-                        fontWeight: "500",
-                        alignSelf: "flex-end"
+                        fontSize: 14,
+                        fontWeight: "400",
+                        alignSelf: "flex-end",
+                        color: "rgba(0, 0, 0, 0.5)"
                     }]} numberOfLines={1}>
                         x{quantity}
                     </Text>
@@ -81,7 +76,7 @@ const BuyerOrderGadgetItem = ({ thumbnailUrl, name, price, quantity, discountPri
                     {
                         width: ScreenWidth / 1.05,
                         alignSelf: "center",
-                        backgroundColor: "#f9f9f9",
+                        backgroundColor: "white",
                         paddingHorizontal: 10,
                         paddingVertical: 15,
                         alignItems: "flex-end",
@@ -112,7 +107,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: ScreenWidth / 1.05,
         alignSelf: "center",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "white",
         paddingHorizontal: 10,
         paddingVertical: 15
     },
@@ -126,7 +121,7 @@ const styles = StyleSheet.create({
     },
     discountBadge: {
         position: 'absolute',
-        top: 5,
+        top: 0,
         right: 6,
         transform: [{ rotate: '0deg' }],
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -147,8 +142,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     name: {
-        fontSize: 19,
-        fontWeight: "700",
+        fontSize: 14,
+        fontWeight: "500",
         marginBottom: 5,
     },
     price: {

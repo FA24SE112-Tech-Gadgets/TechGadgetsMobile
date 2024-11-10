@@ -7,7 +7,7 @@ import { ScreenWidth } from '@rneui/base';
 import api from '../../Authorization/api';
 import useNotification from '../../../utils/useNotification';
 
-export default function SellerNotificationItem({
+export default function BuyerNotificationItem({
     id,
     title,
     content,
@@ -44,7 +44,7 @@ export default function SellerNotificationItem({
                     break;
                 case "SellerOrder":
                     if (sellerOrderId) {
-                        navigation.navigate('SellerOrderDetail', { sellerOrderId: sellerOrderId })
+                        navigation.navigate('BuyerOrderDetail', { sellerOrderId: sellerOrderId })
                     }
                     break;
                 case "User":

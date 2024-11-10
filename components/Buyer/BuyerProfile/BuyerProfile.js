@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import useAuth from "../../../utils/useAuth";
+import useNotification from "../../../utils/useNotification";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { useTranslation } from "react-i18next";
@@ -43,6 +44,8 @@ export default function BuyerProfile() {
     logout,
     user,
   } = useAuth();
+
+  const { setNotifications, setNewNotifications, setCurrentPage } = useNotification();
 
   const getRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -103,7 +106,7 @@ export default function BuyerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-         {user.customer.avatarUrl ? (
+        {user.customer.avatarUrl ? (
           <Image
             source={{
               uri: user.customer.avatarUrl,
@@ -171,8 +174,8 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
-          {/* Danh sách yêu thích */}
-          <Pressable
+        {/* Danh sách yêu thích */}
+        <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -207,8 +210,8 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
-           {/* Ví của tôi*/}
-           <Pressable
+        {/* Ví của tôi*/}
+        <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -243,7 +246,7 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
-          {/* Quản lý giỏ hàng */}
+        {/* Quản lý giỏ hàng */}
         <Pressable
           style={{
             flexDirection: "row",
@@ -314,45 +317,6 @@ export default function BuyerProfile() {
           <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
         </Pressable>
         <Divider />
-
-        {/* Bắt đầu bán | Trang bán hàng */}
-        {/* <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onPress={() => {
-            navigation.replace("StackSellerHome")
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
-          >
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                height: 25,
-                width: 25,
-              }}
-            >
-              <FontAwesome5
-                name="store"
-                size={19}
-              />
-            </View>
-            <Text style={{ fontSize: 15, fontWeight: "500" }}>{true ? "Bắt đầu bán" : "Trang bán hàng"}</Text>
-          </View>
-
-          <View
-            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: "400" }}>{true && "Đăng ký miễn phí"}</Text>
-            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-          </View>
-        </Pressable>
-        <Divider /> */}
 
         {/* Trung tâm trợ giúp */}
         <Pressable
@@ -463,8 +427,11 @@ export default function BuyerProfile() {
 
       {/* Đăng xuất */}
       <Pressable
-        onPress={() => {
-          logout();
+        onPress={async () => {
+          await logout();
+          setCurrentPage(1);
+          setNotifications([]);
+          setNewNotifications([]);
           navigation.dispatch(
             CommonActions.reset({
               index: 0,  // Starts at the first screen in the stack

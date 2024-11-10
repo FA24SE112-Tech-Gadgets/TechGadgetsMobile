@@ -11,7 +11,9 @@ const NotificationContext = createContext({
     setShowNotification: () => { },
     deviceToken: "",
     newNotifications: [],
+    setNewNotifications: () => { },
     notifications: [],
+    setNotifications: () => { },
     isFetching: false,
     setIsFetching: () => { },
     refreshing: false,
@@ -25,6 +27,7 @@ const NotificationContext = createContext({
     fetchNotifications: async (page, type) => { },
     markNotificationAsRead: () => { },
     markAllNotificationsAsRead: () => { },
+    setCurrentPage: () => { },
 })
 
 const NotificationProvider = ({ children }) => {
@@ -219,7 +222,9 @@ const NotificationProvider = ({ children }) => {
                 setShowNotification,
                 deviceToken,
                 newNotifications,
+                setNewNotifications,
                 notifications,
+                setNotifications,
                 isFetching,
                 setIsFetching,
                 refreshing,
@@ -232,7 +237,8 @@ const NotificationProvider = ({ children }) => {
                 fetchNewNotifications,
                 fetchNotifications,
                 markNotificationAsRead,
-                markAllNotificationsAsRead
+                markAllNotificationsAsRead,
+                setCurrentPage,
             }}
         >
             {children}

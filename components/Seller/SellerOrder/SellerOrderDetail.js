@@ -409,7 +409,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             fontWeight: "500"
         },
         sellerOrderStatusContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 7,
             alignSelf: "center",
@@ -440,7 +440,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             fontWeight: "500"
         },
         sellerOrderAddressContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 3.5,
             alignSelf: "center",
@@ -477,7 +477,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             width: ScreenWidth / 1.3
         },
         needHelpContainer: {
-            backgroundColor: "#F9F9F9",
+            backgroundColor: "white",
             width: ScreenWidth / 1.05,
             height: ScreenHeight / 10,
             alignSelf: "center",

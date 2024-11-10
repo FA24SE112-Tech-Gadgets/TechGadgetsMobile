@@ -8,6 +8,7 @@ import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/native";
 import { MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
+import useNotification from "../../../utils/useNotification";
 
 export default function SellerProfile() {
   const [stringErr, setStringErr] = useState("");
@@ -41,6 +42,8 @@ export default function SellerProfile() {
     logout,
     user,
   } = useAuth();
+
+  const { setNotifications, setNewNotifications, setCurrentPage } = useNotification();
 
   useFocusEffect(
     useCallback(() => {
@@ -436,8 +439,11 @@ export default function SellerProfile() {
 
       {/* Đăng xuất */}
       <Pressable
-        onPress={() => {
-          logout();
+        onPress={async () => {
+          await logout();
+          setCurrentPage(1);
+          setNotifications([]);
+          setNewNotifications([]);
           navigation.dispatch(
             CommonActions.reset({
               index: 0,  // Starts at the first screen in the stack

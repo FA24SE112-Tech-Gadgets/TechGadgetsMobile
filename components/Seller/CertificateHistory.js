@@ -9,6 +9,8 @@ import useAuth from "../../utils/useAuth";
 import { useNavigation } from "@react-navigation/native";
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../CustomComponents/ErrModal';
+import useNotification from '../../utils/useNotification';
+
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,6 +30,9 @@ const CertificateHistory = () => {
   const {
     logout
   } = useAuth();
+
+  const { setNotifications, setNewNotifications, setCurrentPage: setContextCurrentPage } = useNotification();
+
   const navigation = useNavigation();
 
   //Reset sort option and search query
@@ -111,9 +116,17 @@ const CertificateHistory = () => {
     );
   };
 
-  const handleLogout = () => {
-    logout();
-    navigation.navigate('Login');
+  const handleLogout = async () => {
+    await logout();
+    setContextCurrentPage(1);
+    setNotifications([]);
+    setNewNotifications([]);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,  // Starts at the first screen in the stack
+        routes: [{ name: 'Login' }],  // Replace 'Login' with the name of your Login screen
+      })
+    );
   };
 
   const handleViewDetails = async (id) => {

@@ -27,7 +27,6 @@ export default function BuyerOrders() {
     const [buyerOrders, setBuyerOrders] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const navigation = useNavigation();
-    const [searchQuery, setSearchQuery] = useState("");
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
@@ -35,7 +34,6 @@ export default function BuyerOrders() {
     const [isFetching, setIsFetching] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [hasMoreData, setHasMoreData] = useState(true);
-    const [isSearching, setIsSearching] = useState(false);
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
 
@@ -43,81 +41,49 @@ export default function BuyerOrders() {
     useFocusEffect(
         useCallback(() => {
             setSortOption("Pending");
-            setSearchQuery("");
             setCurrentPage(1);
             setBuyerOrders([]);
         }, [])
     );
 
     const filter = sortOption === "Success" ? `Status=Success` : sortOption === "Pending" ? `Status=Pending` : `Status=Cancelled`;
+    // Buyer order pagination
+    const fetchBuyerOrders = async (page) => {
+        try {
+            setIsFetching(true);
+            const res = await api.get(
+                `/seller-orders?${filter}&Page=${page}&PageSize=10`
+            );
+            setIsFetching(false);
 
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         const init = async () => {
-    //             try {
-    //                 setIsFetching(true);
-    //                 const res = await api.get(
-    //                     `/seller-orders?${filter}&Page=${currentPage}&PageSize=10`
-    //                 );
-    //                 const newData = res.data.items;
-    //                 setHasMoreData(res.data.hasNextPage);
-    //                 setIsFetching(false);
-                    
-    //                 if (newData && newData.length > 0) {
-    //                     setBuyerOrders((prevArray) => [...prevArray, ...newData]);
-    //                 }
-    //                 if (!res.data.hasNextPage) {
-    //                     console.log("No more data to fetch");
-    //                     return; // Stop the process if there is no more data
-    //                 }
-    //             } catch (error) {
-    //                 console.log('Error fetching buyer orders:', error);
-    //                 setSnackbarMessage("Không thể tải đơn hàng. Vui lòng thử lại sau.");
-    //                 setSnackbarVisible(true);
-    //             }
-    //         };
+            const newData = res.data.items;
 
-    //         if (currentPage >= 1) init();
-    //     }, [currentPage])
-    // );
+            if (newData && newData.length > 0) {
+                const allBuyerOrders = [
+                    ...buyerOrders,
+                    ...newData.filter(
+                        (newBuyerOrder) =>
+                            !buyerOrders.some(
+                                (existingBuyerOrder) =>
+                                    existingBuyerOrder.id === newBuyerOrder.id
+                            )
+                    ),
+                ];
+                setBuyerOrders(allBuyerOrders);
+            }
 
- // Buyer order pagination
- const fetchBuyerOrders = async (page) => {
-    try {
-        setIsFetching(true);
-        const res = await api.get(
-            `/seller-orders?${filter}&Page=${page}&PageSize=10`
-        );
-        setIsFetching(false);
-
-        const newData = res.data.items;
-
-        if (newData && newData.length > 0) {
-            const allBuyerOrders = [
-                ...buyerOrders,
-                ...newData.filter(
-                    (newBuyerOrder) =>
-                        !buyerOrders.some(
-                            (existingBuyerOrder) =>
-                                existingBuyerOrder.id === newBuyerOrder.id
-                        )
-                ),
-            ];
-            setBuyerOrders(allBuyerOrders);
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setIsError(true);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
         }
-
-        // Update hasMoreData status
-        setHasMoreData(res.data.hasNextPage);
-    } catch (error) {
-        setIsError(true);
-        setStringErr(
-            error.response?.data?.reasons[0]?.message ?
-                error.response.data.reasons[0].message
-                :
-                "Lỗi mạng vui lòng thử lại sau"
-        );
     }
-}
 
 
     const handleSortOption = (option) => {
@@ -125,7 +91,7 @@ export default function BuyerOrders() {
             setSortOption(option);
             setModalVisible(false);
             setBuyerOrders([]);
-           
+
             const init = async () => {
                 try {
                     setIsFetching(true);
@@ -134,13 +100,13 @@ export default function BuyerOrders() {
                             ? `/seller-orders?Status=Success&Page=1&PageSize=10`
                             : option == "Pending" ? `/seller-orders?Status=Pending&Page=1&PageSize=10`
                                 : `/seller-orders?Status=Cancelled&Page=1&PageSize=10`;
-                                
+
                     const res = await api.get(url);
                     setIsFetching(false);
                     const newData = res.data.items;
 
                     if (newData && newData.length > 0) {
-                       setBuyerOrders(newData);
+                        setBuyerOrders(newData);
                     }
 
                     if (!res.data.hasNextPage) {
@@ -189,18 +155,18 @@ export default function BuyerOrders() {
             </View>
         );
     };
- 
-  //For refresh page when send reply
-  useFocusEffect(
-    useCallback(() => {
-        if (refreshing) {
-            setBuyerOrders([]);
-            setCurrentPage(1);
-            fetchBuyerOrders(1);
-            setRefreshing(false);
-        }
-    }, [refreshing])
-);  
+
+    //For refresh page when send reply
+    useFocusEffect(
+        useCallback(() => {
+            if (refreshing) {
+                setBuyerOrders([]);
+                setCurrentPage(1);
+                fetchBuyerOrders(1);
+                setRefreshing(false);
+            }
+        }, [refreshing])
+    );
 
     // Initial Fetch when component mounts
     useFocusEffect(
@@ -245,7 +211,7 @@ export default function BuyerOrders() {
                             speed={0.8}
                         />
                         <Text style={styles.emptyText}>
-                            {isSearching ? "Không tìm thấy đơn hàng nào" : "Không có đơn hàng nào"}
+                            Không có đơn hàng nào
                         </Text>
                     </View>
                 ) : (
@@ -254,7 +220,7 @@ export default function BuyerOrders() {
                         keyExtractor={item => item.id}
                         renderItem={({ item, index }) => (
                             <Pressable
-                                onPress={() => navigation.navigate('BuyerOrderDetail', { orderId: item.id })}
+                                onPress={() => navigation.navigate('BuyerOrderDetail', { sellerOrderId: item.id })}
                             >
                                 <BuyerOrderItem
                                     {...item}
@@ -494,10 +460,12 @@ const styles = StyleSheet.create({
     filterContainer: {
         flexDirection: "row",
         marginTop: 10,
+        paddingHorizontal: 10
     },
     orderListContainer: {
         flex: 1,
         marginTop: 10,
+        paddingHorizontal: 10
     },
     emptyContainer: {
         flex: 1,
@@ -532,6 +500,7 @@ const styles = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
         marginRight: 4,
+        fontSize: 16
     },
     modal: {
         justifyContent: 'flex-end',

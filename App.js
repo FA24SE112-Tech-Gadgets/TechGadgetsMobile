@@ -13,6 +13,7 @@ import 'text-encoding';
 import { AppRegistry } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import { NotificationProvider } from "./components/Notification/NotificationContext";
+import "./services/i18next";
 
 // Register background handler
 messaging().setBackgroundMessageHandler(async remoteMessage => {

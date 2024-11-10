@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
-import { Icon } from "@rneui/base";
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ImageBackground } from 'react-native';
+import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 
 const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, setSnackbarVisible, setSnackbarMessage }) => {
   const formatCurrency = (number) => {
@@ -21,13 +21,55 @@ const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, se
   };
 
   const renderGadgetItem = ({ item }) => (
-    <View style={styles.gadgetItem}>
-      <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
-      <View style={styles.gadgetInfo}>
-        <Text style={styles.gadgetName} numberOfLines={2} ellipsizeMode="tail">{item.name}</Text>
-        <Text style={styles.gadgetQuantity}>x{item.quantity}</Text>
+    <View style={{
+      flexDirection: "row"
+    }}>
+      <View style={{
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginRight: 10
+      }}>
+        <ImageBackground
+          source={{ uri: item.thumbnailUrl }} // Replace with your image URL
+          style={styles.thumbnail}
+        >
+        </ImageBackground>
+        {item.discountPercentage > 0 && (
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
+          </View>
+        )}
       </View>
-      <Text style={styles.gadgetPrice}>{formatCurrency(item.discountPrice)}</Text>
+
+      <View style={{ flex: 1, }}>
+        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+          {item.name}
+        </Text>
+
+        <Text style={[styles.name, {
+          fontSize: 14,
+          fontWeight: "400",
+          alignSelf: "flex-end",
+          color: "rgba(0, 0, 0, 0.5)"
+        }]} numberOfLines={1}>
+          x{item.quantity}
+        </Text>
+
+        <View style={{
+          flexDirection: "row",
+          gap: 5,
+          alignSelf: "flex-end",
+        }}>
+          {item.discountPercentage > 0 ? (
+            <>
+              <Text style={styles.originalPrice}>{formatCurrency(item.price)}</Text>
+              <Text style={styles.discountPrice}>{formatCurrency(item.discountPrice)}</Text>
+            </>
+          ) : (
+            <Text style={styles.discountPrice}>{formatCurrency(item.price)}</Text>
+          )}
+        </View>
+      </View>
     </View>
   );
 
@@ -138,18 +180,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   thumbnail: {
-    width: 60,
-    height: 60,
+    width: ScreenWidth / 6,
+    height: ScreenHeight / 18,
     borderRadius: 8,
     marginRight: 12,
   },
+  discountBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 6,
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  discountText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   gadgetInfo: {
     flex: 1,
-  },
-  gadgetName: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
   },
   gadgetQuantity: {
     fontSize: 12,
@@ -158,6 +210,22 @@ const styles = StyleSheet.create({
   gadgetPrice: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#ed8900',
+  },
+  name: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginBottom: 2,
+  },
+  discountPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#ed8900',
   },
   footer: {

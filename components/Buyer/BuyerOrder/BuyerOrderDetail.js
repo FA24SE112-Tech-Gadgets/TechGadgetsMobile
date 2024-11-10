@@ -31,7 +31,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
     const [hasMoreData, setHasMoreData] = useState(true);
     const navigation = useNavigation();
 
-    const orderId = route.params.orderId;
+    const sellerOrderId = route.params.sellerOrderId;
 
     const formatVietnamDate = (time) => {
         const date = new Date(time);
@@ -77,7 +77,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
     const fetchBuyerOrderDetail = async () => {
         try {
             setIsFetching(true);
-            const response = await api.get(`/seller-orders/${orderId}`);
+            const response = await api.get(`/seller-orders/${sellerOrderId}`);
             setBuyerOrder(response.data);
             setIsFetching(false);
         } catch (error) {
@@ -94,7 +94,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
                 try {
                     setIsFetching(true);
                     const res = await api.get(
-                        `/seller-order/${orderId}/items?Page=${currentPage}&PageSize=10`
+                        `/seller-order/${sellerOrderId}/items?Page=${currentPage}&PageSize=10`
                     );
                     const newData = res.data.items;
 
@@ -165,10 +165,10 @@ export default function BuyerOrderDetail({ route, navigate }) {
                 <View style={styles.buyerOrderFooterContainer}>
                     <View style={styles.buyerOrderFooterRow}>
                         <Text style={styles.buyerOrderId} numberOfLines={1} ellipsizeMode="tail">
-                            Mã đơn hàng: {orderId}
+                            Mã đơn hàng: {sellerOrderId}
                         </Text>
                         <TouchableOpacity
-                            onPress={() => copyToClipboard(orderId)}
+                            onPress={() => copyToClipboard(sellerOrderId)}
                         >
                             <Text style={styles.copyText}>Sao chép</Text>
                         </TouchableOpacity>
@@ -218,7 +218,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
         );
     };
 
-    if (!orderId) {
+    if (!sellerOrderId) {
         return (
             <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
                 <Text style={styles.errorText}>Không thể tải thông tin đơn hàng. Mã đơn hàng không hợp lệ.</Text>
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
         fontWeight: "500"
     },
     buyerOrderStatusContainer: {
-        backgroundColor: "#F9F9F9",
+        backgroundColor: "white",
         width: ScreenWidth / 1.05,
         height: ScreenHeight / 7,
         alignSelf: "center",
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
         color: "rgba(0, 0, 0, 0.6)"
     },
     buyerOrderAddressContainer: {
-        backgroundColor: "#F9F9F9",
+        backgroundColor: "white",
         width: ScreenWidth / 1.05,
         alignSelf: "center",
         marginTop: 5,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
         width: ScreenWidth / 1.3
     },
     needHelpContainer: {
-        backgroundColor: "#F9F9F9",
+        backgroundColor: "white",
         width: ScreenWidth / 1.05,
         height: ScreenHeight / 10,
         alignSelf: "center",
