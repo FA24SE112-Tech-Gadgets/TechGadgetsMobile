@@ -9,14 +9,16 @@ import useAuth from "../../utils/useAuth";
 import { useNavigation } from "@react-navigation/native";
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../CustomComponents/ErrModal';
+import useNotification from '../../utils/useNotification';
+
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
 
   const [stringErr, setStringErr] = useState("");
@@ -28,6 +30,9 @@ const CertificateHistory = () => {
   const {
     logout
   } = useAuth();
+
+  const { setNotifications, setNewNotifications, setCurrentPage: setContextCurrentPage } = useNotification();
+
   const navigation = useNavigation();
 
   //Reset sort option and search query
@@ -39,48 +44,64 @@ const CertificateHistory = () => {
   );
 
   // Seller application pagination
-  useFocusEffect(
-    useCallback(() => {
-      const fetchApplications = async () => {
-        try {
-          setIsFetching(true);
-          const response = await api.get(`/seller-applications?Page=${currentPage}&PageSize=10`);
-          const newApplications = response.data.items;
-          setHasMoreData(newApplications.length > 0);
-          setLoading(false);
-          setIsFetching(false);
+  const fetchSellerApplications = async (page) => {
+    try {
+      setIsFetching(true);
+      const res = await api.get(`/seller-applications?Page=${page}&PageSize=10`);
+      setIsFetching(false);
+      const newData = res.data.items;
 
-          if (newApplications.length == 0) {
-            console.log("No more data to fetch");
-            return; // Stop the process if there is no more data
-          }
-
-          setApplications(newApplications);
-          const approvedApp = newApplications.find(app => app.status === 'Approved');
-          if (approvedApp) {
-            setIsPopupNotiOpen(true);
-          }
-
-        } catch (err) {
-          setStringErr(
-            err.response?.data?.reasons[0]?.message ?
-              err.response.data.reasons[0].message
-              :
-              "Lỗi mạng vui lòng thử lại sau"
-          );
-          setIsError(true);
-          setIsFetching(false);
-          setLoading(false);
+      if (newData && newData.length > 0) {
+        const allWalletTrackings = [
+          ...applications,
+          ...newData.filter(
+            (newApplication) =>
+              !applications.some(
+                (existingApplication) =>
+                  existingApplication.id === newApplication.id
+              )
+          ),
+        ];
+        setApplications(allWalletTrackings);
+        const approvedApp = newData.find(app => app.status === 'Approved');
+        if (approvedApp) {
+          setIsPopupNotiOpen(true);
         }
-      };
-      fetchApplications();
-    }, [currentPage])
-  );
+      }
+
+      // Update hasMoreData status
+      setHasMoreData(res.data.hasNextPage);
+
+    } catch (error) {
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+      setIsFetching(false);
+      setLoading(false);
+    }
+  };
 
   const handleScroll = () => {
-    if (!isFetching && hasMoreData) {
-      setCurrentPage((prevPage) => prevPage + 1); // Fetch more data when reaching the end of the list
+    if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+    if (hasMoreData) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+      fetchSellerApplications(nextPage); // Gọi fetchSellerApplications với trang tiếp theo
+    } else {
+      setIsFetching(true);
+      fetchSellerApplications(currentPage); // Gọi fetchSellerApplications nhưng không tăng currentPage
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchSellerApplications(1); // Fetch new data (page 1)
+    setRefreshing(false);
   };
 
   const renderFooter = () => {
@@ -95,10 +116,19 @@ const CertificateHistory = () => {
     );
   };
 
-  const handleLogout = () => {
-    logout();
-    navigation.navigate('Login');
+  const handleLogout = async () => {
+    await logout();
+    setContextCurrentPage(1);
+    setNotifications([]);
+    setNewNotifications([]);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,  // Starts at the first screen in the stack
+        routes: [{ name: 'Login' }],  // Replace 'Login' with the name of your Login screen
+      })
+    );
   };
+
   const handleViewDetails = async (id) => {
     try {
       const response = await api.get(`${"/seller-applications"}/${id}`);
@@ -108,6 +138,25 @@ const CertificateHistory = () => {
       console.log('Không thể lấy chi tiết đơn đăng ký', err);
     }
   };
+
+  //For refresh page when send reply
+  useFocusEffect(
+    useCallback(() => {
+      if (refreshing) {
+        setApplications([]);
+        setCurrentPage(1);
+        fetchSellerApplications(1);
+        setRefreshing(false);
+      }
+    }, [refreshing])
+  );
+
+  // Initial Fetch when component mounts
+  useFocusEffect(
+    useCallback(() => {
+      fetchSellerApplications(1); // Fetch the first page
+    }, [])
+  );
 
   if (loading) return (
     <LinearGradient colors={['#F9F9F9', '#fea92866']} style={styles.loadingContainer}>
@@ -143,12 +192,6 @@ const CertificateHistory = () => {
         </View>
       </View>
     </LinearGradient>
-  );
-
-  if (error) return (
-    <View style={styles.errorContainer}>
-      <Text style={styles.errorText}>{error}</Text>
-    </View>
   );
 
   return (
@@ -230,12 +273,14 @@ const CertificateHistory = () => {
                   </TouchableOpacity>
                 </View>
               )}
-              onEndReached={handleScroll}
-              onEndReachedThreshold={0.5}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
               ListFooterComponent={renderFooter}
               initialNumToRender={10}
               showsVerticalScrollIndicator={false}
               overScrollMode="never"
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
             />
           </View>
         )}

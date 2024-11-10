@@ -12,6 +12,8 @@ import useAuth from "./utils/useAuth";
 import 'text-encoding';
 import { AppRegistry } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { NotificationProvider } from "./components/Notification/NotificationContext";
+import "./services/i18next";
 
 // Register background handler
 messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -58,6 +60,8 @@ export default function App() {
         },
         SellerGadgetByCategory: "SellerGadgetByCategory",
         SellerOrderDetail: "SellerOrderDetail",
+        WalletTrackingScreen: "WalletTrackingScreen",
+        SellerOrderReviews: "SellerOrderReviews",
         GadgetSellerDetail: "GadgetSellerDetail",
         GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",
@@ -136,9 +140,11 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer linking={linking} fallback={<LoadingScreen />}>
         <AuthProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <RootNavigator />
-          </GestureHandlerRootView>
+          <NotificationProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <RootNavigator />
+            </GestureHandlerRootView>
+          </NotificationProvider>
         </AuthProvider>
       </NavigationContainer>
     </SafeAreaProvider>

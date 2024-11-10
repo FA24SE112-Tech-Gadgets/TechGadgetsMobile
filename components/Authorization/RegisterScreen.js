@@ -21,7 +21,7 @@ import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { Checkbox } from 'react-native-paper';
-import messaging from '@react-native-firebase/messaging';
+import useNotification from "../../utils/useNotification"
 
 export default function RegisterScreen({ navigation }) {
   const [stringErr, setStringErr] = useState("");
@@ -37,12 +37,7 @@ export default function RegisterScreen({ navigation }) {
 
   const [isFetching, setIsFetching] = useState(false);
 
-  const [deviceToken, setDeviceToken] = useState("");
-
-  const getDeviceToken = async () => {
-    let token = await messaging().getToken();
-    setDeviceToken(token);
-  }
+  const { deviceToken } = useNotification();
 
   const { t } = useTranslation();
 
@@ -186,16 +181,6 @@ export default function RegisterScreen({ navigation }) {
         keyboardDidShowListener.remove();
         keyboardDidHideListener.remove();
       };
-    }, [])
-  );
-
-  //Get deviceToken for FCM
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        await messaging().registerDeviceForRemoteMessages();
-        await getDeviceToken();
-      })();
     }, [])
   );
 
