@@ -4,7 +4,7 @@ import LoginScreen from "../components/Authorization/LoginScreen";
 import RegisterScreen from "../components/Authorization/RegisterScreen";
 import SellerNavigator from "./SellerNavigator";
 import AboutTechGadget from "../components/CustomComponents/AboutTechGadget";
-import BuyerPersonal from "../components/Buyer/BuyerPersonal";
+import BuyerPersonal from "../components/Buyer/BuyerProfile/BuyerPersonal";
 import Policy from "../components/CustomComponents/Policy";
 import ChangeProfile from "../components/CustomComponents/ChangeProfile";
 import VerifyCodeScreen from "../components/Authorization/VerifyCodeScreen";

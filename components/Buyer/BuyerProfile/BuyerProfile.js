@@ -7,13 +7,13 @@ import {
   Image,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import useAuth from "../../utils/useAuth";
+import useAuth from "../../../utils/useAuth";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { useTranslation } from "react-i18next";
-import ErrModal from "../CustomComponents/ErrModal";
+import ErrModal from "../../CustomComponents/ErrModal";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import api from "../Authorization/api";
+import api from "../../Authorization/api";
 import { FontAwesome5, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 export default function BuyerProfile() {
@@ -195,7 +195,7 @@ export default function BuyerProfile() {
             >
               <MaterialIcons
                 name="playlist-add"
-                size={23}
+                size={24}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
@@ -231,7 +231,7 @@ export default function BuyerProfile() {
             >
               <FontAwesome
                 name="money"
-                size={21}
+                size={20}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
@@ -267,7 +267,7 @@ export default function BuyerProfile() {
             >
               <FontAwesome
                 name="shopping-cart"
-                size={23}
+                size={22}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
@@ -316,7 +316,7 @@ export default function BuyerProfile() {
         <Divider />
 
         {/* Bắt đầu bán | Trang bán hàng */}
-        <Pressable
+        {/* <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -352,7 +352,7 @@ export default function BuyerProfile() {
             <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
           </View>
         </Pressable>
-        <Divider />
+        <Divider /> */}
 
         {/* Trung tâm trợ giúp */}
         <Pressable

@@ -7,16 +7,16 @@ import {
   Pressable,
 } from "react-native";
 import React, { useState } from "react";
-import logo from "../../assets/adaptive-icon.png";
+import logo from "../../../assets/adaptive-icon.png";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import useAuth from "../../utils/useAuth";
+import useAuth from "../../../utils/useAuth";
 import Hyperlink from "react-native-hyperlink";
 import { useTranslation } from "react-i18next";
-import ErrModal from "../CustomComponents/ErrModal";
+import ErrModal from "../../CustomComponents/ErrModal";
 import { useNavigation } from "@react-navigation/native";
 
 export default function BuyerPersonal() {

@@ -8,7 +8,7 @@ import CustomSocial from '../components/Reference/CustomSocial';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import CustomerHistory from '../components/Buyer/CustomerHistory';
-import BuyerProfile from '../components/Buyer/BuyerProfile';
+import BuyerProfile from '../components/Buyer/BuyerProfile/BuyerProfile';
 import { Ionicons } from '@expo/vector-icons';
 import AuthRoute from '../components/Authorization/AuthRoute';
 import FavouriteGagdets from '../components/Buyer/FavouriteGagdets';
