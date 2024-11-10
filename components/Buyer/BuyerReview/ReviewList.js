@@ -51,7 +51,7 @@ const ReviewList = ({ route }) => {
             setHasNextPage(response.data.hasNextPage);
             setPage(refresh ? 2 : page + 1);
         } catch (error) {
-            console.error('Error fetching reviews:', error);
+            console.log('Error fetching reviews:', error);
         } finally {
             setIsLoading(false);
         }

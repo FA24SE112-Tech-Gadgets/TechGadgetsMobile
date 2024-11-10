@@ -70,10 +70,10 @@ export default function SellerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user?.imageUrl ? (
+       {customer.avatarUrl ? (
           <Image
             source={{
-              uri: user.imageUrl,
+              uri: customer.avatarUrl,
             }}
             style={{
               height: 40,

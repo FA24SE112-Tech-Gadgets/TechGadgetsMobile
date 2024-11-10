@@ -65,7 +65,7 @@ export default function BuyerHome() {
         ...prev,
         [categoryId]: response.data.items.map(item => ({
           ...item,
-          isFavorite: item.isFavorite || false // Ensure isFavorite is always present
+          isFavorite: item.isFavorite || false 
         }))
       }));
     } catch (error) {

@@ -103,10 +103,10 @@ export default function BuyerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user.imageUrl ? (
+         {user.customer.avatarUrl ? (
           <Image
             source={{
-              uri: user.imageUrl,
+              uri: user.customer.avatarUrl,
             }}
             style={{
               height: 40,
@@ -127,12 +127,12 @@ export default function BuyerProfile() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-              {/* {user.fullName?.charAt(0)} */}
+              {user.customer.fullName.charAt(0)}
             </Text>
           </View>
         )}
         <Text style={{ fontSize: 24, fontWeight: "500", color: "white" }}>
-          {user.fullName}
+          {user.customer.fullName}
         </Text>
       </View>
 
@@ -171,6 +171,42 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
+          {/* Danh sách yêu thích */}
+          <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => {
+            navigation.navigate("FavoriteList");
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <MaterialIcons
+                name="playlist-add"
+                size={23}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Danh sách yêu thích
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+        </Pressable>
+        <Divider />
+
            {/* Ví của tôi*/}
            <Pressable
           style={{
@@ -195,7 +231,7 @@ export default function BuyerProfile() {
             >
               <FontAwesome
                 name="money"
-                size={23}
+                size={21}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
@@ -272,42 +308,6 @@ export default function BuyerProfile() {
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
               Đã xem gần đây
-            </Text>
-          </View>
-
-          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-        </Pressable>
-        <Divider />
-
-        {/* Kho voucher */}
-        <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onPress={() => {
-            navigation.navigate("ApplicationRequest");
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
-          >
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                height: 25,
-                width: 25,
-              }}
-            >
-              <MaterialIcons
-                name="discount"
-                size={19}
-              />
-            </View>
-            <Text style={{ fontSize: 15, fontWeight: "500" }}>
-              Kho voucher
             </Text>
           </View>
 

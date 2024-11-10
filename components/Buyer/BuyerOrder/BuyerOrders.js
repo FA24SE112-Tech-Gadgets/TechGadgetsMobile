@@ -210,7 +210,7 @@ export default function BuyerOrders() {
     );
 
     return (
-        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
+        <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 {/* Back Button */}

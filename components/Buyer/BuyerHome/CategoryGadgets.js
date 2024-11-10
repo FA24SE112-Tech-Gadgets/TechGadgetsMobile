@@ -97,8 +97,8 @@ export default function CategoryGadgets({ route, navigation }) {
   const toggleFavorite = async (gadgetId) => {
     try {
       await api.post(`/favorite-gadgets/${gadgetId}`);
-      setGadgets(prevGadgets => 
-        prevGadgets.map(gadget => 
+      setGadgets(prevGadgets =>
+        prevGadgets.map(gadget =>
           gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
         )
       );
@@ -159,11 +159,11 @@ export default function CategoryGadgets({ route, navigation }) {
           style={styles.favoriteButton}
           onPress={() => toggleFavorite(item.id)}
         >
-         <AntDesign
-          name={item.isFavorite ? "heart" : "hearto"}
-          size={24}
-          color={item.isFavorite ? "red" : "black"}
-        />
+          <AntDesign
+            name={item.isFavorite ? "heart" : "hearto"}
+            size={24}
+            color={item.isFavorite ? "red" : "black"}
+          />
         </TouchableOpacity>
       </View>
       <Text style={styles.gadgetName} numberOfLines={2}>{item.name}</Text>
@@ -327,42 +327,45 @@ export default function CategoryGadgets({ route, navigation }) {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <AntDesign name="arrowleft" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{categoryName}</Text>
+        <Text style={styles.headerTxt}>{categoryName}</Text>
         <TouchableOpacity onPress={openFilterModal}>
           <AntDesign name="filter" size={24} color={activeFilters ? "#fea128" : "black"} />
         </TouchableOpacity>
       </View>
       {loading && page === 1 ? (
-       
-          <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
-            <View style={styles.loadingContent}>
-              <LottieView
-                source={require("../../../assets/animations/catRole.json")}
-                style={styles.lottieAnimation}
-                autoPlay
-                loop
-                speed={0.8}
-              />
-              <Text style={styles.loadingText}>Đang load dữ liệu</Text>
-            </View>
-          </LinearGradient>
-        
+
+        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <LottieView
+              source={require("../../../assets/animations/catRole.json")}
+              style={styles.lottieAnimation}
+              autoPlay
+              loop
+              speed={0.8}
+            />
+            <Text style={styles.loadingText}>Đang load dữ liệu</Text>
+          </View>
+        </LinearGradient>
+
       ) : noResults ? (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
-        <View style={styles.loadingContent}>
-          <LottieView
-            source={require("../../../assets/animations/catRole.json")}
-            style={styles.lottieAnimation}
-            autoPlay
-            loop
-            speed={0.8}
-          />
-          <Text style={styles.loadingText}>Không có sản phẩm bạn tìm kiếm</Text>
-        </View>
-      </LinearGradient>
+          <View style={styles.loadingContent}>
+            <LottieView
+              source={require("../../../assets/animations/catRole.json")}
+              style={styles.lottieAnimation}
+              autoPlay
+              loop
+              speed={0.8}
+            />
+            <Text style={styles.loadingText}>Không có sản phẩm bạn tìm kiếm</Text>
+          </View>
+        </LinearGradient>
       ) : (
         <FlatList
           data={gadgets}
@@ -405,16 +408,27 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderColor: 'rgb(254, 169, 40)',
+    backgroundColor: 'rgba(254, 169, 40, 0.3)',
   },
-  headerTitle: {
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(254, 161, 40, 0.5)",
+    borderWidth: 1,
+    borderColor: "rgb(254, 161, 40)",
+  },
+  headerTxt: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "600",
+    textAlign: "center",
+    flex: 1,
   },
   gadgetList: {
     padding: 10,

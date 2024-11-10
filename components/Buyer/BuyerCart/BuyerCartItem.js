@@ -68,7 +68,7 @@ const BuyerCartItem = () => {
 
             return allItems;
         } catch (error) {
-            console.error('Error fetching cart items:', error);
+            console.log('Error fetching cart items:', error);
             return [];
         }
     };
@@ -87,7 +87,7 @@ const BuyerCartItem = () => {
             setSellers(fetchedSellers.filter(seller => newCartItems[seller.id]?.length > 0));
             setCartItems(newCartItems);
         } catch (error) {
-            console.error('Error refreshing cart:', error);
+            console.log('Error refreshing cart:', error);
             setSellers([]);
             setCartItems({});
         } finally {
@@ -345,18 +345,18 @@ const BuyerCartItem = () => {
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
-             {/* Header */}
-             <View style={styles.header}>
-                                        {/* Back Button */}
-                                        <TouchableOpacity
-                                            onPress={() => navigation.goBack()}
-                                            style={styles.backButton}
-                                        >
-                                            <AntDesign name="arrowleft" size={24} color="black" />
-                                        </TouchableOpacity>
+            {/* Header */}
+            <View style={styles.header}>
+                {/* Back Button */}
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={styles.backButton}
+                >
+                    <AntDesign name="arrowleft" size={24} color="black" />
+                </TouchableOpacity>
 
-                                        <Text style={styles.headerTxt}>Giỏ hàng của tôi</Text>
-                                    </View>
+                <Text style={styles.headerTxt}>Giỏ hàng của tôi</Text>
+            </View>
             <FlatList
                 data={sellers}
                 renderItem={renderShopItem}
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     },
     editButtonText: {
         color: '#fea128',
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
     shopContainer: {
         backgroundColor: 'white',

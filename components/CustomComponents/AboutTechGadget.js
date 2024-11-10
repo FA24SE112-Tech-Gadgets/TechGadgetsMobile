@@ -76,7 +76,6 @@ const AboutTechGadget = () => {
               width: 70,
               height: 70,
               borderColor: "black",
-              marginRight: -12,
             }}
             source={logo}
           />
