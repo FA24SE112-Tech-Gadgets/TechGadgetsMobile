@@ -5,41 +5,37 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import FontAwesome6 from "react-native-vector-icons/FontAwesome6";
-import { useTranslation } from "react-i18next";
 import kietPic from "../../assets/kietPham.jpg"
-import dungPic from "../../assets/dungDao.jpg"
-import longPic from "../../assets/longDoan.jpg"
-import khanhPic from "../../assets/khanhMai.jpg"
+import thongPic from "../../assets/minhThong.jpg"
+import qKietPic from "../../assets/quangKiet.jpg"
 import thuanPic from "../../assets/thuanLam.jpg"
-import linhPic from "../../assets/linhDo.jpg"
 
 
 const AboutTechGadget = () => {
-  const { t } = useTranslation();
   const teamData = [
     {
       avaURL: kietPic,
       jobTitle: "CEO TechGadget",
-      intro: t("ptk-intro"),
-      introContent: t("ptk-intro-content")
-    },
-    {
-      avaURL: dungPic,
-      jobTitle: "Co-Founder TechGadget",
-      intro: t("vincent-intro"),
-      introContent: t("vincent-intro-content")
+      intro: "Phạm Tuấn Kiệt (2003), là nhà sáng lập và phát triển giao diện kiêm hệ thống của ứng dụng TechGadget.",
+      introContent: "Với niềm đam mê và tầm nhìn sáng tạo, anh đã biến TechGadget thành nền tảng độc đáo giúp người dùng dễ dàng tìm kiếm sản phẩm công nghệ. Hiện Kiệt đang quản lý và điều hành ứng dụng, đảm bảo mang đến trải nghiệm tốt nhất cho người dùng."
     },
     {
       avaURL: thuanPic,
-      jobTitle: "Founder TechGadget",
-      intro: t("thuan-intro"),
-      introContent: t("thuan-intro-content")
+      jobTitle: "Co-Founder TechGadget",
+      intro: "Lâm Hữu Thuần (2003), là người đề ra ý tưởng và đồng sáng lập ứng dụng TechGadget.",
+      introContent: "Với kỹ năng lập trình hướng đối tượng và chuyên môn ở phía back-end, anh đã góp phần quan trọng vào thành công của nền tảng này, hiện đang dẫn dắt và quản lý hoạt động của ứng dụng."
     },
     {
-      avaURL: linhPic,
+      avaURL: qKietPic,
       jobTitle: "Founder TechGadget",
-      intro: t("linh-intro"),
-      introContent: t("linh-intro-content")
+      intro: "Đỗ Quang Kiệt (2003), là người sáng lập TechGadget và là chuyên gia trong lĩnh vực KTPM.",
+      introContent: "Anh đặc biệt quan tâm và phát triển phần Frontend cho các ứng dụng web, sử dụng nền tảng React để tạo ra các trải nghiệm người dùng tốt nhất cho TechGadget."
+    },
+    {
+      avaURL: thongPic,
+      jobTitle: "Founder TechGadget",
+      intro: "Lý Minh Thông (2003), chuyên ngành Kỹ sư phần mềm, áp dụng Tailwind.",
+      introContent: "Anh chuyên phụ trách phát triển phần Frontend cho các ứng dụng web, sử dụng nền tảng React để tạo ra các trải nghiệm người dùng tốt nhất cho TechGadget."
     }
   ]
   return (
@@ -102,11 +98,11 @@ const AboutTechGadget = () => {
         </View>
 
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          {t("about-intro")}
+          TechGadget sẽ là người bạn đồng hành đáng tin cậy giúp bạn giải quyết vấn đề khó nhằn này một cách dễ dàng và thú vị.
         </Text>
 
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          {t("about-intro-content")}
+          Chúng tôi là đội ngũ phát triển đằng sau TechGadget - một ứng dụng sáng tạo và độc đáo, chuyên về tìm kiếm sản phẩm công nghệ dựa trên ngôn ngữ tự nhiên.
         </Text>
 
         {/* Đội ngũ */}
@@ -117,7 +113,7 @@ const AboutTechGadget = () => {
           <Text
             style={{ fontWeight: "bold", fontSize: 18, marginVertical: 10 }}
           >
-            {t("what-eat-team")}
+            Đội ngũ
           </Text>
         </View>
 
@@ -188,12 +184,12 @@ const AboutTechGadget = () => {
           <Text
             style={{ fontWeight: "bold", fontSize: 18, marginVertical: 10 }}
           >
-            {t("what-eat-mission")}
+            Sứ mệnh
           </Text>
         </View>
 
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          {t("mission-content")}
+          Chúng tôi tin rằng việc tìm kiếm sản phẩm để bỏ vào giỏ hàng không chỉ là một nhiệm vụ nhàm chán, mà còn là một thách thức đối với nhiều người. Với TechGadget, chúng tôi đã đặt ra sứ mệnh làm cho quá trình này trở nên dễ dàng và thú vị hơn bao giờ hết. Từ đó, giúp mọi người có thể khám phá những sản phẩm mới đa dạng, phong phú và đúng với nhu cầu tìm kiếm của người dùng.
         </Text>
 
         {/* Tầm nhìn */}
@@ -204,12 +200,12 @@ const AboutTechGadget = () => {
           <Text
             style={{ fontWeight: "bold", fontSize: 18, marginVertical: 10 }}
           >
-            {t("what-eat-vision")}
+            Tầm nhìn
           </Text>
         </View>
 
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          {t("vision-content")}
+          Tầm nhìn của chúng tôi không chỉ dừng lại ở việc giải quyết vấn đề "tìm kiếm nâng cao", mà còn là trở thành một phần không thể thiếu của cuộc sống hàng ngày của mọi gia đình và cá nhân.
         </Text>
 
         {/* Vì sao lại chọn chúng tôi? */}
@@ -220,28 +216,18 @@ const AboutTechGadget = () => {
           <Text
             style={{ fontWeight: "bold", fontSize: 18, marginVertical: 10 }}
           >
-            {t("why-us")}
+            Vì sao bạn nên chọn chúng tôi?
           </Text>
         </View>
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
           <Text style={{ fontWeight: "600" }}>
-            • {t("save-time")}
-          </Text>{t("save-time-content")}
+            • Tiện ích và tiết kiệm thời gian:
+          </Text>{" "}TechGadget không chỉ là một ứng dụng thương mại điện tử, mà còn là một công cụ hữu ích giúp bạn tiết kiệm thời gian và công sức trong việc tìm kiếm sản phẩm công nghệ hàng ngày. Với chúng tôi, việc lựa chọn sản phẩm không còn là nỗi lo lắng nữa.
         </Text>
         <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
           <Text style={{ fontWeight: "600" }}>
-            • {t("good-exp")}
-          </Text>{t("good-exp-content")}
-        </Text>
-        <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          <Text style={{ fontWeight: "600" }}>
-            • {t("phac-do")}
-          </Text>{t("phac-do-content")}
-        </Text>
-        <Text style={{ fontSize: 16, marginVertical: 10, paddingHorizontal: 14 }}>
-          <Text style={{ fontWeight: "600" }}>
-            • {t("social-exp")}
-          </Text>{t("social-exp-content")}
+            • Trải nghiệm độc đáo:
+          </Text>{" "}Với TechGadget, chúng tôi cam kết mang đến cho bạn những trải nghiệm tìm kiếm độc đáo và thú vị. Hệ thống tìm kiếm sản phẩm công nghệ nâng cao của chúng tôi sẽ đem lại cho bạn những lựa chọn mới mẻ và đa dạng mỗi ngày.
         </Text>
       </ScrollView>
     </View>
