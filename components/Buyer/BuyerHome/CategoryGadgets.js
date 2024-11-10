@@ -11,10 +11,13 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import Slider from '@react-native-community/slider';
-import api from "../Authorization/api";
+import api from "../../Authorization/api";
+import LottieView from 'lottie-react-native';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -55,25 +58,30 @@ export default function CategoryGadgets({ route, navigation }) {
         setHasMore(newGadgets.length === 20);
       }
     } catch (error) {
-      console.error('Error fetching gadgets:', error);
+      console.log('Error fetching gadgets:', error);
       setNoResults(true);
     } finally {
       setLoading(false);
     }
   }, [categoryId, page, hasMore]);
 
-  useEffect(() => {
-    fetchGadgets();
-    fetchBrands();
-    fetchFilters();
-  }, [fetchGadgets]);
+  useFocusEffect(
+    useCallback(() => {
+      setGadgets([]);
+      setPage(1);
+      setHasMore(true);
+      fetchGadgets();
+      fetchBrands();
+      fetchFilters();
+    }, [])
+  );
 
   const fetchBrands = async () => {
     try {
       const response = await api.get(`/brands/categories/${categoryId}?Page=1&PageSize=50`);
       setBrands(response.data.items);
     } catch (error) {
-      console.error('Error fetching brands:', error);
+      console.log('Error fetching brands:', error);
     }
   };
 
@@ -82,15 +90,21 @@ export default function CategoryGadgets({ route, navigation }) {
       const response = await api.get(`/gadget-filters/category/${categoryId}`);
       setFilters(response.data);
     } catch (error) {
-      console.error('Error fetching filters:', error);
+      console.log('Error fetching filters:', error);
     }
   };
 
-  const toggleFavorite = (gadgetId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [gadgetId]: !prev[gadgetId]
-    }));
+  const toggleFavorite = async (gadgetId) => {
+    try {
+      await api.post(`/favorite-gadgets/${gadgetId}`);
+      setGadgets(prevGadgets =>
+        prevGadgets.map(gadget =>
+          gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling favorite:', error);
+    }
   };
 
   const openFilterModal = () => {
@@ -146,9 +160,9 @@ export default function CategoryGadgets({ route, navigation }) {
           onPress={() => toggleFavorite(item.id)}
         >
           <AntDesign
-            name={favorites[item.id] ? "heart" : "hearto"}
+            name={item.isFavorite ? "heart" : "hearto"}
             size={24}
-            color={favorites[item.id] ? "red" : "black"}
+            color={item.isFavorite ? "red" : "black"}
           />
         </TouchableOpacity>
       </View>
@@ -165,6 +179,7 @@ export default function CategoryGadgets({ route, navigation }) {
       </View>
     </TouchableOpacity>
   );
+
 
   const renderBrandItem = ({ item, index }) => (
     <TouchableOpacity
@@ -312,20 +327,45 @@ export default function CategoryGadgets({ route, navigation }) {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <AntDesign name="arrowleft" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{categoryName}</Text>
+        <Text style={styles.headerTxt}>{categoryName}</Text>
         <TouchableOpacity onPress={openFilterModal}>
           <AntDesign name="filter" size={24} color={activeFilters ? "#fea128" : "black"} />
         </TouchableOpacity>
       </View>
       {loading && page === 1 ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+
+        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <LottieView
+              source={require("../../../assets/animations/catRole.json")}
+              style={styles.lottieAnimation}
+              autoPlay
+              loop
+              speed={0.8}
+            />
+            <Text style={styles.loadingText}>Đang load dữ liệu</Text>
+          </View>
+        </LinearGradient>
+
       ) : noResults ? (
-        <View style={styles.noResultsContainer}>
-          <Text style={styles.noResultsText}>Không có sản phẩm bạn tìm kiếm</Text>
-        </View>
+        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.loadingContainer}>
+          <View style={styles.loadingContent}>
+            <LottieView
+              source={require("../../../assets/animations/catRole.json")}
+              style={styles.lottieAnimation}
+              autoPlay
+              loop
+              speed={0.8}
+            />
+            <Text style={styles.loadingText}>Không có sản phẩm bạn tìm kiếm</Text>
+          </View>
+        </LinearGradient>
       ) : (
         <FlatList
           data={gadgets}
@@ -349,17 +389,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+  loadingContainer: {
+    flex: 1,
+    height: ScreenHeight / 1.5,
   },
-  headerTitle: {
+  loadingContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lottieAnimation: {
+    width: ScreenWidth,
+    height: ScreenWidth / 1.5,
+  },
+  loadingText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    width: ScreenWidth / 1.5,
+    textAlign: "center",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderColor: 'rgb(254, 169, 40)',
+    backgroundColor: 'rgba(254, 169, 40, 0.3)',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(254, 161, 40, 0.5)",
+    borderWidth: 1,
+    borderColor: "rgb(254, 161, 40)",
+  },
+  headerTxt: {
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    flex: 1,
   },
   gadgetList: {
     padding: 10,

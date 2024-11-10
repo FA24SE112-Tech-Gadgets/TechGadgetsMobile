@@ -8,13 +8,14 @@ import CustomSocial from '../components/Reference/CustomSocial';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import CustomerHistory from '../components/Buyer/CustomerHistory';
-import BuyerProfile from '../components/Buyer/BuyerProfile';
+import BuyerProfile from '../components/Buyer/BuyerProfile/BuyerProfile';
 import { Ionicons } from '@expo/vector-icons';
 import AuthRoute from '../components/Authorization/AuthRoute';
 import FavouriteGagdets from '../components/Buyer/FavouriteGagdets';
 import OrdersHistory from '../components/Buyer/OrdersHistory';
 import BuyerNotification from '../components/Buyer/BuyerNotification';
-import BuyerHome from '../components/Buyer/BuyerHome';
+import BuyerHome from '../components/Buyer/BuyerHome/BuyerHome';
+import BuyerOrders from '../components/Buyer/BuyerOrder/BuyerOrders';
 
 const Tab = createBottomTabNavigator();
 
@@ -92,7 +93,7 @@ const BuyerNavigator = () => {
 				)}
 			</Tab.Screen>
 			<Tab.Screen
-				name='OrdersHistory'
+				name='BuyerOrder'
 				options={{
 					tabBarIcon: ({ color, size }) => (
 						<FontAwesome5 name="history" size={+size} color={color} />
@@ -102,7 +103,7 @@ const BuyerNavigator = () => {
 			>
 				{() => (
 					<AuthRoute>
-						<OrdersHistory />
+						<BuyerOrders />
 					</AuthRoute>
 				)}
 			</Tab.Screen>

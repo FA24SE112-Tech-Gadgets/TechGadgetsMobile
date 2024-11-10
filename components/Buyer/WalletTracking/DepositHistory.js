@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { AntDesign } from '@expo/vector-icons';
-import api from '../Authorization/api';
+import api from '../../Authorization/api';
 import { Snackbar } from 'react-native-paper';
 
 const DepositHistory = () => {
@@ -31,7 +31,7 @@ const DepositHistory = () => {
         setHasMore(false);
       }
     } catch (error) {
-      console.error('Error fetching deposit history:', error);
+      console.log('Error fetching deposit history:', error);
     } finally {
       setLoading(false);
     }
@@ -49,9 +49,7 @@ const DepositHistory = () => {
   const cancelTransaction = async (walletTrackingId) => {
     try {
       await api.put(`/wallet-trackings/${walletTrackingId}/cancel`);
-      // Update the local state to reflect the cancellation
-      console.log('day ne', walletTrackingId);
-      
+    
       setTransactions(prevTransactions =>
         prevTransactions.map(transaction =>
           transaction.id === walletTrackingId
@@ -62,7 +60,7 @@ const DepositHistory = () => {
       setSnackbarMessage('Giao dịch đã được hủy thành công.');
       setSnackbarVisible(true);
     } catch (error) {
-      console.error('Error cancelling transaction:', error);
+      console.log('Error cancelling transaction:', error);
       setSnackbarMessage('Không thể hủy giao dịch. Vui lòng thử lại sau.');
       setSnackbarVisible(true);
     }

@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
-import api from '../Authorization/api';
+import api from '../../Authorization/api';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import LottieView from 'lottie-react-native';
@@ -23,7 +23,7 @@ const EmptyStateView = ({ message }) => (
     <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.emptyContainer}>
         <View style={styles.emptyContent}>
             <LottieView
-                source={require("../../assets/animations/catRole.json")}
+                source={require("../../../assets/animations/catRole.json")}
                 style={styles.lottieAnimation}
                 autoPlay
                 loop
@@ -34,7 +34,7 @@ const EmptyStateView = ({ message }) => (
     </LinearGradient>
 );
 
-const FavoriteGadgets = () => {
+const FavoriteList = () => {
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -362,4 +362,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default FavoriteGadgets;
+export default FavoriteList;

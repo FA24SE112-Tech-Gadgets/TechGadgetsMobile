@@ -9,15 +9,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon } from "@rneui/base";
-import api from "../Authorization/api";
-import logo from "../../assets/adaptive-icon.png";
+import api from "../../Authorization/api";
+import logo from "../../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
+import LottieView from 'lottie-react-native';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -36,7 +39,6 @@ export default function BuyerHome() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [favorites, setFavorites] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const flatListRef = useRef();
   const navigation = useNavigation();
@@ -59,7 +61,13 @@ export default function BuyerHome() {
   const fetchGadgets = async (categoryId) => {
     try {
       const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
-      setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+      setGadgets(prev => ({
+        ...prev,
+        [categoryId]: response.data.items.map(item => ({
+          ...item,
+          isFavorite: item.isFavorite || false 
+        }))
+      }));
     } catch (error) {
       console.log('Error fetching gadgets:', error);
     }
@@ -73,9 +81,12 @@ export default function BuyerHome() {
     setLoading(true);
     try {
       const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
-      setSearchResults(response.data.items);
+      setSearchResults(response.data.items.map(item => ({
+        ...item,
+        isFavorite: item.isFavorite || false // Ensure isFavorite is always present
+      })));
     } catch (error) {
-      console.error('Error searching gadgets:', error);
+      console.log('Error searching gadgets:', error);
     } finally {
       setLoading(false);
     }
@@ -101,11 +112,28 @@ export default function BuyerHome() {
     }, [debouncedSearchQuery])
   );
 
-  const toggleFavorite = (gadgetId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [gadgetId]: !prev[gadgetId]
-    }));
+  const toggleFavorite = async (gadgetId) => {
+    try {
+      await api.post(`/favorite-gadgets/${gadgetId}`);
+      // Update the gadget's isFavorite status in the state
+      setGadgets(prevGadgets => {
+        const updatedGadgets = { ...prevGadgets };
+        for (const categoryId in updatedGadgets) {
+          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget => 
+            gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+          );
+        }
+        return updatedGadgets;
+      });
+      // Also update in search results if present
+      setSearchResults(prevResults => 
+        prevResults.map(gadget => 
+          gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling favorite:', error);
+    }
   };
 
   const renderGadget = ({ item, isSearchResult = false }) => (
@@ -134,9 +162,9 @@ export default function BuyerHome() {
           onPress={() => toggleFavorite(item.id)}
         >
           <AntDesign
-            name={favorites[item.id] ? "heart" : "hearto"}
+            name={item.isFavorite ? "heart" : "hearto"}
             size={24}
-            color={favorites[item.id] ? "red" : "black"}
+            color={item.isFavorite ? "red" : "black"}
           />
         </TouchableOpacity>
       </View>
@@ -219,9 +247,37 @@ export default function BuyerHome() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <LinearGradient colors={['#fea92866', '#FFFFFF']}
+          style={{
+              flex: 1,
+              height: ScreenHeight / 1.5,
+          }}
+      >
+          <View
+              style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+              }}
+          >
+              <LottieView
+                  source={require("../../../assets/animations/catRole.json")}
+                  style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                  autoPlay
+                  loop
+                  speed={0.8}
+              />
+              <Text
+                  style={{
+                      fontSize: 18,
+                      width: ScreenWidth / 1.5,
+                      textAlign: "center",
+                  }}
+              >
+                  Đang load dữ liệu
+              </Text>
+          </View>
+      </LinearGradient>
     );
   }
 

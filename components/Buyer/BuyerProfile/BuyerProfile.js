@@ -7,13 +7,13 @@ import {
   Image,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import useAuth from "../../utils/useAuth";
+import useAuth from "../../../utils/useAuth";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { useTranslation } from "react-i18next";
-import ErrModal from "../CustomComponents/ErrModal";
+import ErrModal from "../../CustomComponents/ErrModal";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import api from "../Authorization/api";
+import api from "../../Authorization/api";
 import { FontAwesome5, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 export default function BuyerProfile() {
@@ -103,10 +103,10 @@ export default function BuyerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user.imageUrl ? (
+         {user.customer.avatarUrl ? (
           <Image
             source={{
-              uri: user.imageUrl,
+              uri: user.customer.avatarUrl,
             }}
             style={{
               height: 40,
@@ -127,12 +127,12 @@ export default function BuyerProfile() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-              {/* {user.fullName?.charAt(0)} */}
+              {user.customer.fullName.charAt(0)}
             </Text>
           </View>
         )}
         <Text style={{ fontSize: 24, fontWeight: "500", color: "white" }}>
-          {user.fullName}
+          {user.customer.fullName}
         </Text>
       </View>
 
@@ -171,15 +171,15 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
-        {/* Quản lý yêu cầu */}
-        {/* <Pressable
+          {/* Danh sách yêu thích */}
+          <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
           }}
           onPress={() => {
-            navigation.navigate("ApplicationRequest");
+            navigation.navigate("FavoriteList");
           }}
         >
           <View
@@ -193,19 +193,19 @@ export default function BuyerProfile() {
                 width: 25,
               }}
             >
-              <FontAwesome
-                name="wpforms"
-                size={23}
+              <MaterialIcons
+                name="playlist-add"
+                size={24}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
-              Quản lý yêu cầu
+              Danh sách yêu thích
             </Text>
           </View>
 
           <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
         </Pressable>
-        <Divider /> */}
+        <Divider />
 
            {/* Ví của tôi*/}
            <Pressable
@@ -231,11 +231,47 @@ export default function BuyerProfile() {
             >
               <FontAwesome
                 name="money"
-                size={23}
+                size={20}
               />
             </View>
             <Text style={{ fontSize: 15, fontWeight: "500" }}>
               Ví của tôi
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+        </Pressable>
+        <Divider />
+
+          {/* Quản lý giỏ hàng */}
+        <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => {
+            navigation.navigate("BuyerCartItem");
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <FontAwesome
+                name="shopping-cart"
+                size={22}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Quản lý giỏ hàng
             </Text>
           </View>
 
@@ -279,44 +315,8 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
-        {/* Kho voucher */}
-        <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onPress={() => {
-            navigation.navigate("ApplicationRequest");
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
-          >
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                height: 25,
-                width: 25,
-              }}
-            >
-              <MaterialIcons
-                name="discount"
-                size={19}
-              />
-            </View>
-            <Text style={{ fontSize: 15, fontWeight: "500" }}>
-              Kho voucher
-            </Text>
-          </View>
-
-          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-        </Pressable>
-        <Divider />
-
         {/* Bắt đầu bán | Trang bán hàng */}
-        <Pressable
+        {/* <Pressable
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -352,7 +352,7 @@ export default function BuyerProfile() {
             <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
           </View>
         </Pressable>
-        <Divider />
+        <Divider /> */}
 
         {/* Trung tâm trợ giúp */}
         <Pressable
