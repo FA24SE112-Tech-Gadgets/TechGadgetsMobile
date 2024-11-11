@@ -423,16 +423,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: -5,
-    transform: [{ rotate: '0deg' }],
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: '#F9F9F9',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "grey"
   },
   discountText: {
-    color: 'white',
+    color: 'grey',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   priceContainer: {
     flexDirection: 'column',
