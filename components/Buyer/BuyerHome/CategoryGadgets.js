@@ -482,9 +482,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     left: 5,
-    backgroundColor: '#ff4444',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   discountText: {

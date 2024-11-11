@@ -36,6 +36,8 @@ import { WalletTrackingScreen } from "../components/Seller/WalletTracking/Wallet
 import { SellerOrderReviewsScreen } from "../components/Seller/SellerOrderReviews/SellerOrderReviewsScreen";
 import ReviewList from "../components/Buyer/BuyerReview/ReviewList";
 import FavoriteList from "../components/Buyer/Favorite/FavoriteList";
+import { BuyerReviewSellerOrdersScreen } from "../components/Buyer/SellerOrderReviews/BuyerReviewSellerOrdersScreen";
+import GadgetHistory from "../components/Buyer/BuyerHistory/GadgetHistory";
 
 
 const Stack = createNativeStackNavigator();
@@ -226,6 +228,13 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
+      <Stack.Screen name="GadgetHistory" >
+        {() => (
+          <AuthRoute>
+            <GadgetHistory />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
       <Stack.Screen name="PasswordAndSecure" >
         {() => (
           <AuthRoute>
@@ -272,6 +281,13 @@ const RootNavigator = () => {
         {({ navigation, route }) => (
           <AuthRoute>
             <ReviewList navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="BuyerReviewSellerOrdersScreen" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <BuyerReviewSellerOrdersScreen navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

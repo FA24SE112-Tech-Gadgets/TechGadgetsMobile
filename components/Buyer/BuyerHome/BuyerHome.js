@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,27 +21,42 @@ import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 const { width: screenWidth } = Dimensions.get('window');
-
-const bannerArr = [
-  { id: '1', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/fd03b255-bb6c-4cfd-84cb-269df900b4b2.png' },
-  { id: '2', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/512a8bb8-b561-45c5-b40a-637c5734b098.png' },
-  { id: '3', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/f4a9f07b-7b35-4c9b-9893-01c1669e8d38.png' },
-  { id: '4', image: 'https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/ad5f0c4e-066f-4448-b8a2-42df939462c5.png' },
-];
 
 export default function BuyerHome() {
   const [categories, setCategories] = useState([]);
   const [gadgets, setGadgets] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [stringErr, setStringErr] = useState("");
+  const [isError, setIsError] = useState(false);
+
+  const [maxBannerCount] = useState(4);
+  const [bannerArr, setBannerArr] = useState([]);
+
   const flatListRef = useRef();
   const navigation = useNavigation();
+
+  const fetchHotGadgets = async (categoryId) => {
+    try {
+      const response = await api.get(`/gadgets/hot?CategoryId=${categoryId}&Page=1&PageSize=1`);
+      const gadget = response.data?.items[0];
+      if (gadget) {
+        setBannerArr((prev) => [...prev, gadget]); // Only add if gadget is found
+      }
+    } catch (error) {
+      console.error("Error fetching gadgets:", error);
+    }
+  };
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -52,7 +67,13 @@ export default function BuyerHome() {
         fetchGadgets(category.id);
       }
     } catch (error) {
-      console.log('Error fetching categories:', error);
+      setIsError(true);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
     } finally {
       setLoading(false);
     }
@@ -65,11 +86,17 @@ export default function BuyerHome() {
         ...prev,
         [categoryId]: response.data.items.map(item => ({
           ...item,
-          isFavorite: item.isFavorite || false 
+          isFavorite: item.isFavorite || false
         }))
       }));
     } catch (error) {
-      console.log('Error fetching gadgets:', error);
+      setIsError(true);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
     }
   };
 
@@ -86,7 +113,13 @@ export default function BuyerHome() {
         isFavorite: item.isFavorite || false // Ensure isFavorite is always present
       })));
     } catch (error) {
-      console.log('Error searching gadgets:', error);
+      setIsError(true);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
     } finally {
       setLoading(false);
     }
@@ -112,6 +145,21 @@ export default function BuyerHome() {
     }, [debouncedSearchQuery])
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchBanners = async () => {
+        for (const category of categories) {
+          if (bannerArr.length >= maxBannerCount) break; // Stop if bannerArr already has 4 items
+          await fetchHotGadgets(category.id); // Fetch gadgets for each category
+        }
+      };
+
+      if (categories.length > 0 && bannerArr.length < maxBannerCount) {
+        fetchBanners();
+      }
+    }, [categories])
+  );
+
   const toggleFavorite = async (gadgetId) => {
     try {
       await api.post(`/favorite-gadgets/${gadgetId}`);
@@ -119,15 +167,15 @@ export default function BuyerHome() {
       setGadgets(prevGadgets => {
         const updatedGadgets = { ...prevGadgets };
         for (const categoryId in updatedGadgets) {
-          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget => 
+          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget =>
             gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
           );
         }
         return updatedGadgets;
       });
       // Also update in search results if present
-      setSearchResults(prevResults => 
-        prevResults.map(gadget => 
+      setSearchResults(prevResults =>
+        prevResults.map(gadget =>
           gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
         )
       );
@@ -221,7 +269,9 @@ export default function BuyerHome() {
       renderItem={({ item }) => renderGadget({ item, isSearchResult: true })}
       keyExtractor={(item) => item.id.toString()}
       numColumns={2}
+      key={2} //Rất cần dòng này để tránh báo lỗi numColumns khi reload API
       contentContainerStyle={styles.searchResultsList}
+      showsVerticalScrollIndicator={false}
     />
   );
 
@@ -245,46 +295,47 @@ export default function BuyerHome() {
     }, [currentSlide, bannerArr])
   );
 
-  if (loading) {
-    return (
-      <LinearGradient colors={['#fea92866', '#FFFFFF']}
-          style={{
-              flex: 1,
-              height: ScreenHeight / 1.5,
-          }}
+  const renderLoading = () => (
+    <LinearGradient colors={['#fea92866', '#FFFFFF']}
+      style={{
+        flex: 1,
+        height: ScreenHeight / 1.5,
+      }}
+    >
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-          <View
-              style={{
-                  flex: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-              }}
-          >
-              <LottieView
-                  source={require("../../../assets/animations/catRole.json")}
-                  style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                  autoPlay
-                  loop
-                  speed={0.8}
-              />
-              <Text
-                  style={{
-                      fontSize: 18,
-                      width: ScreenWidth / 1.5,
-                      textAlign: "center",
-                  }}
-              >
-                  Đang load dữ liệu
-              </Text>
-          </View>
-      </LinearGradient>
-    );
-  }
+        <LottieView
+          source={require("../../../assets/animations/catRole.json")}
+          style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+          autoPlay
+          loop
+          speed={0.8}
+        />
+        <Text
+          style={{
+            fontSize: 18,
+            width: ScreenWidth / 1.5,
+            textAlign: "center",
+          }}
+        >
+          Đang load dữ liệu
+        </Text>
+      </View>
+    </LinearGradient>
+  )
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFFFFF', '#fea92866']}
+    <LinearGradient
+      colors={['#fea92866', '#FFFFFF']}
+      style={styles.container}
+    >
+      {/* Header + search */}
+      <View
         style={styles.header}
       >
         <View style={styles.searchContainer}>
@@ -299,54 +350,97 @@ export default function BuyerHome() {
         <View style={styles.logo}>
           <Image source={logo} style={styles.logoImage} />
         </View>
-      </LinearGradient>
+      </View>
 
-      {searchQuery ? (
-        searchResults.length > 0 ? (
-          renderSearchResults()
-        ) : (
-          <View style={styles.noResultsContainer}>
-            <Text style={styles.noResultsText}>Không tìm thấy từ khóa của bạn</Text>
-          </View>
+      {
+        loading ? (
+          renderLoading()
         )
-      ) : (
-        <>
-          <View style={styles.bannerContainer}>
-            <FlatList
-              data={bannerArr}
-              ref={flatListRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <Image
-                  style={styles.bannerImage}
-                  source={{ uri: item.image }}
+          :
+          <>
+            {searchQuery ? (
+              searchResults.length > 0 ? (
+                renderSearchResults()
+              ) : (
+                <View style={styles.noResultsContainer}>
+                  <Text style={styles.noResultsText}>Không tìm thấy từ khóa của bạn</Text>
+                </View>
+              )
+            ) : (
+              <>
+                <FlatList
+                  data={categories}
+                  renderItem={renderCategory}
+                  ListHeaderComponent={
+                    bannerArr.length > 0 &&
+                    <View style={styles.bannerContainer}>
+                      <FlatList
+                        data={bannerArr}
+                        ref={flatListRef}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity onPress={() => {
+                            navigation.navigate('GadgetDetail', { gadgetId: item.id })
+                          }}
+                            style={styles.imageBtn}
+                          >
+                            <View style={styles.gadgetImageItem}>
+                              <Image
+                                source={{ uri: item.thumbnailUrl }}
+                                style={styles.gadgetImage}
+                                resizeMode="contain"
+                              />
+                              <View style={{
+                                position: "absolute",
+                                bottom: 10,
+                                left: 10,
+                                backgroundColor: "rgba(0, 0, 0, 0.2)",
+                                paddingHorizontal: 10,
+                                paddingVertical: 5,
+                                borderRadius: 10
+                              }}>
+                                <Text
+                                  style={{
+                                    width: ScreenWidth / 3
+                                  }}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >{item.name}</Text>
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        )}
+                        keyExtractor={(item) => item.id}
+                        onLayout={() => {
+                          if (flatListRef.current) {
+                            flatListRef.current.scrollToIndex({ index: 0, animated: false });
+                          }
+                        }}
+                        getItemLayout={(data, index) => ({
+                          length: screenWidth,
+                          offset: screenWidth * index,
+                          index,
+                        })}
+                      />
+                    </View>
+                  }
+                  showsVerticalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  style={styles.categoryList}
                 />
-              )}
-              keyExtractor={(item) => item.id}
-              onLayout={() => {
-                if (flatListRef.current) {
-                  flatListRef.current.scrollToIndex({ index: 0, animated: false });
-                }
-              }}
-              getItemLayout={(data, index) => ({
-                length: screenWidth,
-                offset: screenWidth * index,
-                index,
-              })}
-            />
-          </View>
+              </>
+            )}
+          </>
+      }
 
-          <FlatList
-            data={categories}
-            renderItem={renderCategory}
-            keyExtractor={(item) => item.id}
-            style={styles.categoryList}
-          />
-        </>
-      )}
-    </View>
+      <ErrModal
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
+    </LinearGradient>
   );
 }
 
@@ -421,17 +515,19 @@ const styles = StyleSheet.create({
   },
   discountBadge: {
     position: 'absolute',
-    top: 5,
-    left: 5,
-    backgroundColor: '#ff4444',
+    top: 0,
+    left: -5,
+    backgroundColor: '#F9F9F9',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "grey"
   },
   discountText: {
-    color: 'white',
+    color: 'grey',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   priceContainer: {
     flexDirection: 'column',
@@ -448,12 +544,27 @@ const styles = StyleSheet.create({
     color: '#ed8900',
   },
   bannerContainer: {
-    height: screenWidth * 0.5,
     marginBottom: 15,
   },
-  bannerImage: {
-    width: screenWidth,
-    height: screenWidth * 0.5,
+  imageBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: ScreenWidth
+  },
+  gadgetImageItem: {
+    justifyContent: "center",
+    width: ScreenWidth / 1.2,
+    alignItems: "center",
+    backgroundColor: "white",
+    height: ScreenHeight / 5,
+    borderWidth: 1.5,
+    borderRadius: 15,
+    borderColor: "rgb(254, 169, 40)"
+  },
+  gadgetImage: {
+    width: ScreenWidth / 1.1,
+    height: ScreenHeight / 1.5,
+    borderRadius: 8,
   },
   categoryList: {
     flex: 1,
@@ -491,7 +602,7 @@ const styles = StyleSheet.create({
   },
   gadgetCard: {
     width: (screenWidth - 40) / 3,
-    marginHorizontal:  5,
+    marginHorizontal: 5,
     borderRadius: 10,
     padding: 10,
     shadowColor: "#000",
@@ -533,7 +644,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchResultsList: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   searchResultCard: {
     width: (screenWidth - 30) / 2,

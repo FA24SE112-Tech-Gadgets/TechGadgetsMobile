@@ -447,10 +447,10 @@ export default function GadgetDetail({ route, navigation }) {
         {snackbarMessage}
       </Snackbar>
       <ErrModal
-                stringErr={stringErr}
-                isError={isError}
-                setIsError={setIsError}
-            />
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
     </LinearGradient>
   );
 }
@@ -509,7 +509,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    backgroundColor: '#ff4444',
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
