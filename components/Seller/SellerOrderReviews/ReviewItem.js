@@ -80,7 +80,7 @@ export default function ReviewItem({
                 gap: 10
             }}>
                 {/* Customer avatar */}
-                {review?.customer.avatarUrl ? (
+                {review?.customer?.avatarUrl ? (
                     <Image
                         source={{
                             uri: review?.customer.avatarUrl,
@@ -98,12 +98,12 @@ export default function ReviewItem({
                             height: 40,
                             width: 40,
                             borderRadius: 30,
-                            backgroundColor: "#ffecd0",
+                            backgroundColor: "#ed8900",
                             alignItems: "center",
                             justifyContent: "center",
                         }}
                     >
-                        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
+                        <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
                             {review?.customer !== null ? review?.customer.fullName?.charAt(0) : "G"}
                         </Text>
                     </View>
@@ -295,12 +295,12 @@ export default function ReviewItem({
                                     <ActivityIndicator color={"#ed8900"} />
                                     :
                                     <TouchableOpacity
-                                        disabled={newSellerReply == ""}
+                                        disabled={newSellerReply == "" || newSellerReply == review.sellerReply.content}
                                         onPress={() => {
                                             handleSendReply();
                                         }}
                                     >
-                                        <Feather name="send" size={20} color={newSellerReply == "" ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
+                                        <Feather name="send" size={20} color={newSellerReply == "" || newSellerReply == review.sellerReply.content ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
                                     </TouchableOpacity>
                             }
                         </View>
