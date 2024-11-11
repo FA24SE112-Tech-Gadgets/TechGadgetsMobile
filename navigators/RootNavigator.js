@@ -36,6 +36,7 @@ import { WalletTrackingScreen } from "../components/Seller/WalletTracking/Wallet
 import { SellerOrderReviewsScreen } from "../components/Seller/SellerOrderReviews/SellerOrderReviewsScreen";
 import ReviewList from "../components/Buyer/BuyerReview/ReviewList";
 import FavoriteList from "../components/Buyer/Favorite/FavoriteList";
+import GadgetHistory from "../components/Buyer/BuyerHistory/GadgetHistory";
 
 
 const Stack = createNativeStackNavigator();
@@ -223,6 +224,13 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <FavoriteList />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="GadgetHistory" >
+        {() => (
+          <AuthRoute>
+            <GadgetHistory />
           </AuthRoute>
         )}
       </Stack.Screen>

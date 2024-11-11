@@ -65,7 +65,7 @@ export default function BuyerHome() {
         ...prev,
         [categoryId]: response.data.items.map(item => ({
           ...item,
-          isFavorite: item.isFavorite || false 
+          isFavorite: item.isFavorite || false
         }))
       }));
     } catch (error) {
@@ -119,15 +119,15 @@ export default function BuyerHome() {
       setGadgets(prevGadgets => {
         const updatedGadgets = { ...prevGadgets };
         for (const categoryId in updatedGadgets) {
-          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget => 
+          updatedGadgets[categoryId] = updatedGadgets[categoryId].map(gadget =>
             gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
           );
         }
         return updatedGadgets;
       });
       // Also update in search results if present
-      setSearchResults(prevResults => 
-        prevResults.map(gadget => 
+      setSearchResults(prevResults =>
+        prevResults.map(gadget =>
           gadget.id === gadgetId ? { ...gadget, isFavorite: !gadget.isFavorite } : gadget
         )
       );
@@ -248,35 +248,35 @@ export default function BuyerHome() {
   if (loading) {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
-          style={{
-              flex: 1,
-              height: ScreenHeight / 1.5,
-          }}
+        style={{
+          flex: 1,
+          height: ScreenHeight / 1.5,
+        }}
       >
-          <View
-              style={{
-                  flex: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-              }}
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <LottieView
+            source={require("../../../assets/animations/catRole.json")}
+            style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+            autoPlay
+            loop
+            speed={0.8}
+          />
+          <Text
+            style={{
+              fontSize: 18,
+              width: ScreenWidth / 1.5,
+              textAlign: "center",
+            }}
           >
-              <LottieView
-                  source={require("../../../assets/animations/catRole.json")}
-                  style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                  autoPlay
-                  loop
-                  speed={0.8}
-              />
-              <Text
-                  style={{
-                      fontSize: 18,
-                      width: ScreenWidth / 1.5,
-                      textAlign: "center",
-                  }}
-              >
-                  Đang load dữ liệu
-              </Text>
-          </View>
+            Đang load dữ liệu
+          </Text>
+        </View>
       </LinearGradient>
     );
   }
@@ -421,9 +421,10 @@ const styles = StyleSheet.create({
   },
   discountBadge: {
     position: 'absolute',
-    top: 5,
-    left: 5,
-    backgroundColor: '#ff4444',
+    top: 0,
+    left: -5,
+    transform: [{ rotate: '0deg' }],
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -431,7 +432,7 @@ const styles = StyleSheet.create({
   discountText: {
     color: 'white',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   priceContainer: {
     flexDirection: 'column',
@@ -491,7 +492,7 @@ const styles = StyleSheet.create({
   },
   gadgetCard: {
     width: (screenWidth - 40) / 3,
-    marginHorizontal:  5,
+    marginHorizontal: 5,
     borderRadius: 10,
     padding: 10,
     shadowColor: "#000",

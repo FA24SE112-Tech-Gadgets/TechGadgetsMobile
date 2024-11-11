@@ -627,10 +627,11 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     discountBadge: {
-        backgroundColor: '#ff4444',
+        transform: [{ rotate: '0deg' }],
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         paddingHorizontal: 4,
         paddingVertical: 2,
-        borderRadius: 2,
+        borderRadius: 4,
     },
     discountText: {
         color: 'white',
@@ -654,6 +655,7 @@ const styles = StyleSheet.create({
     removeButton: {
         justifyContent: 'center',
         paddingHorizontal: 10,
+        zIndex: 1,
     },
     emptyCartContainer: {
         flex: 1,

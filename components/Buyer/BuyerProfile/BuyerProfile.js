@@ -290,7 +290,7 @@ export default function BuyerProfile() {
             justifyContent: "space-between",
           }}
           onPress={() => {
-            navigation.navigate("ApplicationRequest");
+            navigation.navigate("GadgetHistory");
           }}
         >
           <View
