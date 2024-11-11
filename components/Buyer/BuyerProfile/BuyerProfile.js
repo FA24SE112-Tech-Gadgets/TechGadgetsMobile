@@ -327,7 +327,7 @@ export default function BuyerProfile() {
             justifyContent: "space-between",
           }}
           onPress={() => {
-            navigation.navigate("ApplicationRequest");
+            navigation.navigate("GadgetHistory");
           }}
         >
           <View
@@ -531,7 +531,6 @@ export default function BuyerProfile() {
 }
 
 const ConfirmHelpCenterModal = ({ showConfirmModal, setShowConfirmModal }) => {
-  const { t } = useTranslation();
   return (
     <Modal
       isVisible={showConfirmModal}

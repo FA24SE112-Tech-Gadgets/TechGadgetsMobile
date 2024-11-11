@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { AntDesign } from '@expo/vector-icons';
+import { Snackbar, Divider } from 'react-native-paper';
+import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import Clipboard from '@react-native-clipboard/clipboard';
 import api from '../../Authorization/api';
-import { Snackbar } from 'react-native-paper';
 
 const DepositHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -13,16 +15,19 @@ const DepositHistory = () => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const isFirstLoad = useRef(true);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [sortOption, setSortOption] = useState('DESC');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const navigation = useNavigation();
 
-  const fetchTransactions = useCallback(async (pageNumber) => {
+  const fetchTransactions = useCallback(async (pageNumber, sort = sortOption) => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
-      const response = await api.get(`/wallet-trackings?Types=Deposit&Page=${pageNumber}&PageSize=10`);
+      const response = await api.get(`/wallet-trackings?Types=Deposit&SortByDate=${sort}&Page=${pageNumber}&PageSize=10`);
       const newTransactions = response.data.items;
       if (newTransactions.length > 0) {
         setTransactions(prev => pageNumber === 1 ? newTransactions : [...prev, ...newTransactions]);
@@ -35,7 +40,7 @@ const DepositHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore]);
+  }, [loading, hasMore, sortOption]);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,10 +51,19 @@ const DepositHistory = () => {
     }, [fetchTransactions])
   );
 
+  const handleSortOption = (option) => {
+    setSortOption(option);
+    setTransactions([]);
+    setPage(1);
+    setHasMore(true);
+    fetchTransactions(1, option);
+    setSortModalVisible(false);
+  };
+
   const cancelTransaction = async (walletTrackingId) => {
     try {
       await api.put(`/wallet-trackings/${walletTrackingId}/cancel`);
-    
+
       setTransactions(prevTransactions =>
         prevTransactions.map(transaction =>
           transaction.id === walletTrackingId
@@ -68,36 +82,71 @@ const DepositHistory = () => {
 
   const showCancelModal = (transaction) => {
     setSelectedTransaction(transaction);
-    setModalVisible(true);
+    setCancelModalVisible(true);
   };
 
   const handleCancelConfirm = () => {
     if (selectedTransaction) {
       cancelTransaction(selectedTransaction.id);
     }
-    setModalVisible(false);
+    setCancelModalVisible(false);
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.transactionItem}>
-      <Text style={styles.amount}>{formatAmount(item.amount)} VNĐ</Text>
-      <Text style={styles.paymentMethod}>Phương thức: {item.paymentMethod}</Text>
-      <View style={styles.statusContainer}>
-        <Text style={styles.statusLabel}>Trạng thái: </Text>
+  const copyToClipboard = (text) => {
+    Clipboard.setString(text);
+    setSnackbarMessage("Sao chép thành công");
+    setSnackbarVisible(true);
+  };
+
+  const renderItem = ({ item, index }) => (
+    <>
+      <View style={styles.transactionItem}>
+        <View style={styles.idContainer}>
+          <Text style={styles.idText} numberOfLines={1} ellipsizeMode="tail">
+            Mã giao dịch: {item.id}
+          </Text>
+          <TouchableOpacity
+            disabled={!item.id}
+            onPress={() => copyToClipboard(item.id)}
+          >
+            <Text style={styles.copyText}>Sao chép</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.paymentMethod}>
+          Phương thức thanh toán: <Text style={styles.paymentMethodValue}>{item.paymentMethod}</Text>
+        </Text>
+
+        <View style={styles.statusContainer}>
+        <Text style={styles.statusLabel}>Trạng thái:</Text>
         <View style={styles.statusWrapper}>
-          <Text style={[styles.status, getStatusStyle(item.status)]}>
+          <Text style={[styles.statusText, getStatusTextColor(item.status)]}>
             {getStatusText(item.status)}
           </Text>
         </View>
+      </View>
+
+        <View style={styles.amountDateContainer}>
+          <Text style={[styles.amount, item.status === 'Success' ? styles.successAmount : {}]}>
+            {item.status === 'Success' ? '+ ' : ''}{formatAmount(item.amount)} ₫
+          </Text>
+
+          <View style={styles.dateContainer}>
+            <Text style={styles.date}>Ngày tạo: {formatDate(item.createdAt)}</Text>
+            <Text style={styles.date}>Ngày nạp: {getDepositedAtText(item.status, item.depositedAt)}</Text>
+          </View>
+        </View>
+
         {item.status === 'Pending' && (
           <TouchableOpacity onPress={() => showCancelModal(item)} style={styles.cancelButton}>
-            <AntDesign name="close" size={24} color="red" />
+            <Text style={styles.cancelButtonText}>Hủy</Text>
           </TouchableOpacity>
         )}
       </View>
-      <Text style={styles.date}>Ngày nạp: {getDepositedAtText(item.status, item.depositedAt)}</Text>
-      <Text style={styles.date}>Ngày tạo: {formatDate(item.createdAt)}</Text>
-    </View>
+
+      {/* Divider */}
+      {index < transactions.length - 1 && <Divider style={{ marginVertical: -8 }} />}
+    </>
   );
 
   const formatAmount = (amount) => {
@@ -107,7 +156,7 @@ const DepositHistory = () => {
   const getStatusText = (status) => {
     switch (status) {
       case 'Success':
-        return 'Thành công';
+        return 'Hoàn thành';
       case 'Pending':
         return 'Đang chờ';
       case 'Cancelled':
@@ -119,18 +168,29 @@ const DepositHistory = () => {
     }
   };
 
-  const getStatusStyle = (status) => {
+  const getStatusTextColor = (status) => {
     switch (status) {
       case 'Success':
-        return styles.successStatus;
-      case 'Pending':
-        return styles.pendingStatus;
+        return { color: 'green' };
       case 'Cancelled':
       case 'Expired':
-        return styles.cancelledStatus;
+        return { color: '#de241b' };
+      case 'Pending':
+        return { color: '#f57e2f' };
       default:
-        return {};
+        return { color: 'black' };
     }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Đang chờ';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const getDepositedAtText = (status, depositedAt) => {
@@ -144,18 +204,6 @@ const DepositHistory = () => {
       default:
         return formatDate(depositedAt);
     }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Đang chờ';
-    const date = new Date(dateString);
-    return date.toLocaleString('vi-VN', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
   };
 
   const renderFooter = () => {
@@ -174,128 +222,379 @@ const DepositHistory = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#FFFFFF', '#fea92866']}
-      style={styles.container}
-    >
-      <Text style={styles.title}>Lịch sử nạp tiền</Text>
-      <FlatList
-        data={transactions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={renderFooter}
-      />
-       <Snackbar
+    <View style={styles.container}>
+      <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.gradient}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <AntDesign name="arrowleft" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Lịch sử nạp tiền</Text>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.sortContainer}>
+            <SortModal
+              modalVisible={sortModalVisible}
+              setModalVisible={setSortModalVisible}
+              sortOption={sortOption}
+              handleSortOption={handleSortOption}
+              disabled={transactions.length === 0}
+            />
+          </View>
+
+          <FlatList
+            data={transactions}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={renderFooter}
+            contentContainerStyle={styles.listContent}
+          />
+        </View>
+
+        <Snackbar
           visible={snackbarVisible}
           onDismiss={() => setSnackbarVisible(false)}
           duration={1500}
-          wrapperStyle={{ bottom: 0, zIndex: 1 }}
+          style={styles.snackbar}
         >
           {snackbarMessage}
         </Snackbar>
-      <Modal
-        isVisible={isModalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        onBackButtonPress={() => setModalVisible(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
+
+        <Modal
+          isVisible={cancelModalVisible}
+          onBackdropPress={() => setCancelModalVisible(false)}
+          onBackButtonPress={() => setCancelModalVisible(false)}
+          useNativeDriver
+          hideModalContentWhileAnimating
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Xác nhận hủy giao dịch</Text>
+            <Text style={styles.modalText}>Bạn có chắc chắn muốn hủy giao dịch nạp tiền này?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setCancelModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={handleCancelConfirm}>
+                <Text style={[styles.modalButtonText, styles.confirmButtonText]}>Có</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </LinearGradient>
+    </View>
+  );
+};
+
+const SortModal = ({
+  modalVisible,
+  setModalVisible,
+  sortOption,
+  handleSortOption,
+  disabled,
+}) => {
+  return (
+    <View>
+      <Pressable
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          columnGap: 4,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderColor: "#FB6562",
+          borderWidth: 2,
+          borderRadius: 20,
+          backgroundColor: "#FB6562",
+          backgroundColor: disabled ? "#cccccc" : "#ed8900",
+          borderColor: disabled ? "#999999" : "#ed8900",
+        }}
+        onPress={() => setModalVisible(true)}
+        disabled={disabled}
       >
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Xác nhận hủy giao dịch</Text>
-          <Text style={styles.modalText}>Bạn có chắc chắn muốn hủy giao dịch nạp tiền này?</Text>
-          <View style={styles.modalButtons}>
-            <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-              <Text style={styles.modalButtonText}>Hủy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={handleCancelConfirm}>
-              <Text style={[styles.modalButtonText, styles.confirmButtonText]}>Có</Text>
-            </TouchableOpacity>
+        <Text style={{
+          fontWeight: "bold",
+          fontSize: 18,
+          color: "white",
+        }}>
+          {sortOption == "DESC" ? "Ngày gần nhất" : "Ngày xa nhất"}
+        </Text>
+        <Icon
+          type="material-community"
+          name="chevron-down"
+          size={24}
+          color="white"
+        />
+      </Pressable>
+
+      {/* choose Ngày gần nhất/ Ngày xa nhất */}
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}
+        onSwipeComplete={() => setModalVisible(false)}
+        useNativeDriverForBackdrop
+        swipeDirection={"down"}
+        propagateSwipe={true}
+        style={{
+          justifyContent: 'flex-end',
+          margin: 0,
+        }}
+      >
+        <View>
+          <View style={{
+            backgroundColor: "white",
+            paddingVertical: 16,
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+          }}>
+            {/* Thanh hồng trên cùng */}
+            <View
+              style={{
+                alignItems: "center",
+                paddingBottom: 12,
+              }}
+            >
+              <View
+                style={{
+                  width: ScreenWidth / 7,
+                  height: ScreenHeight / 100,
+                  backgroundColor: "#ed8900",
+                  borderRadius: 30,
+                }}
+              />
+            </View>
+
+            {/* Lọc theo */}
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}>
+              <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
+            </View>
+
+            {/* Giá thấp nhất */}
+            <Pressable
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+              }}
+              onPress={() => handleSortOption("DESC")}
+            >
+              <Text style={{
+                fontSize: 16,
+              }}>Ngày gần nhất</Text>
+              {sortOption === "DESC" ? (
+                <Icon
+                  type="material-community"
+                  name="check-circle"
+                  size={24}
+                  color="#ed8900"
+                />
+              ) : (
+                <Icon
+                  type="material-community"
+                  name="checkbox-blank-circle-outline"
+                  size={24}
+                  color="#ed8900"
+                />
+              )}
+            </Pressable>
+
+            {/* Name alphabet */}
+            <Pressable
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+              }}
+              onPress={() => handleSortOption("ASC")}
+            >
+              <Text style={{
+                fontSize: 16,
+              }}>Ngày xa nhất</Text>
+              {sortOption === "ASC" ? (
+                <Icon
+                  type="material-community"
+                  name="check-circle"
+                  size={24}
+                  color="#ed8900"
+                />
+              ) : (
+                <Icon
+                  type="material-community"
+                  name="checkbox-blank-circle-outline"
+                  size={24}
+                  color="#ed8900"
+                />
+              )}
+            </Pressable>
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
+  gradient: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderColor: 'rgb(254, 169, 40)',
+    backgroundColor: 'rgba(254, 169, 40, 0.3)',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(254, 161, 40, 0.5)",
+    borderWidth: 1,
+    borderColor: "rgb(254, 161, 40)",
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "500",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  sortContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  listContent: {
+    flexGrow: 1,
   },
   transactionItem: {
-    backgroundColor: 'white',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    elevation: 2,
+    shadowRadius: 4,
   },
-  amount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ed8900',
+  idContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  idText: {
+    fontSize: 19,
+    fontWeight: "700",
+    width: ScreenWidth / 1.4,
+  },
+  copyText: {
+    color: "#ed8900",
+    fontSize: 16,
+    fontWeight: "500",
   },
   paymentMethod: {
     fontSize: 16,
-    marginTop: 4,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  paymentMethodValue: {
+    fontWeight: "400",
+  },
+  divider: {
+    marginVertical: 2,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   statusLabel: {
     fontSize: 16,
-    marginRight: 4,
+    fontWeight: "500",
   },
   statusWrapper: {
-    borderRadius: 12,
-    overflow: 'hidden',
+    backgroundColor: "#f9f9f9",
+    borderWidth: 0.5,
+    borderColor: "rgba(0, 0, 0, 0.5)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10
   },
-  status: {
+  statusText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    fontWeight: "bold",
   },
   successStatus: {
     backgroundColor: '#d1fae5',
-    color: '#065f46',
   },
   pendingStatus: {
     backgroundColor: '#fef3c7',
-    color: '#92400e',
   },
   cancelledStatus: {
     backgroundColor: '#fee2e2',
-    color: '#991b1b',
+  },
+  expiredStatus: {
+    backgroundColor: '#f3f4f6',
+  },
+  amountDateContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dateContainer: {
+    flexDirection: 'column',
+    marginTop: 4,
+  },
+  amount: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  successAmount: {
+    color: 'green',
   },
   date: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
-    marginTop: 4,
   },
   footer: {
     paddingVertical: 20,
     alignItems: 'center',
   },
-  cancelButton: {
-    marginLeft: 'auto',
+  snackbar: {
+    bottom: 0,
+    zIndex: 1,
   },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+  cancelButton: {
+    backgroundColor: "#ff4d4f",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 4,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  cancelButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
   modalTitle: {
     fontSize: 20,

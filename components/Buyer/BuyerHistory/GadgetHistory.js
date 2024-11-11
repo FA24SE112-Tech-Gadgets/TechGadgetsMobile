@@ -6,81 +6,61 @@ import {
     Image,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
     Pressable,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
-import api from '../../Authorization/api';
-import { useNavigation } from '@react-navigation/native';
-import { Divider, ScreenHeight, ScreenWidth } from '@rneui/base';
+import { Divider, ScreenHeight, ScreenWidth } from "@rneui/base";
 import LottieView from 'lottie-react-native';
 import { Snackbar } from "react-native-paper";
 
-const { width } = Dimensions.get('window');
+// Assume these are imported from your project
+import api from '../../Authorization/api';
 
-const EmptyStateView = ({ message }) => (
-    <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.emptyContainer}>
-        <View style={styles.emptyContent}>
-            <LottieView
-                source={require("../../../assets/animations/catRole.json")}
-                style={styles.lottieAnimation}
-                autoPlay
-                loop
-                speed={0.8}
-            />
-            <Text style={styles.emptyText}>{message}</Text>
-        </View>
-    </LinearGradient>
-);
-
-const FavoriteList = () => {
-    const [favorites, setFavorites] = useState([]);
+const GadgetHistory = () => {
+    const [gadgetHistory, setGadgetHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isEditMode, setIsEditMode] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMoreData, setHasMoreData] = useState(true);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const navigation = useNavigation();
     
-    const fetchFavorites = useCallback(async () => {
-        setIsLoading(true);
+    const fetchGadgetHistory = useCallback(async (page = 1) => {
+        if (page === 1) setIsLoading(true);
         try {
-            const response = await api.get('/favorite-gadgets?Page=1&PageSize=40');
-            setFavorites(response.data.items);
+            const response = await api.get(`/gadget-histories?Page=${page}&PageSize=10`);
+            const newItems = response.data.items;
+            setGadgetHistory(prevItems => page === 1 ? newItems : [...prevItems, ...newItems]);
+            setHasMoreData(response.data.hasNextPage);
+            setCurrentPage(page);
         } catch (error) {
-            console.log('Error fetching favorites:', error);
+            console.log('Error fetching gadget history:', error);
+            showSnackbar('Không thể tải lịch sử. Vui lòng thử lại');
         } finally {
             setIsLoading(false);
         }
     }, []);
 
-
     useFocusEffect(
         useCallback(() => {
-            fetchFavorites();
+            fetchGadgetHistory();
         }, [])
     );
 
-    const deleteFavorite = async (gadgetId) => {
+    const toggleFavorite = async (gadgetId) => {
         try {
             await api.post(`/favorite-gadgets/${gadgetId}`);
-            setFavorites(favorites.filter(item => item.gadget.id !== gadgetId));
-            showSnackbar('Đã xóa khỏi danh sách yêu thích');
+            setGadgetHistory(prevHistory =>
+                prevHistory.map(item =>
+                    item.gadget.id === gadgetId
+                        ? { ...item, gadget: { ...item.gadget, isFavorite: !item.gadget.isFavorite } }
+                        : item
+                )
+            );
         } catch (error) {
-            console.log('Error deleting favorite:', error);
-            showSnackbar('Không thể xóa. Vui lòng thử lại');
-        }
-    };
-
-    const deleteAllFavorites = async () => {
-        try {
-            await api.delete('/favorite-gadgets');
-            setFavorites([]);
-            showSnackbar('Đã xóa tất cả khỏi danh sách yêu thích');
-        } catch (error) {
-            console.log('Error deleting all favorites:', error);
-            showSnackbar('Không thể xóa tất cả. Vui lòng thử lại');
+            console.log('Error toggling favorite:', error);
         }
     };
 
@@ -98,11 +78,11 @@ const FavoriteList = () => {
         return "";
     };
 
-    const renderFavoriteItem = ({ item }) => (
+    const renderGadgetHistoryItem = ({ item }) => (
         <Pressable
-            onPress={() => !isEditMode && navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
+            onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
         >
-           <View style={styles.container}>
+              <View style={styles.container}>
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: item.gadget.thumbnailUrl }} style={styles.image} />
                     {item.gadget.discountPercentage > 0 && (
@@ -110,6 +90,16 @@ const FavoriteList = () => {
                             <Text style={styles.discountText}>-{item.gadget.discountPercentage}%</Text>
                         </View>
                     )}
+                    <TouchableOpacity
+                        style={styles.favoriteButton}
+                        onPress={() => toggleFavorite(item.gadget.id)}
+                    >
+                        <AntDesign
+                            name={item.gadget.isFavorite ? "heart" : "hearto"}
+                            size={24}
+                            color={item.gadget.isFavorite ? "red" : "black"}
+                        />
+                    </TouchableOpacity>
                 </View>
                 {(!item.gadget.isForSale) && (
                     <View style={styles.watermarkContainer}>
@@ -143,18 +133,16 @@ const FavoriteList = () => {
                         )}
                     </View>
                 </View>
-                {isEditMode && (
-                    <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => deleteFavorite(item.gadget.id)}
-                    >
-                        <AntDesign name="delete" size={24} color="#E53935" />
-                    </TouchableOpacity>
-                )}
             </View>
             <Divider style={styles.divider} />
         </Pressable>
     );
+
+    const handleLoadMore = () => {
+        if (hasMoreData && !isLoading) {
+            fetchGadgetHistory(currentPage + 1);
+        }
+    };
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.gradientContainer}>
@@ -165,21 +153,11 @@ const FavoriteList = () => {
                 >
                     <AntDesign name="arrowleft" size={24} color="black" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Danh sách yêu thích</Text>
-                {favorites.length > 0 ? (
-                    <TouchableOpacity
-                        onPress={() => setIsEditMode(!isEditMode)}
-                        style={styles.editButton}
-                    >
-                        <Text style={styles.editButtonText}>{isEditMode ? 'Xong' : 'Chỉnh sửa'}</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <View style={styles.editButton} />
-                )}
+                <Text style={styles.headerTitle}>Sản phẩm đã xem</Text>
             </View>
 
             <View style={styles.listContainer}>
-                {isLoading ? (
+                {isLoading && gadgetHistory.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <LottieView
                             source={require("../../../assets/animations/catRole.json")}
@@ -188,9 +166,9 @@ const FavoriteList = () => {
                             loop
                             speed={0.8}
                         />
-                        <Text style={styles.emptyText}>Đang load dữ liệu...</Text>
+                        <Text style={styles.emptyText}>Đang tải dữ liệu...</Text>
                     </View>
-                ) : favorites.length === 0 ? (
+                ) : gadgetHistory.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <LottieView
                             source={require("../../../assets/animations/catRole.json")}
@@ -199,27 +177,33 @@ const FavoriteList = () => {
                             loop
                             speed={0.8}
                         />
-                        <Text style={styles.emptyText}>Danh sách yêu thích trống</Text>
+                        <Text style={styles.emptyText}>Chưa có sản phẩm nào được xem</Text>
                     </View>
                 ) : (
                     <FlatList
-                        data={favorites}
-                        renderItem={renderFavoriteItem}
-                        keyExtractor={(item) => item.gadget.id}
+                        data={gadgetHistory}
+                        renderItem={renderGadgetHistoryItem}
+                        keyExtractor={(item) => item.id.toString()}
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={styles.flatListContent}
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.1}
+                        ListFooterComponent={() => 
+                            isLoading && gadgetHistory.length > 0 ? (
+                                <View style={styles.loadingFooter}>
+                                    <LottieView
+                                        source={require("../../../assets/animations/catRole.json")}
+                                        style={styles.footerLottie}
+                                        autoPlay
+                                        loop
+                                        speed={0.8}
+                                    />
+                                </View>
+                            ) : null
+                        }
                     />
                 )}
             </View>
-
-            {isEditMode && favorites.length > 0 && (
-                <TouchableOpacity
-                    style={styles.deleteAllButton}
-                    onPress={deleteAllFavorites}
-                >
-                    <Text style={styles.deleteAllText}>Xóa tất cả</Text>
-                </TouchableOpacity>
-            )}
 
             <Snackbar
                 visible={snackbarVisible}
@@ -262,14 +246,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         flex: 1,
         textAlign: 'center',
-    },
-    editButton: {
-        width: 70,
-        alignItems: 'flex-end',
-    },
-    editButtonText: {
-        color: '#fea128',
-        fontWeight: '600',
     },
     listContainer: {
         flex: 1,
@@ -319,7 +295,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         right: 6,
-        transform: [{ rotate: '0deg' }],
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -330,12 +305,24 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
+    favoriteButton: {
+        position: 'absolute',
+        top: 0,
+        left: 5,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex:2,
+    },
     watermarkContainer: {
         position: 'absolute',
-        top: 30,
+        top: 40,
         left: -8,
         right: -8,
-        bottom: 30,
+        bottom: 40,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -384,23 +371,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#ed8900',
     },
-    deleteButton: {
-        padding: 10,
-        zIndex: 1,
-    },
     divider: {
         marginVertical: 2,
-    },
-    deleteAllButton: {
-        backgroundColor: '#E53935',
-        padding: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    deleteAllText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
     shopInfo: {
         flexDirection: 'row',
@@ -417,6 +389,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#616161',
     },
+    loadingFooter: {
+        paddingVertical: 20,
+        alignItems: 'center',
+    },
+    footerLottie: {
+        width: 50,
+        height: 50,
+    },
 });
 
-export default FavoriteList;
+export default GadgetHistory;
