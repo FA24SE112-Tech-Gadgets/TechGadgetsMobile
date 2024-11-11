@@ -15,7 +15,8 @@ import { useTranslation } from "react-i18next";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import api from "../../Authorization/api";
-import { FontAwesome5, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome6, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function BuyerProfile() {
   const navigation = useNavigation();
@@ -92,7 +93,7 @@ export default function BuyerProfile() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
+    <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1 }}>
       {/* Header */}
       <View
         style={{
@@ -129,7 +130,7 @@ export default function BuyerProfile() {
               justifyContent: "center",
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
               {user.customer.fullName.charAt(0)}
             </Text>
           </View>
@@ -282,6 +283,42 @@ export default function BuyerProfile() {
         </Pressable>
         <Divider />
 
+        {/* Đánh giá sản phẩm */}
+        <Pressable
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onPress={() => {
+            navigation.navigate("BuyerReviewSellerOrdersScreen");
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 25,
+                width: 25,
+              }}
+            >
+              <FontAwesome6
+                name="pen-to-square"
+                size={19}
+              />
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              Đánh giá sản phẩm
+            </Text>
+          </View>
+
+          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+        </Pressable>
+        <Divider />
+
         {/* Đã xem gần đây */}
         <Pressable
           style={{
@@ -290,7 +327,7 @@ export default function BuyerProfile() {
             justifyContent: "space-between",
           }}
           onPress={() => {
-            navigation.navigate("ApplicationRequest");
+            navigation.navigate("GadgetHistory");
           }}
         >
           <View
@@ -489,12 +526,11 @@ export default function BuyerProfile() {
         isError={isError}
         setIsError={setIsError}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const ConfirmHelpCenterModal = ({ showConfirmModal, setShowConfirmModal }) => {
-  const { t } = useTranslation();
   return (
     <Modal
       isVisible={showConfirmModal}

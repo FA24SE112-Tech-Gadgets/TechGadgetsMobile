@@ -200,6 +200,9 @@ const NotificationProvider = ({ children }) => {
         useCallback(() => {
             const unsubscribe = messaging().onMessage(async remoteMessage => {
                 if (user) {
+                    if (notifications && notifications.length == 0) {
+                        await fetchNotifications(1, "normal");
+                    }
                     await fetchNewNotifications();
                 }
                 console.log("nhận đc noti", showNotification);
