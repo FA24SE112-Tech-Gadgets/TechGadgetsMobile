@@ -18,14 +18,14 @@ import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import ErrModal from '../../CustomComponents/ErrModal';
-import { Picker } from '@react-native-picker/picker';
 import api from '../../Authorization/api';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-export default function BuyerWallet() {
+export default function Component() {
     const navigation = useNavigation();
     const [isDepositModalVisible, setDepositModalVisible] = useState(false);
+    const [isPaymentMethodModalVisible, setPaymentMethodModalVisible] = useState(false);
     const [depositAmount, setDepositAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('VnPay');
     const [error, setError] = useState('');
@@ -70,8 +70,8 @@ export default function BuyerWallet() {
             if (status === 'Success' || status === 'Cancelled') {
                 setDepositStatus(status);
                 setShowStatusOverlay(true);
-                setWalletTrackingId(null); // Reset tracking ID after status is final
-                fetchBalance(); // Refresh balance after successful deposit
+                setWalletTrackingId(null);
+                fetchBalance();
             }
         } catch (error) {
             console.log('Error checking deposit status:', error);
@@ -81,7 +81,7 @@ export default function BuyerWallet() {
     useEffect(() => {
         let intervalId;
         if (walletTrackingId) {
-            intervalId = setInterval(checkDepositStatus, 5000); // Check every 5 seconds
+            intervalId = setInterval(checkDepositStatus, 5000);
         }
         return () => {
             if (intervalId) clearInterval(intervalId);
@@ -101,7 +101,6 @@ export default function BuyerWallet() {
                 paymentMethod: paymentMethod,
                 returnUrl: 'techgadgets://BuyerHome' 
             });
-            console.log('API Response:', response);
 
             if (response.data && response.data.depositUrl && response.data.walletTrackingId) {
                 setWalletTrackingId(response.data.walletTrackingId);
@@ -147,6 +146,36 @@ export default function BuyerWallet() {
         );
     };
 
+    const PaymentMethodModal = () => (
+        <Modal
+            isVisible={isPaymentMethodModalVisible}
+            onBackdropPress={() => setPaymentMethodModalVisible(false)}
+            onSwipeComplete={() => setPaymentMethodModalVisible(false)}
+            swipeDirection="down"
+            style={styles.modal}
+        >
+            <View style={styles.modalContent}>
+                <View style={styles.modalHandle} />
+                <Text style={styles.modalTitle}>Phương thức thanh toán</Text>
+                {['VnPay', 'Momo', 'PayOS'].map((method) => (
+                    <Pressable
+                        key={method}
+                        style={styles.paymentMethodItem}
+                        onPress={() => {
+                            setPaymentMethod(method);
+                            setPaymentMethodModalVisible(false);
+                        }}
+                    >
+                        <Text style={styles.paymentMethodText}>{method}</Text>
+                        {paymentMethod === method && (
+                            <Icon name="check" type="material" color="#ed8900" size={24} />
+                        )}
+                    </Pressable>
+                ))}
+            </View>
+        </Modal>
+    );
+
     return (
         <LinearGradient
             start={{ x: 0, y: 0 }}
@@ -159,7 +188,6 @@ export default function BuyerWallet() {
                 overScrollMode="never"
                 showsVerticalScrollIndicator={false}
             >
-                {/* TechGadget logo */}
                 <View style={styles.logoContainer}>
                     <View style={styles.logoImageContainer}>
                         <Image
@@ -186,7 +214,6 @@ export default function BuyerWallet() {
                     </MaskedView>
                 </View>
 
-                {/* Wallet Center */}
                 <Text style={styles.title}>
                     Ví của tôi
                 </Text>
@@ -196,12 +223,10 @@ export default function BuyerWallet() {
                     </Text>
                 </View>
 
-                {/* Wallet Information */}
                 <Text style={styles.sectionTitle}>
                     Thông tin Ví
                 </Text>
                 <View style={styles.walletInfoContainer}>
-                    {/* Wallet Balance */}
                     <View style={styles.walletBalanceContainer}>
                         <View style={styles.balanceTextContainer}>
                             <Text style={styles.balanceLabel}>Số dư ví:</Text>
@@ -214,7 +239,6 @@ export default function BuyerWallet() {
                         </Pressable>
                     </View>
 
-                    {/* Deposit */}
                     <Pressable
                         style={styles.walletInfoItem}
                         onPress={() => setDepositModalVisible(true)}
@@ -228,7 +252,6 @@ export default function BuyerWallet() {
                         <Icon type="antdesign" name="right" color="#ed8900" size={20} />
                     </Pressable>
 
-                    {/* Deposit History */}
                     <Pressable
                         style={styles.walletInfoItem}
                         onPress={() => {
@@ -244,7 +267,6 @@ export default function BuyerWallet() {
                         <Icon type="antdesign" name="right" color="#ed8900" size={20} />
                     </Pressable>
 
-                    {/* Refund History */}
                     <Pressable
                         style={styles.walletInfoItem}
                         onPress={() => {
@@ -260,7 +282,6 @@ export default function BuyerWallet() {
                         <Icon type="antdesign" name="right" color="#ed8900" size={20} />
                     </Pressable>
 
-                    {/* Payment History */}
                     <Pressable
                         style={styles.walletInfoItem}
                         onPress={() => {
@@ -278,7 +299,6 @@ export default function BuyerWallet() {
                 </View>
             </ScrollView>
 
-            {/* Deposit Modal */}
             <Modal
                 isVisible={isDepositModalVisible}
                 onBackdropPress={() => setDepositModalVisible(false)}
@@ -286,12 +306,7 @@ export default function BuyerWallet() {
                 swipeDirection="down"
                 style={styles.modal}
             >
-                <LinearGradient
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 0.8 }}
-                    colors={["#FFFFFF", "#fecc80"]}
-                    style={styles.modalContent}
-                >
+                <View style={styles.modalContent}>
                     <View style={styles.modalHandle} />
                     <Text style={styles.modalTitle}>Nạp tiền</Text>
                     <TextInput
@@ -301,21 +316,22 @@ export default function BuyerWallet() {
                         value={depositAmount}
                         onChangeText={setDepositAmount}
                     />
-                    <Picker
-                        selectedValue={paymentMethod}
-                        onValueChange={(itemValue) => setPaymentMethod(itemValue)}
-                        style={styles.picker}
+                    <Pressable
+                        style={styles.paymentMethodButton}
+                        onPress={() => setPaymentMethodModalVisible(true)}
                     >
-                        <Picker.Item label="VnPay" value="VnPay" />
-                        <Picker.Item label="Momo" value="Momo" />
-                        <Picker.Item label="PayOS" value="PayOS" />
-                    </Picker>
+                        <Text style={styles.paymentMethodButtonText}>{paymentMethod}</Text>
+                        <Icon type="antdesign" name="down" color="#ed8900" size={20} />
+                    </Pressable>
                     {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     <Pressable style={styles.depositButton} onPress={handleDeposit}>
                         <Text style={styles.depositButtonText}>Nạp tiền</Text>
                     </Pressable>
-                </LinearGradient>
+                </View>
             </Modal>
+
+            <PaymentMethodModal />
+
             <ErrModal
                 stringErr={stringErr}
                 isError={isError}
@@ -405,16 +421,16 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     modal: {
-        justifyContent:  'flex-end',
+        justifyContent: 'flex-end',
         margin: 0,
     },
     modalContent: {
-        width: screenWidth,
-        height: screenHeight / 2,
-        borderTopRightRadius: 20,
-        borderTopLeftRadius: 20,
-        padding: 20,
+        backgroundColor: 'white',
+        padding: 22,
+        justifyContent: 'center',
         alignItems: 'center',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
     },
     modalHandle: {
         width: 40,
@@ -438,18 +454,28 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 10,
     },
-    picker: {
-        width: '100%',
+    paymentMethodButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderColor: '#B7B7B7',
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingVertical: 10,
+        paddingHorizontal: 15,
         marginBottom: 10,
-        paddingVertical: 12,          
-        paddingHorizontal: 15,     
+        width: '100%',
+    },
+    paymentMethodButtonText: {
+        fontSize: 16,
     },
     depositButton: {
         backgroundColor: '#ed8900',
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius:  6,
+        borderRadius: 6,
         marginTop: 10,
+        width: '100%',
     },
     depositButtonText: {
         color: 'white',
@@ -507,5 +533,18 @@ const styles = StyleSheet.create({
     },
     eyeIconContainer: {
         padding: 5,
+    },
+    paymentMethodItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        width: '100%',
+    },
+    paymentMethodText: {
+        fontSize: 16,
     },
 });
