@@ -66,6 +66,7 @@ export default function App() {
         GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",
         BuyerPersonal: "BuyerPersonal",
+        BuyerWallet: "BuyerWallet",
         Policy: "Policy",
         PasswordAndSecure: "PasswordAndSecure",
         ChangeProfile: "ChangeProfile",

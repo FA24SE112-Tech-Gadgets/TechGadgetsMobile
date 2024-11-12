@@ -99,7 +99,7 @@ export default function BuyerWallet() {
             const response = await api.post('/wallet/deposit', {
                 amount: Number(depositAmount),
                 paymentMethod: paymentMethod,
-                returnUrl: 'techgadgets://BuyerHome' 
+                returnUrl: 'techgadgets://BuyerWallet'
             });
             console.log('API Response:', response);
 
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     modal: {
-        justifyContent:  'flex-end',
+        justifyContent: 'flex-end',
         margin: 0,
     },
     modalContent: {
@@ -441,14 +441,14 @@ const styles = StyleSheet.create({
     picker: {
         width: '100%',
         marginBottom: 10,
-        paddingVertical: 12,          
-        paddingHorizontal: 15,     
+        paddingVertical: 12,
+        paddingHorizontal: 15,
     },
     depositButton: {
         backgroundColor: '#ed8900',
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius:  6,
+        borderRadius: 6,
         marginTop: 10,
     },
     depositButtonText: {
