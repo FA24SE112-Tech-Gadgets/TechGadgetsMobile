@@ -3,7 +3,7 @@
     "name": "Tech Gadget",
     "slug": "WhatEat",
     "scheme": "techgadgets",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -71,7 +71,7 @@
       "bundleIdentifier": "com.kietpt2003.WhatEat"
     },
     "android": {
-      "versionCode": 147,
+      "versionCode": 148,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
