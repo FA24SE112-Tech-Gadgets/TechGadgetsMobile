@@ -43,7 +43,7 @@ export default function SellerProfile() {
     user,
   } = useAuth();
 
-  const { setNotifications, setNewNotifications, setCurrentPage } = useNotification();
+  const { setNotifications, setNewNotifications, setCurrentPage, handleDeleteDeviceToken } = useNotification();
 
   useFocusEffect(
     useCallback(() => {
@@ -440,6 +440,7 @@ export default function SellerProfile() {
       {/* Đăng xuất */}
       <Pressable
         onPress={async () => {
+          await handleDeleteDeviceToken();
           await logout();
           setCurrentPage(1);
           setNotifications([]);

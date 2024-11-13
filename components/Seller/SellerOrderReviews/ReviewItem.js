@@ -262,7 +262,7 @@ export default function ReviewItem({
                                     }}
                                     onPress={() => {
                                         setOpenEditField(!openEditField);
-                                        setNewSellerReply(review.sellerReply ? review.sellerReply.content : "");
+                                        setNewSellerReply(review.sellerReply ? review.sellerReply?.content : "");
                                     }}
                                 >
                                     <Feather name="edit" size={20} color="black" />
@@ -295,12 +295,12 @@ export default function ReviewItem({
                                     <ActivityIndicator color={"#ed8900"} />
                                     :
                                     <TouchableOpacity
-                                        disabled={newSellerReply == "" || newSellerReply == review.sellerReply.content}
+                                        disabled={newSellerReply == "" || newSellerReply == review.sellerReply?.content}
                                         onPress={() => {
                                             handleSendReply();
                                         }}
                                     >
-                                        <Feather name="send" size={20} color={newSellerReply == "" || newSellerReply == review.sellerReply.content ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
+                                        <Feather name="send" size={20} color={newSellerReply == "" || newSellerReply == review.sellerReply?.content ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
                                     </TouchableOpacity>
                             }
                         </View>

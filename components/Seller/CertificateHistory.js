@@ -31,7 +31,7 @@ const CertificateHistory = () => {
     logout
   } = useAuth();
 
-  const { setNotifications, setNewNotifications, setCurrentPage: setContextCurrentPage } = useNotification();
+  const { setNotifications, setNewNotifications, setCurrentPage: setContextCurrentPage, handleDeleteDeviceToken } = useNotification();
 
   const navigation = useNavigation();
 
@@ -117,6 +117,7 @@ const CertificateHistory = () => {
   };
 
   const handleLogout = async () => {
+    await handleDeleteDeviceToken();
     await logout();
     setContextCurrentPage(1);
     setNotifications([]);
