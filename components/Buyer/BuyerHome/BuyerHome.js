@@ -61,6 +61,13 @@ export default function BuyerHome() {
       }
     } catch (error) {
       console.error("Error fetching gadgets:", error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -187,6 +194,13 @@ export default function BuyerHome() {
       );
     } catch (error) {
       console.log('Error toggling favorite:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -413,7 +427,7 @@ export default function BuyerHome() {
                                     borderWidth: 0.5,
                                     borderColor: "grey",
                                   }}>
-                                    <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
+                                    <Text style={[styles.discountText, { color: "white" }]}>-{item.discountPercentage}%</Text>
                                   </View>
                                 )}
                                 <View style={{
@@ -550,7 +564,7 @@ const styles = StyleSheet.create({
     borderColor: "grey"
   },
   discountText: {
-    color: 'white',
+    color: 'grey',
     fontSize: 16,
     fontWeight: '500',
   },
