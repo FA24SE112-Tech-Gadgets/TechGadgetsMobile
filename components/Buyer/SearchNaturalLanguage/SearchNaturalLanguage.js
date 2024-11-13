@@ -34,6 +34,10 @@ export default function SearchNaturalLanguage() {
 
     const handleSearch = async () => {
         try {
+            //Delete state before fetching
+            setGadgets([]);
+            setSelectedLocation(null);
+            setSellers([]);
             setIsFetching(true);
             const res = await api.post(`/natural-languages/search`, {
                 input: searchInput
@@ -63,6 +67,10 @@ export default function SearchNaturalLanguage() {
                     "Lỗi mạng vui lòng thử lại sau"
             );
             setIsError(true);
+            setGadgets([]);
+            setSelectedLocation(null);
+            setSellers([]);
+            setIsFetching(false);
         }
     };
 
