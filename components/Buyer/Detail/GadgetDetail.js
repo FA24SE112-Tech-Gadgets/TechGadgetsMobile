@@ -58,12 +58,19 @@ export default function GadgetDetail({ route, navigation }) {
       setGadget(response.data);
     } catch (error) {
       console.log('Error fetching gadget details:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
   const addToCart = async () => {
     try {
-      const response = await api.post('/cart', {
+      await api.post('/cart', {
         gadgetId: gadget.id,
         quantity: quantity
       });
@@ -78,7 +85,7 @@ export default function GadgetDetail({ route, navigation }) {
 
   const buyNow = async () => {
     try {
-      const response = await api.post('/order/now', {
+      await api.post('/order/now', {
         gadgetId: gadget.id,
         quantity: quantity
       });
@@ -92,7 +99,7 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
-  if (!gadget) {
+  if (!gadget || isError) {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{
@@ -121,7 +128,7 @@ export default function GadgetDetail({ route, navigation }) {
               textAlign: "center",
             }}
           >
-            Đang load dữ liệu
+            {isError ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Đang load dữ liệu"}
           </Text>
         </View>
       </LinearGradient>

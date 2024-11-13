@@ -17,6 +17,7 @@ import { Snackbar } from "react-native-paper";
 
 // Assume these are imported from your project
 import api from '../../Authorization/api';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 const GadgetHistory = () => {
     const [gadgetHistory, setGadgetHistory] = useState([]);
@@ -25,8 +26,12 @@ const GadgetHistory = () => {
     const [hasMoreData, setHasMoreData] = useState(true);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [stringErr, setStringErr] = useState('');
+    const [isError, setIsError] = useState(false);
+
     const navigation = useNavigation();
-    
+
     const fetchGadgetHistory = useCallback(async (page = 1) => {
         if (page === 1) setIsLoading(true);
         try {
@@ -61,6 +66,13 @@ const GadgetHistory = () => {
             );
         } catch (error) {
             console.log('Error toggling favorite:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
         }
     };
 
@@ -80,9 +92,10 @@ const GadgetHistory = () => {
 
     const renderGadgetHistoryItem = ({ item }) => (
         <Pressable
+            disabled={item.gadget.status !== "Active"}
             onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
         >
-              <View style={styles.container}>
+            <View style={styles.container}>
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: item.gadget.thumbnailUrl }} style={styles.image} />
                     {item.gadget.discountPercentage > 0 && (
@@ -101,9 +114,14 @@ const GadgetHistory = () => {
                         />
                     </TouchableOpacity>
                 </View>
-                {(!item.gadget.isForSale) && (
+                {(!item.gadget.isForSale && item.gadget.status === "Active") && (
                     <View style={styles.watermarkContainer}>
                         <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                    </View>
+                )}
+                {(item.gadget.status !== "Active") && (
+                    <View style={styles.statusWatermark}>
+                        <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
                     </View>
                 )}
 
@@ -188,7 +206,7 @@ const GadgetHistory = () => {
                         contentContainerStyle={styles.flatListContent}
                         onEndReached={handleLoadMore}
                         onEndReachedThreshold={0.1}
-                        ListFooterComponent={() => 
+                        ListFooterComponent={() =>
                             isLoading && gadgetHistory.length > 0 ? (
                                 <View style={styles.loadingFooter}>
                                     <LottieView
@@ -213,6 +231,12 @@ const GadgetHistory = () => {
             >
                 {snackbarMessage}
             </Snackbar>
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
         </LinearGradient>
     );
 };
@@ -315,18 +339,19 @@ const styles = StyleSheet.create({
         height: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex:2,
+        zIndex: 2,
     },
     watermarkContainer: {
         position: 'absolute',
-        top: 40,
-        left: -8,
-        right: -8,
-        bottom: 40,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         zIndex: 1,
+        borderRadius: 10 + 15,
     },
     watermarkText: {
         color: 'white',
@@ -334,6 +359,25 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         textAlign: 'center',
         padding: 4,
+    },
+    statusWatermark: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+        borderRadius: 10 + 15,
+        paddingHorizontal: 50
+    },
+    statusText: {
+        color: 'red',
+        fontSize: 14,
+        fontWeight: '500',
+        textTransform: 'uppercase',
     },
     detailsContainer: {
         flex: 1,
