@@ -46,7 +46,7 @@ export default function BuyerProfile() {
     user,
   } = useAuth();
 
-  const { setNotifications, setNewNotifications, setCurrentPage } = useNotification();
+  const { setNotifications, setNewNotifications, setCurrentPage, handleDeleteDeviceToken } = useNotification();
 
   const getRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -465,6 +465,7 @@ export default function BuyerProfile() {
       {/* Đăng xuất */}
       <Pressable
         onPress={async () => {
+          await handleDeleteDeviceToken();
           await logout();
           setCurrentPage(1);
           setNotifications([]);

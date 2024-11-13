@@ -24,23 +24,6 @@ AppRegistry.registerComponent('app', () => App);
 
 export default function App() {
   const { isLoggedIn, fetchUser } = useAuth();
-  //   const url = "/account";
-  //   try {
-  //     const res = await api.get(url);
-  //     let user = res.data;
-
-  //     console.log("check here", user);
-  //     if (user) {
-  //       return user
-  //     } else {
-  //       return null
-  //     }
-
-  //   } catch (error) {
-  //     console.log("Don't have token");
-  //     return null
-  //   }
-  // };
 
   const linking = {
     prefixes: ["techgadgets://"],
@@ -52,7 +35,7 @@ export default function App() {
         StackBuyerHome: {
           screens: {
             BuyerHome: "BuyerHome",
-            FavouriteGagdets: "FavouriteGagdets",
+            SearchNaturalLanguage: "SearchNaturalLanguage",
             OrdersHistory: "OrdersHistory",
             BuyerProfile: "BuyerProfile",
             BuyerNotification: "BuyerNotification",
@@ -66,6 +49,8 @@ export default function App() {
         GadgetDetail: "GadgetDetail",
         AboutTechGadget: "AboutTechGadget",
         BuyerPersonal: "BuyerPersonal",
+        BuyerWallet: "BuyerWallet",
+        FavoriteList: "FavoriteList",
         Policy: "Policy",
         PasswordAndSecure: "PasswordAndSecure",
         ChangeProfile: "ChangeProfile",
@@ -83,53 +68,51 @@ export default function App() {
       },
     },
     async getInitialURL() {
-      // First, you may want to do the default deep link handling
-      // Check if app was opened from a deep link
-      const url = await Linking.getInitialURL();
+      try {
+        // Try to get the initial URL
+        const url = await Linking.getInitialURL();
+        if (url) return url;
 
-      if (url != null) {
-        return url;
+        // If not, check for a URL in the last notification response
+        const response = await Notifications.getLastNotificationResponseAsync();
+        return response?.notification.request.content.data?.url || ""; // Default to empty string if null
+      } catch (error) {
+        console.log("Error fetching initial URL:", error);
+        return ""; // Handle errors by returning an empty string or default value
       }
-
-      // Handle URL from expo push notifications
-      const response = await Notifications.getLastNotificationResponseAsync();
-
-      return response?.notification.request.content.data.url;
     },
     subscribe(listener) {
-      const onReceiveURL = ({ url }) => listener(url);
+      const onReceiveURL = async ({ url }) => {
+        if (url) await listener(url); // Only pass the URL if it's not null
+      };
 
       // Listen to incoming links from deep linking
-      const eventListenerSubscription = Linking.addEventListener('url', onReceiveURL);
+      const eventListenerSubscription = Linking.addEventListener("url", onReceiveURL);
 
       // Listen to expo push notifications
       const subscription = Notifications.addNotificationResponseReceivedListener(async (response) => {
-        const url = response.notification.request.content.data.url;
-        const notificationId = response.notification.request.content.data.notificationId;
+        const url = response.notification.request.content.data?.url;
+        const notificationId = response.notification.request.content.data?.notificationId;
 
-        // Any custom logic to see whether the URL needs to be handled
-        //...
-        await fetchUser();
-        if (isLoggedIn) {
-          //Fetch API /api/notification/{notificationId} for update Seen
+        if (url) {  // Only proceed if `url` exists
           try {
-            const res = await api.get(`/notification/${notificationId}`);
-            let noti = res.data;
+            await fetchUser();
+            if (isLoggedIn) {
+              // Fetch API to update Seen status
+              const res = await api.get(`/notification/${notificationId}`);
+              const noti = res.data;
+              console.log("Notification detail:", noti);
 
-            console.log("check noti detail", noti);
+              // Let React Navigation handle the URL
+              listener(url);
+            }
           } catch (error) {
-            console.log("Error get notification detail");
-            return;
+            console.log("Error getting notification detail:", error);
           }
-
-          // Let React Navigation handle the URL
-          listener(url);
         }
-
       });
 
       return () => {
-        // Clean up the event listeners
         eventListenerSubscription.remove();
         subscription.remove();
       };

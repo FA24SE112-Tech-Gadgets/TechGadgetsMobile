@@ -28,6 +28,7 @@ const NotificationContext = createContext({
     markNotificationAsRead: () => { },
     markAllNotificationsAsRead: () => { },
     setCurrentPage: () => { },
+    handleDeleteDeviceToken: async () => { }
 })
 
 const NotificationProvider = ({ children }) => {
@@ -47,6 +48,22 @@ const NotificationProvider = ({ children }) => {
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
+
+    const handleDeleteDeviceToken = async () => {
+        try {
+            await api.delete(`/device-tokens`, {
+                data: { token: deviceToken }
+            });
+
+        } catch (error) {
+            setIsError(true);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message
+                    ? error.response.data.reasons[0].message
+                    : "Lỗi mạng vui lòng thử lại sau"
+            );
+        }
+    }
 
     //Function for trigger new notification when have fcm noti
     const fetchNewNotifications = async () => {
@@ -242,6 +259,7 @@ const NotificationProvider = ({ children }) => {
                 markNotificationAsRead,
                 markAllNotificationsAsRead,
                 setCurrentPage,
+                handleDeleteDeviceToken
             }}
         >
             {children}

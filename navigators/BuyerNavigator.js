@@ -7,11 +7,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import BuyerProfile from '../components/Buyer/BuyerProfile/BuyerProfile';
 import { Ionicons } from '@expo/vector-icons';
 import AuthRoute from '../components/Authorization/AuthRoute';
-import FavouriteGagdets from '../components/Buyer/FavouriteGagdets';
 import BuyerHome from '../components/Buyer/BuyerHome/BuyerHome';
 import BuyerOrders from '../components/Buyer/BuyerOrder/BuyerOrders';
 import useNotification from '../utils/useNotification';
 import BuyerNotifications from '../components/Buyer/BuyerNotification/BuyerNotifications';
+import SearchNaturalLanguage from '../components/Buyer/SearchNaturalLanguage/SearchNaturalLanguage';
 
 const Tab = createBottomTabNavigator();
 
@@ -69,17 +69,17 @@ const BuyerNavigator = () => {
 				)}
 			</Tab.Screen>
 			<Tab.Screen
-				name='FavouriteGagdets'
+				name='SearchNaturalLanguage'
 				options={{
 					tabBarIcon: ({ color, size }) => (
-						<FontAwesome name="heart" size={+size} color={color} />
+						<Ionicons name="search" size={+size} color={color} />
 					),
-					tabBarLabel: "Yêu thích",
+					tabBarLabel: "Tìm kiếm",
 				}}
 			>
 				{() => (
 					<AuthRoute>
-						<FavouriteGagdets />
+						<SearchNaturalLanguage />
 					</AuthRoute>
 				)}
 			</Tab.Screen>
