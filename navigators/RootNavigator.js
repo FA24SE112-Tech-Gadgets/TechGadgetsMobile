@@ -38,6 +38,8 @@ import ReviewList from "../components/Buyer/BuyerReview/ReviewList";
 import FavoriteList from "../components/Buyer/Favorite/FavoriteList";
 import { BuyerReviewSellerOrdersScreen } from "../components/Buyer/SellerOrderReviews/BuyerReviewSellerOrdersScreen";
 import GadgetHistory from "../components/Buyer/BuyerHistory/GadgetHistory";
+import SellerDetailScreen from "../components/Buyer/SearchNaturalLanguage/Seller/SellerDetailScreen";
+import GadgetsByCategory from "../components/Buyer/SearchNaturalLanguage/Seller/GadgetsByCategory";
 
 
 const Stack = createNativeStackNavigator();
@@ -288,6 +290,20 @@ const RootNavigator = () => {
         {({ navigation, route }) => (
           <AuthRoute>
             <BuyerReviewSellerOrdersScreen navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SellerDetailScreen" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <SellerDetailScreen navigation={navigation} route={route} />
+          </AuthRoute>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="GadgetsByCategory" >
+        {({ navigation, route }) => (
+          <AuthRoute>
+            <GadgetsByCategory navigation={navigation} route={route} />
           </AuthRoute>
         )}
       </Stack.Screen>

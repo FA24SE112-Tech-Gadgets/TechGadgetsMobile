@@ -22,6 +22,7 @@ import { useDebounce } from 'use-debounce';
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
+import Snowfall from '../../CustomComponents/Snowfall';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -51,7 +52,12 @@ export default function BuyerHome() {
       const response = await api.get(`/gadgets/hot?CategoryId=${categoryId}&Page=1&PageSize=1`);
       const gadget = response.data?.items[0];
       if (gadget) {
-        setBannerArr((prev) => [...prev, gadget]); // Only add if gadget is found
+        setBannerArr((prev) => {
+          // Check if gadget with the same id already exists
+          const isDuplicate = prev.some((item) => item.id === gadget.id);
+          // Only add if it's not a duplicate
+          return isDuplicate ? prev : [...prev, gadget];
+        });
       }
     } catch (error) {
       console.error("Error fetching gadgets:", error);
@@ -373,58 +379,77 @@ export default function BuyerHome() {
                   renderItem={renderCategory}
                   ListHeaderComponent={
                     bannerArr.length > 0 &&
-                    <View style={styles.bannerContainer}>
-                      <FlatList
-                        data={bannerArr}
-                        ref={flatListRef}
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        renderItem={({ item }) => (
-                          <TouchableOpacity onPress={() => {
-                            navigation.navigate('GadgetDetail', { gadgetId: item.id })
-                          }}
-                            style={styles.imageBtn}
-                          >
-                            <View style={styles.gadgetImageItem}>
-                              <Image
-                                source={{ uri: item.thumbnailUrl }}
-                                style={styles.gadgetImage}
-                                resizeMode="contain"
-                              />
-                              <View style={{
-                                position: "absolute",
-                                bottom: 10,
-                                left: 10,
-                                backgroundColor: "rgba(0, 0, 0, 0.2)",
-                                paddingHorizontal: 10,
-                                paddingVertical: 5,
-                                borderRadius: 10
-                              }}>
-                                <Text
-                                  style={{
-                                    width: ScreenWidth / 3
-                                  }}
-                                  numberOfLines={1}
-                                  ellipsizeMode="tail"
-                                >{item.name}</Text>
+                    <Snowfall style={{
+                      backgroundColor: "#112A46"
+                    }}>
+                      <View style={styles.bannerContainer}>
+                        <FlatList
+                          data={bannerArr}
+                          ref={flatListRef}
+                          horizontal
+                          pagingEnabled
+                          showsHorizontalScrollIndicator={false}
+                          renderItem={({ item }) => (
+                            <TouchableOpacity onPress={() => {
+                              navigation.navigate('GadgetDetail', { gadgetId: item.id })
+                            }}
+                              style={styles.imageBtn}
+                            >
+                              <View style={styles.gadgetImageItem}>
+                                <Image
+                                  source={{ uri: item.thumbnailUrl }}
+                                  style={styles.gadgetImage}
+                                  resizeMode="contain"
+                                />
+                                {item.discountPercentage > 0 && (
+                                  <View style={{
+                                    position: 'absolute',
+                                    bottom: 10,
+                                    right: 10,
+                                    backgroundColor: '#FF0000',
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 5,
+                                    borderRadius: 10,
+                                    borderWidth: 0.5,
+                                    borderColor: "grey",
+                                  }}>
+                                    <Text style={styles.discountText}>-{item.discountPercentage}%</Text>
+                                  </View>
+                                )}
+                                <View style={{
+                                  position: "absolute",
+                                  bottom: 10,
+                                  left: 10,
+                                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                                  paddingHorizontal: 10,
+                                  paddingVertical: 5,
+                                  borderRadius: 10
+                                }}>
+                                  <Text
+                                    style={{
+                                      width: ScreenWidth / 3
+                                    }}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                  >{item.name}</Text>
+                                </View>
                               </View>
-                            </View>
-                          </TouchableOpacity>
-                        )}
-                        keyExtractor={(item) => item.id}
-                        onLayout={() => {
-                          if (flatListRef.current) {
-                            flatListRef.current.scrollToIndex({ index: 0, animated: false });
-                          }
-                        }}
-                        getItemLayout={(data, index) => ({
-                          length: screenWidth,
-                          offset: screenWidth * index,
-                          index,
-                        })}
-                      />
-                    </View>
+                            </TouchableOpacity>
+                          )}
+                          keyExtractor={(item) => item.id}
+                          onLayout={() => {
+                            if (flatListRef.current) {
+                              flatListRef.current.scrollToIndex({ index: 0, animated: false });
+                            }
+                          }}
+                          getItemLayout={(data, index) => ({
+                            length: screenWidth,
+                            offset: screenWidth * index,
+                            index,
+                          })}
+                        />
+                      </View>
+                    </Snowfall>
                   }
                   showsVerticalScrollIndicator={false}
                   keyExtractor={(item) => item.id}
@@ -525,8 +550,8 @@ const styles = StyleSheet.create({
     borderColor: "grey"
   },
   discountText: {
-    color: 'grey',
-    fontSize: 12,
+    color: 'white',
+    fontSize: 16,
     fontWeight: '500',
   },
   priceContainer: {
