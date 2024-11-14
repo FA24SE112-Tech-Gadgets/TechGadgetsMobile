@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import {
     View,
@@ -19,6 +18,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import BuyerOrderGadgetItem from './BuyerOrderGadgetItem';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Snackbar } from 'react-native-paper';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 export default function BuyerOrderDetail({ route, navigate }) {
     const [buyerOrder, setBuyerOrder] = useState(null);
@@ -30,6 +30,9 @@ export default function BuyerOrderDetail({ route, navigate }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreData, setHasMoreData] = useState(true);
     const navigation = useNavigation();
+
+    const [stringErr, setStringErr] = useState("");
+    const [isError, setIsError] = useState(false);
 
     const sellerOrderId = route.params.sellerOrderId;
 
@@ -248,7 +251,18 @@ export default function BuyerOrderDetail({ route, navigate }) {
                     data={gadgets}
                     keyExtractor={item => item.gadgetId}
                     renderItem={({ item, index }) => (
-                        <Pressable onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadgetId })}>
+                        <Pressable
+                            onPress={
+                                () => {
+                                    if (item.gadgetStatus === "Active") {
+                                        navigation.navigate('GadgetDetail', { gadgetId: item.gadgetId })
+                                    } else {
+                                        setStringErr("Sản phẩm này không còn tồn tại nữa.");
+                                        setIsError(true);
+                                    }
+                                }
+                            }
+                        >
                             <BuyerOrderGadgetItem
                                 {...item}
                                 index={index}
@@ -363,6 +377,12 @@ export default function BuyerOrderDetail({ route, navigate }) {
             <ConfirmHelpCenterModal
                 showConfirmModal={showConfirmModal}
                 setShowConfirmModal={setShowConfirmModal}
+            />
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
             />
         </LinearGradient>
     );

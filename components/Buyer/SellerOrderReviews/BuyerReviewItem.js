@@ -286,18 +286,21 @@ export default function BuyerReviewItem({
                                 </View>
 
                                 {/* Edit button */}
-                                <TouchableOpacity
-                                    style={{
-                                        alignSelf: "center"
-                                    }}
-                                    onPress={() => {
-                                        setOpenEditField(!openEditField);
-                                        setRatingStars(review ? review.rating : 0);
-                                        setNewSellerReview(review ? review.content : "");
-                                    }}
-                                >
-                                    <Feather name="edit" size={20} color="black" />
-                                </TouchableOpacity>
+                                {
+                                    !review?.isUpdated &&
+                                    <TouchableOpacity
+                                        style={{
+                                            alignSelf: "center"
+                                        }}
+                                        onPress={() => {
+                                            setOpenEditField(!openEditField);
+                                            setRatingStars(review ? review.rating : 0);
+                                            setNewSellerReview(review ? review.content : "");
+                                        }}
+                                    >
+                                        <Feather name="edit" size={20} color="black" />
+                                    </TouchableOpacity>
+                                }
                             </View>
 
                             {/* CreatedAt and categoryName */}
@@ -329,7 +332,14 @@ export default function BuyerReviewItem({
                                 alignItems: "center",
                                 marginVertical: 10
                             }}
-                                onPress={() => { navigation.navigate('GadgetSellerDetail', { gadgetId: gadgetId }) }}
+                                onPress={() => {
+                                    if (status === "Active") {
+                                        navigation.navigate('GadgetSellerDetail', { gadgetId: gadgetId })
+                                    } else {
+                                        setStringErr("Sản phẩm này không còn tồn tại nữa.");
+                                        setIsError(true);
+                                    }
+                                }}
                             >
                                 {/* thumbnailUrl */}
                                 <View style={{

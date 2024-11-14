@@ -321,11 +321,11 @@ export default function GadgetDetail({ route, navigation }) {
                 <View key={index}>
                   <View style={styles.specRow}>
                     <View style={styles.specKeyContainer}>
-                      <Text style={styles.specKey}>{spec.specificationKey}</Text>
+                      <Text style={styles.specKey}>{spec.specificationKey.name}</Text>
                     </View>
                     <View style={styles.specValueContainer}>
                       <Text style={styles.specValue}>
-                        {spec.specificationKey === 'Thời điểm ra mắt' ? formatVietnamDate(spec.value) : spec.value} {spec.specificationUnit}
+                        {spec.value} {spec.specificationUnit?.name}
                       </Text>
                     </View>
                   </View>
