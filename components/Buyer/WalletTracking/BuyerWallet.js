@@ -10,6 +10,7 @@ import {
     Dimensions,
     Linking,
     TouchableWithoutFeedback,
+    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
@@ -19,8 +20,6 @@ import { useNavigation } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import ErrModal from '../../CustomComponents/ErrModal';
 import api from '../../Authorization/api';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function Component() {
     const navigation = useNavigation();
@@ -36,6 +35,7 @@ export default function Component() {
     const [showStatusOverlay, setShowStatusOverlay] = useState(false);
     const [balance, setBalance] = useState(null);
     const [isBalanceVisible, setIsBalanceVisible] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
 
     const fetchBalance = async () => {
         try {
@@ -50,9 +50,9 @@ export default function Component() {
         fetchBalance();
     }, []);
 
-    const toggleBalanceVisibility = () => {
+    const toggleBalanceVisibility = async () => {
         if (!isBalanceVisible) {
-            fetchBalance();
+            await fetchBalance();
         }
         setIsBalanceVisible(!isBalanceVisible);
     };
@@ -71,7 +71,7 @@ export default function Component() {
                 setDepositStatus(status);
                 setShowStatusOverlay(true);
                 setWalletTrackingId(null);
-                fetchBalance();
+                await fetchBalance();
             }
         } catch (error) {
             console.log('Error checking deposit status:', error);
@@ -96,10 +96,11 @@ export default function Component() {
         }
 
         try {
+            setIsFetching(true);
             const response = await api.post('/wallet/deposit', {
                 amount: Number(depositAmount),
                 paymentMethod: paymentMethod,
-                returnUrl: 'techgadgets://BuyerHome' 
+                returnUrl: 'techgadgets://BuyerWallet'
             });
 
             if (response.data && response.data.depositUrl && response.data.walletTrackingId) {
@@ -116,6 +117,7 @@ export default function Component() {
                 setIsError(true);
                 setStringErr('Không nhận được liên kết thanh toán. Vui lòng thử lại.');
             }
+            setIsFetching(false);
         } catch (error) {
             setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
             setIsError(true);
@@ -234,7 +236,9 @@ export default function Component() {
                                 {isBalanceVisible && balance !== null ? formatBalance(balance) : '*****'}
                             </Text>
                         </View>
-                        <Pressable onPress={toggleBalanceVisibility} style={styles.eyeIconContainer}>
+                        <Pressable onPress={async () => {
+                            await toggleBalanceVisibility();
+                        }} style={styles.eyeIconContainer}>
                             <Ionicons name={isBalanceVisible ? "eye-off" : "eye"} size={24} color="#ed8900" />
                         </Pressable>
                     </View>
@@ -324,8 +328,18 @@ export default function Component() {
                         <Icon type="antdesign" name="down" color="#ed8900" size={20} />
                     </Pressable>
                     {error ? <Text style={styles.errorText}>{error}</Text> : null}
-                    <Pressable style={styles.depositButton} onPress={handleDeposit}>
+                    <Pressable
+                        style={styles.depositButton}
+                        onPress={async () => {
+                            await handleDeposit();
+                        }}
+                        disabled={isFetching}
+                    >
                         <Text style={styles.depositButtonText}>Nạp tiền</Text>
+                        {
+                            isFetching &&
+                            <ActivityIndicator color={"white"} />
+                        }
                     </Pressable>
                 </View>
             </Modal>
@@ -476,6 +490,10 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginTop: 10,
         width: '100%',
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10
     },
     depositButtonText: {
         color: 'white',

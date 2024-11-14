@@ -18,6 +18,7 @@ import Slider from '@react-native-community/slider';
 import api from "../../Authorization/api";
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import ErrModal from '../../CustomComponents/ErrModal';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -39,6 +40,9 @@ export default function CategoryGadgets({ route, navigation }) {
   const [currentFilters, setCurrentFilters] = useState('');
   const [noResults, setNoResults] = useState(false);
 
+  const [stringErr, setStringErr] = useState('');
+  const [isError, setIsError] = useState(false);
+
   const fetchGadgets = useCallback(async (filterParams = '', resetPage = false) => {
     if (!hasMore && page !== 1 && !resetPage) return;
     setLoading(true);
@@ -59,6 +63,13 @@ export default function CategoryGadgets({ route, navigation }) {
       }
     } catch (error) {
       console.log('Error fetching gadgets:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
       setNoResults(true);
     } finally {
       setLoading(false);
@@ -82,6 +93,13 @@ export default function CategoryGadgets({ route, navigation }) {
       setBrands(response.data.items);
     } catch (error) {
       console.log('Error fetching brands:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -91,6 +109,13 @@ export default function CategoryGadgets({ route, navigation }) {
       setFilters(response.data);
     } catch (error) {
       console.log('Error fetching filters:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -104,6 +129,13 @@ export default function CategoryGadgets({ route, navigation }) {
       );
     } catch (error) {
       console.log('Error toggling favorite:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -381,6 +413,12 @@ export default function CategoryGadgets({ route, navigation }) {
         />
       )}
       {renderFilterModal()}
+
+      <ErrModal
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
     </LinearGradient>
   );
 }

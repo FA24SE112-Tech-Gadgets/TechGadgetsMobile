@@ -43,14 +43,26 @@ export default function GadgetDetail({ route, navigation }) {
 
     return `${day}/${month}/${year}`;
   };
-
+  
   useEffect(() => {
     fetchGadgetDetail();
   }, []);
-
+  
   useEffect(() => {
     setIsContentExpanded(false);
   }, [activeTab]);
+  
+  {/* Group Specification*/ }
+  const groupSpecifications = (specs) => {
+    return specs.reduce((acc, spec) => {
+      const key = spec.specificationKey.name;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(spec);
+      return acc;
+    }, {});
+  };
 
   const fetchGadgetDetail = async () => {
     try {
@@ -58,12 +70,19 @@ export default function GadgetDetail({ route, navigation }) {
       setGadget(response.data);
     } catch (error) {
       console.log('Error fetching gadget details:', error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
   const addToCart = async () => {
     try {
-      const response = await api.post('/cart', {
+      await api.post('/cart', {
         gadgetId: gadget.id,
         quantity: quantity
       });
@@ -78,7 +97,7 @@ export default function GadgetDetail({ route, navigation }) {
 
   const buyNow = async () => {
     try {
-      const response = await api.post('/order/now', {
+      await api.post('/order/now', {
         gadgetId: gadget.id,
         quantity: quantity
       });
@@ -92,7 +111,7 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
-  if (!gadget) {
+  if (!gadget || isError) {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{
@@ -121,7 +140,7 @@ export default function GadgetDetail({ route, navigation }) {
               textAlign: "center",
             }}
           >
-            Đang load dữ liệu
+            {isError ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Đang load dữ liệu"}
           </Text>
         </View>
       </LinearGradient>
@@ -310,24 +329,28 @@ export default function GadgetDetail({ route, navigation }) {
         <View style={styles.tabContent}>
           {activeTab === 'specs' ? (
             <View style={styles.specsContainer}>
-              {gadget.specificationValues.slice(0, isContentExpanded ? undefined : 4).map((spec, index) => (
-                <View key={index}>
-                  <View style={styles.specRow}>
-                    <View style={styles.specKeyContainer}>
-                      <Text style={styles.specKey}>{spec.specificationKey}</Text>
+              {Object.entries(groupSpecifications(gadget.specificationValues))
+                .slice(0, isContentExpanded ? undefined : 4)
+                .map(([key, specs], index, array) => (
+                  <View key={key}>
+                    <View style={styles.specRow}>
+                      <View style={styles.specKeyContainer}>
+                        <Text style={styles.specKey}>{key}</Text>
+                      </View>
+                      <View style={styles.specValueContainer}>
+                        {specs.map((spec, i) => (
+                          <View key={i} style={styles.specValueRow}>
+                            <Text style={styles.specValue}>
+                              {spec.value}{spec.specificationUnit?.name || ''}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
-                    <View style={styles.specValueContainer}>
-                      <Text style={styles.specValue}>
-                        {spec.specificationKey === 'Thời điểm ra mắt' ? formatVietnamDate(spec.value) : spec.value} {spec.specificationUnit}
-                      </Text>
-                    </View>
+                    {index < array.length - 1 && <View style={styles.separator} />}
                   </View>
-                  {index < (isContentExpanded ? gadget.specificationValues.length - 1 : 3) && (
-                    <View style={styles.separator} />
-                  )}
-                </View>
-              ))}
-              {gadget.specificationValues.length > 4 && (
+                ))}
+              {Object.keys(groupSpecifications(gadget.specificationValues)).length > 4 && (
                 <TouchableOpacity
                   style={styles.expandButton}
                   onPress={() => setIsContentExpanded(!isContentExpanded)}
@@ -631,6 +654,9 @@ const styles = StyleSheet.create({
   },
   specValueContainer: {
     flex: 3,
+  },
+  specValueRow: {
+    marginBottom: 2,
   },
   specKey: {
     fontSize: 16,

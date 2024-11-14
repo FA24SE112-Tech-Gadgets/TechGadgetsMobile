@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ImageBackground } from 'react-native';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import { useNavigation } from '@react-navigation/native';
 
-const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, setSnackbarVisible, setSnackbarMessage }) => {
+const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, setStringErr, setIsError }) => {
+  const navigation = useNavigation();
+
   const formatCurrency = (number) => {
     if (number) {
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
@@ -21,9 +24,21 @@ const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, se
   };
 
   const renderGadgetItem = ({ item }) => (
-    <View style={{
-      flexDirection: "row"
-    }}>
+    <TouchableOpacity
+      style={{
+        flexDirection: "row"
+      }}
+      onPress={
+        () => {
+          if (item.gadgetStatus === "Active") {
+            navigation.navigate('GadgetDetail', { gadgetId: item.gadgetId })
+          } else {
+            setStringErr("Sản phẩm này không còn tồn tại nữa.");
+            setIsError(true);
+          }
+        }
+      }
+    >
       <View style={{
         justifyContent: "space-between",
         alignItems: "center",
@@ -70,7 +85,7 @@ const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, se
           )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

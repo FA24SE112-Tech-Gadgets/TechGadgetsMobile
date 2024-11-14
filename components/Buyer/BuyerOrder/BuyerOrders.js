@@ -4,8 +4,6 @@ import {
     Text,
     FlatList,
     StyleSheet,
-    Image,
-    TextInput,
     ActivityIndicator,
     Pressable,
     TouchableOpacity,
@@ -14,12 +12,9 @@ import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import api from "../../Authorization/api";
-import logo from "../../../assets/adaptive-icon.png";
-import { useDebounce } from 'use-debounce';
 import { Icon, ScreenHeight, ScreenWidth, Divider } from "@rneui/base";
 import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
-import { Snackbar } from 'react-native-paper';
 import BuyerOrderItem from './BuyerOrderItem';
 import ErrModal from '../../CustomComponents/ErrModal';
 
@@ -27,8 +22,6 @@ export default function BuyerOrders() {
     const [buyerOrders, setBuyerOrders] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const navigation = useNavigation();
-    const [snackbarVisible, setSnackbarVisible] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [sortOption, setSortOption] = useState("Pending");
     const [isFetching, setIsFetching] = useState(false);
@@ -224,8 +217,8 @@ export default function BuyerOrders() {
                             >
                                 <BuyerOrderItem
                                     {...item}
-                                    setSnackbarMessage={setSnackbarMessage}
-                                    setSnackbarVisible={setSnackbarVisible}
+                                    setIsError={setIsError}
+                                    setStringErr={setStringErr}
                                 />
                                 {index < buyerOrders.length - 1 && (
                                     <Divider style={{ marginVertical: 14 }} />
@@ -243,14 +236,6 @@ export default function BuyerOrders() {
                     />
                 )}
             </View>
-            <Snackbar
-                visible={snackbarVisible}
-                onDismiss={() => setSnackbarVisible(false)}
-                duration={1500}
-                wrapperStyle={{ bottom: 0, zIndex: 1, alignSelf: "center" }}
-            >
-                {snackbarMessage}
-            </Snackbar>
 
             <ErrModal
                 stringErr={stringErr}

@@ -6,8 +6,8 @@ import {
     Image,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
     Pressable,
+    ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,23 +18,6 @@ import { Divider, ScreenHeight, ScreenWidth } from '@rneui/base';
 import LottieView from 'lottie-react-native';
 import { Snackbar } from "react-native-paper";
 
-const { width } = Dimensions.get('window');
-
-const EmptyStateView = ({ message }) => (
-    <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.emptyContainer}>
-        <View style={styles.emptyContent}>
-            <LottieView
-                source={require("../../../assets/animations/catRole.json")}
-                style={styles.lottieAnimation}
-                autoPlay
-                loop
-                speed={0.8}
-            />
-            <Text style={styles.emptyText}>{message}</Text>
-        </View>
-    </LinearGradient>
-);
-
 const FavoriteList = () => {
     const [favorites, setFavorites] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +25,9 @@ const FavoriteList = () => {
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const navigation = useNavigation();
-    
+
+    const [isFetching, setIsFetching] = useState(false);
+
     const fetchFavorites = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -64,7 +49,9 @@ const FavoriteList = () => {
 
     const deleteFavorite = async (gadgetId) => {
         try {
+            setIsFetching(true);
             await api.post(`/favorite-gadgets/${gadgetId}`);
+            setIsFetching(false);
             setFavorites(favorites.filter(item => item.gadget.id !== gadgetId));
             showSnackbar('Đã xóa khỏi danh sách yêu thích');
         } catch (error) {
@@ -75,7 +62,9 @@ const FavoriteList = () => {
 
     const deleteAllFavorites = async () => {
         try {
+            setIsFetching(true);
             await api.delete('/favorite-gadgets');
+            setIsFetching(false);
             setFavorites([]);
             showSnackbar('Đã xóa tất cả khỏi danh sách yêu thích');
         } catch (error) {
@@ -100,9 +89,10 @@ const FavoriteList = () => {
 
     const renderFavoriteItem = ({ item }) => (
         <Pressable
+            disabled={item.gadget.status !== "Active"}
             onPress={() => !isEditMode && navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
         >
-           <View style={styles.container}>
+            <View style={styles.container}>
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: item.gadget.thumbnailUrl }} style={styles.image} />
                     {item.gadget.discountPercentage > 0 && (
@@ -111,9 +101,14 @@ const FavoriteList = () => {
                         </View>
                     )}
                 </View>
-                {(!item.gadget.isForSale) && (
+                {(!item.gadget.isForSale && item.gadget.status === "Active") && (
                     <View style={styles.watermarkContainer}>
                         <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                    </View>
+                )}
+                {(item.gadget.status !== "Active") && (
+                    <View style={styles.statusWatermark}>
+                        <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
                     </View>
                 )}
 
@@ -216,8 +211,13 @@ const FavoriteList = () => {
                 <TouchableOpacity
                     style={styles.deleteAllButton}
                     onPress={deleteAllFavorites}
+                    disabled={isFetching}
                 >
                     <Text style={styles.deleteAllText}>Xóa tất cả</Text>
+                    {
+                        isFetching &&
+                        <ActivityIndicator color={"white"} />
+                    }
                 </TouchableOpacity>
             )}
 
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
         width: ScreenWidth / 1.05,
         alignSelf: "center",
         paddingHorizontal: 10,
-        paddingVertical: 15
+        paddingVertical: 15,
     },
     imageContainer: {
         width: ScreenWidth / 2.5,
@@ -332,14 +332,15 @@ const styles = StyleSheet.create({
     },
     watermarkContainer: {
         position: 'absolute',
-        top: 30,
-        left: -8,
-        right: -8,
-        bottom: 30,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         zIndex: 1,
+        borderRadius: 10 + 15,
     },
     watermarkText: {
         color: 'white',
@@ -347,6 +348,25 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         textAlign: 'center',
         padding: 4,
+    },
+    statusWatermark: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+        borderRadius: 10 + 15,
+        paddingHorizontal: 50
+    },
+    statusText: {
+        color: 'red',
+        fontSize: 14,
+        fontWeight: '500',
+        textTransform: 'uppercase',
     },
     detailsContainer: {
         flex: 1,
@@ -386,7 +406,7 @@ const styles = StyleSheet.create({
     },
     deleteButton: {
         padding: 10,
-        zIndex: 1,
+        zIndex: 3,
     },
     divider: {
         marginVertical: 2,
@@ -396,6 +416,12 @@ const styles = StyleSheet.create({
         padding: 16,
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: "row",
+        borderRadius: 10,
+        gap: 10,
+        marginBottom: 10,
+        width: ScreenWidth / 1.1,
+        alignSelf: "center"
     },
     deleteAllText: {
         color: 'white',

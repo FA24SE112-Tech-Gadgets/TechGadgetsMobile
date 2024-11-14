@@ -17,7 +17,6 @@ const AuthContext = createContext({
   setUser: () => { },
   isPayToWin: false,
   setIsPayToWin: () => { },
-  fetchSubscription: async (status, page, limit) => { },
   currentPackage: {},
   setCurrentPackage: () => { },
   fetchUser: async () => { },
@@ -45,28 +44,6 @@ const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-  async function fetchSubscription(status, page, limit) {
-    const url = `/subscriptions/current?subscriptionStatus=${status}&page=${page}&limit=${limit}`;
-    try {
-      const res = await api.get(url);
-      const data = res.data.data;
-      if (data != undefined && data.length != 0) {
-        setCurrentPackage(data[0]);
-        setIsPayToWin(false);
-        return true;
-      }
-      setCurrentPackage(null);
-      setIsPayToWin(true);
-      return false;
-    } catch (error) {
-      console.log("check pay to win err:", error.response?.data?.reasons[0]?.message ?
-        error.response.data.reasons[0].message
-        : error);
-      setIsPayToWin(true);
-      return false;
-    }
-  }
 
   const login = async () => {
     await fetchUser();
@@ -101,7 +78,6 @@ const AuthProvider = ({ children }) => {
         setIsTimerRunning,
         isPayToWin,
         setIsPayToWin,
-        fetchSubscription,
         currentPackage,
         setCurrentPackage,
         fetchUser

@@ -6,7 +6,8 @@ import {
     Image,
     TouchableOpacity,
     StyleSheet,
-    RefreshControl
+    RefreshControl,
+    ActivityIndicator
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -36,6 +37,8 @@ const BuyerCartItem = () => {
     const [stringErr, setStringErr] = useState('');
     const [isError, setIsError] = useState(false);
 
+    const [isFetching, setIsFetching] = useState(false);
+
     const navigation = useNavigation();
 
     const fetchSellers = async () => {
@@ -44,6 +47,13 @@ const BuyerCartItem = () => {
             return response.data.items;
         } catch (error) {
             console.log('Error fetching sellers:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
             return [];
         }
     };
@@ -69,6 +79,13 @@ const BuyerCartItem = () => {
             return allItems;
         } catch (error) {
             console.log('Error fetching cart items:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
             return [];
         }
     };
@@ -88,6 +105,13 @@ const BuyerCartItem = () => {
             setCartItems(newCartItems);
         } catch (error) {
             console.log('Error refreshing cart:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
             setSellers([]);
             setCartItems({});
         } finally {
@@ -104,7 +128,9 @@ const BuyerCartItem = () => {
 
     const removeGadget = async (gadgetId) => {
         try {
+            setIsFetching(true);
             await api.put('/cart/old', { gadgetId, quantity: 0 });
+            setIsFetching(false);
             setSnackbarMessage('Xóa sản phẩm thành công');
             setSnackbarVisible(true);
             await refreshCart();
@@ -117,8 +143,10 @@ const BuyerCartItem = () => {
 
     const removeShop = async (sellerId) => {
         try {
+            setIsFetching(true);
             await api.delete(`/cart/seller/${sellerId}`);
             await refreshCart();
+            setIsFetching(false);
             setSnackbarMessage('Xóa thành công');
             setSnackbarVisible(true);
         } catch (error) {
@@ -131,7 +159,9 @@ const BuyerCartItem = () => {
 
     const removeAll = async () => {
         try {
+            setIsFetching(true);
             await api.delete('https://tech-gadgets-dev.xyz/api/cart/clear');
+            setIsFetching(false);
             await refreshCart();
             setSnackbarMessage('Đã xóa tất cả sản phẩm');
             setSnackbarVisible(true);
@@ -145,43 +175,95 @@ const BuyerCartItem = () => {
 
     const updateGadgetQuantity = async (gadgetId, newQuantity) => {
         try {
+            setIsFetching(true);
             await api.put('/cart/old', { gadgetId, quantity: newQuantity });
+            setIsFetching(false);
             await refreshCart();
         } catch (error) {
             console.log('Error updating gadget quantity:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
         }
     };
 
     const toggleItemSelection = (sellerId, gadgetId) => {
-        setSelectedItems(prevState => ({
-            ...prevState,
-            [sellerId]: {
-                ...prevState[sellerId],
-                [gadgetId]: !prevState[sellerId]?.[gadgetId]
-            }
-        }));
+        // setSelectedItems(prevState => ({
+        //     ...prevState,
+        //     [sellerId]: {
+        //         ...prevState[sellerId],
+        //         [gadgetId]: !prevState[sellerId]?.[gadgetId]
+        //     }
+        // }));
+        const item = cartItems[sellerId]?.find(item => item.gadget.id === gadgetId);
+
+        // Kiểm tra điều kiện trước khi thay đổi trạng thái
+        if (item && item.gadget.status !== "Inactive" && item.gadget.isForSale === true) {
+            setSelectedItems(prevState => ({
+                ...prevState,
+                [sellerId]: {
+                    ...prevState[sellerId],
+                    [gadgetId]: !prevState[sellerId]?.[gadgetId]
+                }
+            }));
+        }
     };
 
     const toggleShopSelection = (sellerId) => {
-        const allSelected = cartItems[sellerId]?.every(item => selectedItems[sellerId]?.[item.gadget.id]);
+        // const allSelected = cartItems[sellerId]?.every(item => selectedItems[sellerId]?.[item.gadget.id]);
+        // setSelectedItems(prevState => ({
+        //     ...prevState,
+        //     [sellerId]: cartItems[sellerId]?.reduce((acc, item) => {
+        //         acc[item.gadget.id] = !allSelected;
+        //         return acc;
+        //     }, {})
+        // }));
+        const allSelected = cartItems[sellerId]?.every(item =>
+            selectedItems[sellerId]?.[item.gadget.id] ||
+            item.gadget.status !== "Inactive" && item.gadget.isForSale === true
+        );
+
         setSelectedItems(prevState => ({
             ...prevState,
             [sellerId]: cartItems[sellerId]?.reduce((acc, item) => {
-                acc[item.gadget.id] = !allSelected;
+                if (item.gadget.status !== "Inactive" && item.gadget.isForSale === true) {
+                    acc[item.gadget.id] = !allSelected;
+                }
                 return acc;
             }, {})
         }));
     };
 
     const toggleAllSelection = () => {
+        // const allSelected = sellers.every(seller =>
+        //     cartItems[seller.id]?.every(item => selectedItems[seller.id]?.[item.gadget.id])
+        // );
+        // const newSelectedItems = {};
+        // sellers.forEach(seller => {
+        //     newSelectedItems[seller.id] = {};
+        //     cartItems[seller.id]?.forEach(item => {
+        //         newSelectedItems[seller.id][item.gadget.id] = !allSelected;
+        //     });
+        // });
+        // setSelectedItems(newSelectedItems);
         const allSelected = sellers.every(seller =>
-            cartItems[seller.id]?.every(item => selectedItems[seller.id]?.[item.gadget.id])
+            cartItems[seller.id]?.every(item =>
+                selectedItems[seller.id]?.[item.gadget.id] ||
+                item.gadget.status !== "Inactive" && item.gadget.isForSale === true
+            )
         );
+
         const newSelectedItems = {};
         sellers.forEach(seller => {
             newSelectedItems[seller.id] = {};
             cartItems[seller.id]?.forEach(item => {
-                newSelectedItems[seller.id][item.gadget.id] = !allSelected;
+                if (item.gadget.status !== "Inactive" && item.gadget.isForSale === true) {
+                    newSelectedItems[seller.id][item.gadget.id] = !allSelected;
+                }
             });
         });
         setSelectedItems(newSelectedItems);
@@ -221,7 +303,9 @@ const BuyerCartItem = () => {
 
     const confirmCheckout = async () => {
         try {
+            setIsFetching(true);
             await api.post('/order', { listGadgetItems: itemsToCheckout });
+            setIsFetching(false);
             setItemsToCheckout([]);
             setTotalPrice(0);
             setSelectedItems({});
@@ -231,7 +315,12 @@ const BuyerCartItem = () => {
             setSnackbarVisible(true);
         } catch (error) {
             console.log('Error creating order:', error);
-            setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
             setIsError(true);
         }
     };
@@ -246,61 +335,88 @@ const BuyerCartItem = () => {
     };
 
     const renderGadgetItem = useCallback(({ item, index, sellerId }) => (
-        <TouchableOpacity
-            style={[
-                styles.gadgetItem,
-                index === cartItems[sellerId].length - 1 && styles.lastGadgetItem
-            ]}
-            key={`${sellerId}-${item.gadget.id}-${index}`}
-            onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
-        >
-            <CheckBox
-                checked={selectedItems[sellerId]?.[item.gadget.id] || false}
-                onPress={() => toggleItemSelection(sellerId, item.gadget.id)}
-                containerStyle={styles.checkbox}
-            />
-            <View style={styles.imageContainer}>
-                <Image source={{ uri: item.gadget.thumbnailUrl }} style={styles.gadgetImage} />
-                {!item.gadget.isForSale && (
-                    <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+        <View>
+            <TouchableOpacity
+                style={[
+                    styles.gadgetItem,
+                    index === cartItems[sellerId].length - 1 && styles.lastGadgetItem
+                ]}
+                key={`${sellerId}-${item.gadget.id}-${index}`}
+                onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
+            >
+                <CheckBox
+                    checked={selectedItems[sellerId]?.[item.gadget.id] || false}
+                    disabled={!item.gadget.isForSale || item.gadget.status !== "Active"}
+                    onPress={() => toggleItemSelection(sellerId, item.gadget.id)}
+                    containerStyle={styles.checkbox}
+                    uncheckedColor={(!item.gadget.isForSale || item.gadget.status !== "Active") ? "white" : undefined}
+                />
+                <View style={styles.imageContainer}>
+                    <Image source={{ uri: item.gadget.thumbnailUrl }} style={styles.gadgetImage} />
+
+                </View>
+                <View style={styles.gadgetInfo}>
+                    <Text style={styles.gadgetName} numberOfLines={2}>{item.gadget.name}</Text>
+                    <View style={styles.priceContainer}>
+                        {item.gadget.discountPercentage > 0 ? (
+                            <>
+                                <Text style={styles.originalPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
+                                <Text style={styles.discountPrice}>{item.gadget.discountPrice.toLocaleString('vi-VN')} ₫</Text>
+                                <View style={styles.discountBadge}>
+                                    <Text style={styles.discountText}>-{item.gadget.discountPercentage}%</Text>
+                                </View>
+                            </>
+                        ) : (
+                            <Text style={styles.gadgetPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
+                        )}
                     </View>
+                    <View style={styles.quantityContainer}>
+                        <TouchableOpacity
+                            disabled={!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching}
+                            onPress={
+                                () => {
+                                    if (item.quantity - 1 == 0) {
+                                        showConfirmModal(() => removeGadget(item.gadget.id), 'Bạn có chắc chắn muốn xóa sản phẩm này?')
+                                    } else {
+                                        updateGadgetQuantity(item.gadget.id, Math.max(1, item.quantity - 1))
+                                    }
+                                }
+                            }
+                        >
+                            <AntDesign name="minuscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#fea128"} />
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>{item.quantity}</Text>
+                        <TouchableOpacity
+                            disabled={!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching}
+                            onPress={() => updateGadgetQuantity(item.gadget.id, item.quantity + 1)}
+                        >
+                            <AntDesign name="pluscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#fea128"} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                {editMode && (
+                    <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => showConfirmModal(() => removeGadget(item.gadget.id), 'Bạn có chắc chắn muốn xóa sản phẩm này?')}
+                    >
+                        <AntDesign name="delete" size={24} color="red" />
+                    </TouchableOpacity>
                 )}
-            </View>
-            <View style={styles.gadgetInfo}>
-                <Text style={styles.gadgetName} numberOfLines={2}>{item.gadget.name}</Text>
-                <View style={styles.priceContainer}>
-                    {item.gadget.discountPercentage > 0 ? (
-                        <>
-                            <Text style={styles.originalPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
-                            <Text style={styles.discountPrice}>{item.gadget.discountPrice.toLocaleString('vi-VN')} ₫</Text>
-                            <View style={styles.discountBadge}>
-                                <Text style={styles.discountText}>-{item.gadget.discountPercentage}%</Text>
-                            </View>
-                        </>
-                    ) : (
-                        <Text style={styles.gadgetPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
-                    )}
-                </View>
-                <View style={styles.quantityContainer}>
-                    <TouchableOpacity onPress={() => updateGadgetQuantity(item.gadget.id, Math.max(1, item.quantity - 1))}>
-                        <AntDesign name="minuscircleo" size={24} color="#fea128" />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityText}>{item.quantity}</Text>
-                    <TouchableOpacity onPress={() => updateGadgetQuantity(item.gadget.id, item.quantity + 1)}>
-                        <AntDesign name="pluscircleo" size={24} color="#fea128" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            {editMode && (
+            </TouchableOpacity>
+            {(!item.gadget.isForSale && item.gadget.status === "Active" && !editMode) && (
                 <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => showConfirmModal(() => removeGadget(item.gadget.id), 'Bạn có chắc chắn muốn xóa sản phẩm này?')}
+                    style={styles.watermarkContainer}
+                    onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
                 >
-                    <AntDesign name="delete" size={24} color="red" />
+                    <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
                 </TouchableOpacity>
             )}
-        </TouchableOpacity>
+            {(item.gadget.status !== "Active" && !editMode) && (
+                <View style={styles.statusWatermark}>
+                    <Text style={styles.statusText}>Sản phẩm đã bị khóa do vi phạm chính sách TechGadget</Text>
+                </View>
+            )}
+        </View>
     ), [selectedItems, toggleItemSelection, updateGadgetQuantity, removeGadget, editMode, navigation, cartItems]);
 
     const renderShopItem = useCallback(({ item: seller, index }) => (
@@ -407,16 +523,25 @@ const BuyerCartItem = () => {
                         <TouchableOpacity
                             style={styles.removeAllButton}
                             onPress={() => showConfirmModal(removeAll, 'Bạn có chắc chắn muốn xóa tất cả sản phẩm?')}
+                            disabled={isFetching}
                         >
                             <Text style={styles.removeAllButtonText}>Xóa tất cả</Text>
+                            {
+                                isFetching &&
+                                <ActivityIndicator color={"white"} />
+                            }
                         </TouchableOpacity>
                     ) : (
                         <TouchableOpacity
-                            style={[styles.checkoutButton, getSelectedItemsCount() === 0 && styles.disabledButton]}
+                            style={[styles.checkoutButton, (getSelectedItemsCount() === 0 || isFetching) && styles.disabledButton]}
                             onPress={handleCheckout}
-                            disabled={getSelectedItemsCount() === 0}
+                            disabled={getSelectedItemsCount() === 0 || isFetching}
                         >
                             <Text style={styles.checkoutButtonText}>Thanh toán</Text>
+                            {
+                                isFetching &&
+                                <ActivityIndicator color={"white"} />
+                            }
                         </TouchableOpacity>
                     )}
                 </View>
@@ -427,10 +552,18 @@ const BuyerCartItem = () => {
                     <Text style={styles.modalText}>Bạn có chắc chắn muốn thanh toán {itemsToCheckout.length} sản phẩm đã chọn?</Text>
                     <Text style={styles.modalTotalPrice}>Tổng tiền: {totalPrice.toLocaleString('vi-VN')} ₫</Text>
                     <View style={styles.modalButtons}>
-                        <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                        <TouchableOpacity
+                            disabled={isFetching}
+                            style={styles.modalButton}
+                            onPress={() => setModalVisible(false)}
+                        >
                             <Text style={styles.modalButtonText}>Hủy</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={confirmCheckout}>
+                        <TouchableOpacity
+                            disabled={isFetching}
+                            style={[styles.modalButton, styles.confirmButton]}
+                            onPress={confirmCheckout}
+                        >
                             <Text style={styles.modalButtonText}>Xác nhận</Text>
                         </TouchableOpacity>
                     </View>
@@ -441,10 +574,15 @@ const BuyerCartItem = () => {
                     <Text style={styles.modalTitle}>Xác nhận</Text>
                     <Text style={styles.modalText}>Bạn có chắc chắn muốn thực hiện hành động này?</Text>
                     <View style={styles.modalButtons}>
-                        <TouchableOpacity style={styles.modalButton} onPress={() => setConfirmModalVisible(false)}>
+                        <TouchableOpacity
+                            disabled={isFetching}
+                            style={styles.modalButton}
+                            onPress={() => setConfirmModalVisible(false)}
+                        >
                             <Text style={styles.modalButtonText}>Hủy</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
+                            disabled={isFetching}
                             style={[styles.modalButton, styles.confirmButton]}
                             onPress={() => {
                                 confirmAction();
@@ -593,13 +731,34 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        zIndex: 10,
+        borderRadius: 10,
     },
     watermarkText: {
         color: 'white',
         fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    statusWatermark: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderRadius: 10,
+        paddingHorizontal: 15
+    },
+    statusText: {
+        color: 'red',
+        fontSize: 14,
+        fontWeight: '500',
+        textTransform: 'uppercase',
     },
     gadgetInfo: {
         flex: 1,
@@ -722,6 +881,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         alignItems: 'center',
         minWidth: 120,
+        flexDirection: "row",
+        gap: 10
     },
     removeAllButtonText: {
         color: 'white',
@@ -730,6 +891,8 @@ const styles = StyleSheet.create({
     },
     disabledButton: {
         backgroundColor: '#cccccc',
+        flexDirection: "row",
+        gap: 10
     },
     modalContent: {
         backgroundColor: 'white',

@@ -110,28 +110,23 @@ export default function ReviewItem({
                 )}
 
                 <View>
-                    <View style={{
-                        flexDirection: "row",
-                        gap: 10,
-                        alignItems: "center"
-                    }}>
-                        {/* FullName */}
-                        <Text
-                            style={{
-                                width: ScreenWidth / 1.3
-                            }}
-                            numberOfLines={2}
-                            ellipsizeMode="tail"
-                        >{review?.customer.fullName}</Text>
-                        <Text style={{
-                            fontSize: 12,
-                            color: "rgba(0, 0, 0, 0.5)"
-                        }}>{review?.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
-                    </View>
+                    {/* FullName */}
+                    <Text
+                        style={{
+                            width: ScreenWidth / 1.4
+                        }}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                    >{review?.customer.fullName}</Text>
 
                     {/* Number of stars */}
                     <View style={{ flexDirection: "row", columnGap: -4 }}>
                         <RenderStars avgRating={review?.rating} size={16} />
+                        <Text style={{
+                            fontSize: 12,
+                            color: "rgba(0, 0, 0, 0.5)",
+                            marginLeft: 10
+                        }}>{review?.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
                     </View>
 
                     {/* CreatedAt and categoryName */}
@@ -256,17 +251,20 @@ export default function ReviewItem({
                                 </View>
 
                                 {/* Edit button */}
-                                <TouchableOpacity
-                                    style={{
-                                        alignSelf: "center"
-                                    }}
-                                    onPress={() => {
-                                        setOpenEditField(!openEditField);
-                                        setNewSellerReply(review.sellerReply ? review.sellerReply.content : "");
-                                    }}
-                                >
-                                    <Feather name="edit" size={20} color="black" />
-                                </TouchableOpacity>
+                                {
+                                    !review?.sellerReply?.isUpdated &&
+                                    <TouchableOpacity
+                                        style={{
+                                            alignSelf: "center"
+                                        }}
+                                        onPress={() => {
+                                            setOpenEditField(!openEditField);
+                                            setNewSellerReply(review.sellerReply ? review.sellerReply?.content : "");
+                                        }}
+                                    >
+                                        <Feather name="edit" size={20} color="black" />
+                                    </TouchableOpacity>
+                                }
                             </View>
                         </>
                     }
@@ -295,12 +293,12 @@ export default function ReviewItem({
                                     <ActivityIndicator color={"#ed8900"} />
                                     :
                                     <TouchableOpacity
-                                        disabled={newSellerReply == "" || newSellerReply == review.sellerReply.content}
+                                        disabled={newSellerReply == "" || newSellerReply == review.sellerReply?.content}
                                         onPress={() => {
                                             handleSendReply();
                                         }}
                                     >
-                                        <Feather name="send" size={20} color={newSellerReply == "" || newSellerReply == review.sellerReply.content ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
+                                        <Feather name="send" size={20} color={newSellerReply == "" || newSellerReply == review.sellerReply?.content ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
                                     </TouchableOpacity>
                             }
                         </View>
