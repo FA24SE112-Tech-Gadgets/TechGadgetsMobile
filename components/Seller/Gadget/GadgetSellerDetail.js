@@ -101,7 +101,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
 
     const handleUpdateGadget = async () => {
         setIsFetching(true);
-        if (newIsForSale != gadget.status) {
+        if (newIsForSale != gadget.isForSale) {
             try {
                 await api.put(`/gadgets/${route.params.gadgetId}/${newIsForSale ? "set-for-sale" : "set-not-for-sale"}`);
             } catch (error) {
@@ -418,11 +418,11 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                 <View key={index}>
                                     <View style={styles.specRow}>
                                         <View style={styles.specKeyContainer}>
-                                            <Text style={styles.specKey}>{spec.specificationKey}</Text>
+                                            <Text style={styles.specKey}>{spec.specificationKey.name}</Text>
                                         </View>
                                         <View style={styles.specValueContainer}>
                                             <Text style={styles.specValue}>
-                                                {spec.specificationKey === 'Thời điểm ra mắt' ? formatVietnamDate(spec.value) : spec.value} {spec.specificationUnit}
+                                                {spec.value} {spec.specificationUnit?.name}
                                             </Text>
                                         </View>
                                     </View>
@@ -513,7 +513,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     />
                 </View>
 
-                {/* Gadget status */}
+                {/* Gadget isForSale */}
                 <TouchableOpacity
                     style={[
                         {
@@ -531,8 +531,15 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 <TouchableOpacity
                     disabled={(newIsForSale == gadget.isForSale && newQuantity == gadget.quantity) || isFetching}
                     onPress={() => {
-                        //TODO: handle call api patch
-                        handleUpdateGadget();
+                        if (gadget.status !== "Active") {
+                            setStringErr(
+                                "Sản phẩm của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết."
+                            );
+                            setIsError(true);
+                        } else {
+                            //TODO: handle call api patch
+                            handleUpdateGadget();
+                        }
                     }}
                 >
                     <Ionicons
