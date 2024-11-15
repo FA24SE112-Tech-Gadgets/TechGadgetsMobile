@@ -49,6 +49,18 @@ export default function GadgetSellerDetail({ route, navigation }) {
         return `${day}/${month}/${year}`;
     };
 
+    {/* Group Specification*/ }
+    const groupSpecifications = (specs) => {
+        return specs.reduce((acc, spec) => {
+            const key = spec.specificationKey.name;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(spec);
+            return acc;
+        }, {});
+    };
+
     // Fetch gadget detail
     useFocusEffect(
         useCallback(() => {
@@ -414,25 +426,28 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 <View style={styles.tabContent}>
                     {activeTab === 'specs' ? (
                         <View style={styles.specsContainer}>
-                            {gadget.specificationValues.slice(0, isContentExpanded ? undefined : 4).map((spec, index) => (
-                                <View key={index}>
-                                    <View style={styles.specRow}>
-                                        <View style={styles.specKeyContainer}>
-                                            <Text style={styles.specKey}>{spec.specificationKey.name}</Text>
+                            {Object.entries(groupSpecifications(gadget.specificationValues))
+                                .slice(0, isContentExpanded ? undefined : 4)
+                                .map(([key, specs], index, array) => (
+                                    <View key={key}>
+                                        <View style={styles.specRow}>
+                                            <View style={styles.specKeyContainer}>
+                                                <Text style={styles.specKey}>{key}</Text>
+                                            </View>
+                                            <View style={styles.specValueContainer}>
+                                                {specs.map((spec, i) => (
+                                                    <View key={i} style={styles.specValueRow}>
+                                                        <Text style={styles.specValue}>
+                                                            {spec.value}{spec.specificationUnit?.name || ''}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </View>
                                         </View>
-                                        <View style={styles.specValueContainer}>
-                                            <Text style={styles.specValue}>
-                                                {spec.value} {spec.specificationUnit?.name}
-                                            </Text>
-                                        </View>
+                                        {index < array.length - 1 && <View style={styles.separator} />}
                                     </View>
-
-                                    {index < (isContentExpanded ? gadget.specificationValues.length - 1 : 3) && (
-                                        <View style={styles.separator} />
-                                    )}
-                                </View>
-                            ))}
-                            {gadget.specificationValues.length > 4 && (
+                                ))}
+                            {Object.entries(groupSpecifications(gadget.specificationValues)).length > 4 && (
                                 <TouchableOpacity
                                     style={styles.expandButton}
                                     onPress={() => setIsContentExpanded(!isContentExpanded)}
@@ -751,6 +766,9 @@ const styles = StyleSheet.create({
     },
     specValueContainer: {
         flex: 3,
+    },
+    specValueRow: {
+        marginBottom: 2,
     },
     specKey: {
         fontSize: 16,
