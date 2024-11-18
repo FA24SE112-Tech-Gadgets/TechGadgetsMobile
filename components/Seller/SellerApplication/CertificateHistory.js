@@ -209,7 +209,6 @@ const CertificateHistory = () => {
   );
 
   return (
-
     <View style={styles.container}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
@@ -223,7 +222,7 @@ const CertificateHistory = () => {
           autoPlay
           loop={false}
         />
-        <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
+        <Text style={[styles.title, { marginTop: 10 }]}>Lịch Sử Đơn Đăng Ký</Text>
         {applications.length === 0 ? (
           <View
             style={{

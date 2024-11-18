@@ -1,7 +1,7 @@
 import {
   ActivityIndicator,
+  Image,
   Keyboard,
-  Linking,
   PermissionsAndroid,
   Platform,
   Pressable,
@@ -30,12 +30,17 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import useNotification from "../../utils/useNotification"
+import ggLogo from "../../assets/GoogleLogo.png"
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
-    <View style={styles.googleIconContainer}>
-      <Icon name="logo-google" size={24} color="white" />
-    </View>
+    <Image
+      style={{
+        width: 24,
+        height: 24,
+      }}
+      source={ggLogo}
+    />
     <Text style={styles.googleButtonText}>Sign in with Google</Text>
   </TouchableOpacity>
 );
@@ -302,7 +307,7 @@ const LoginScreen = () => {
           <View style={{ position: "relative" }}>
             <TextInput
               style={styles.textInput}
-              placeholder={t('password-input')}
+              placeholder={"Mật khẩu"}
               secureTextEntry={showPassword ? false : true}
               value={password}
               onChangeText={(text) => setPassword(text)}
@@ -346,7 +351,7 @@ const LoginScreen = () => {
               fontSize: 18,
             }}
           >
-            {t('sign-in-btn')}
+            ĐĂNG NHẬP
           </Text>
           {
             isRecentPushed &&
@@ -481,14 +486,14 @@ const styles = StyleSheet.create({
   googleButtonContainer: {
     alignItems: 'center',
     marginTop: 20,
-    backgroundColor: '#4285F4',
+    backgroundColor: 'black',
     borderRadius: 30,
     overflow: 'hidden',
   },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4285F4',
+    backgroundColor: 'black',
     borderRadius: 40,
     width: 320,
     height: 48,
@@ -500,9 +505,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  googleIconContainer: {
-    marginRight: 12,
+    gap: 12
   },
   googleButtonText: {
     color: 'white',
