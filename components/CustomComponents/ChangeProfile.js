@@ -31,7 +31,6 @@ const formatDateToDisplay = (dateString) => {
 };
 
 export default function ChangeProfile() {
-  const [customer, setCustomer] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newCustomerFields, setNewCustomerFields] = useState({
     fullName: '',
@@ -78,7 +77,7 @@ export default function ChangeProfile() {
             address: userData.address || '',
             cccd: userData.cccd || '',
             gender: userData.gender || 'Male',
-            dateOfBirth: userData.dateOfBirth ? new Date(userData.dateOfBirth) : new Date(),
+            dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth : null,
             avatarUrl: userData.avatarUrl || '',
           });
         } else if (user.role === "Seller") {
@@ -94,38 +93,112 @@ export default function ChangeProfile() {
         } else {
           setNewCustomerFields(null);
           setNewSellerFields(null);
+          setSelectedAvatar(null);
         }
       }
     }, [user])
   );
 
   const handleChange = (field, value) => {
-    setNewCustomerFields(prev => ({ ...prev, [field]: value }));
+    if (user.role === "Customer") {
+      setNewCustomerFields(prev => ({ ...prev, [field]: value }));
+    } else if (user.role === "Seller") {
+      setNewSellerFields(prev => ({ ...prev, [field]: value }));
+    }
   };
+
+  // const handleSellerSave = async () => {
+  //   try {
+  //     setIsFetching(true);
+  //     const formData = new FormData();
+  //     Object.keys(newSellerFields).forEach(key => {
+  //       formData.append(key, newSellerFields[key]);
+  //     });
+
+  //     const response = await api.patch('/seller', formData, {
+  //       headers: { 'Content-Type': 'multipart/form-data' },
+  //     });
+  //     setIsFetching(false);
+
+  //     // Check for response status
+  //     if (response.status >= 200 && response.status < 300) {
+  //       setIsEditing(false);
+  //       setSnackbarMessage('Cập nhật thông tin thành công!');
+  //       setSnackbarVisible(true);
+  //     } else {
+  //       setStringErr(
+  //         response?.data?.reasons[0]?.message ?
+  //           response.data.reasons[0].message
+  //           :
+  //           "Lỗi mạng vui lòng thử lại sau"
+  //       );
+  //       setIsError(true);
+  //     }
+  //   } catch (error) {
+  //     setStringErr(
+  //       error.response?.data?.reasons[0]?.message ?
+  //         error.response.data.reasons[0].message
+  //         :
+  //         "Lỗi mạng vui lòng thử lại sau"
+  //     );
+  //     setIsError(true);
+  //   } finally {
+  //     setIsFetching(false);
+  //   }
+  // };
 
   const handleSellerSave = async () => {
     try {
       setIsFetching(true);
+
+      // Chỉ gửi những field đã thay đổi
+      const changedFields = {};
+      Object.keys(newSellerFields).forEach((key) => {
+        if (
+          newSellerFields[key] !== user?.seller[key] && // Field đã thay đổi
+          newSellerFields[key] !== "" // Field không phải chuỗi rỗng
+        ) {
+          changedFields[key] = newSellerFields[key];
+        }
+      });
+
+      // Nếu không có thay đổi, không cần gọi API
+      if (Object.keys(changedFields).length === 0) {
+        setIsFetching(false);
+        setSnackbarMessage('Không có thay đổi nào được thực hiện.');
+        setSnackbarVisible(true);
+        return;
+      }
+
       const formData = new FormData();
-      Object.keys(newSellerFields).forEach(key => {
-        formData.append(key, newSellerFields[key]);
+      Object.keys(changedFields).forEach((key) => {
+        formData.append(key, changedFields[key]);
       });
 
       const response = await api.patch('/seller', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setIsFetching(false);
 
-      // Check for response status
+      // Kiểm tra phản hồi từ server
       if (response.status >= 200 && response.status < 300) {
         setIsEditing(false);
         setSnackbarMessage('Cập nhật thông tin thành công!');
         setSnackbarVisible(true);
       } else {
-        Alert.alert('Lỗi', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        setStringErr(
+          response?.data?.reasons[0]?.message
+            ? response.data.reasons[0].message
+            : 'Lỗi mạng vui lòng thử lại sau'
+        );
+        setIsError(true);
       }
+      setIsFetching(false);
     } catch (error) {
-      setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      setStringErr(
+        error.response?.data?.reasons[0]?.message
+          ? error.response.data.reasons[0].message
+          : 'Lỗi mạng vui lòng thử lại sau'
+      );
       setIsError(true);
     } finally {
       setIsFetching(false);
@@ -135,12 +208,32 @@ export default function ChangeProfile() {
   const handleCustomerSave = async () => {
     try {
       setIsFetching(true);
+
+      // Chỉ gửi những field đã thay đổi
+      const changedFields = {};
+      Object.keys(newCustomerFields).forEach((key) => {
+        if (
+          newCustomerFields[key] !== user?.customer[key] && // Field đã thay đổi
+          newCustomerFields[key] !== "" // Field không phải chuỗi rỗng
+        ) {
+          changedFields[key] = newCustomerFields[key];
+        }
+      });
+
+      // Nếu không có thay đổi, không cần gọi API
+      if (Object.keys(changedFields).length === 0 && selectedAvatar == null) {
+        setIsFetching(false);
+        setSnackbarMessage('Không có thay đổi nào được thực hiện.');
+        setSnackbarVisible(true);
+        return;
+      }
+
       const formData = new FormData();
-      Object.keys(newCustomerFields).forEach(key => {
+      Object.keys(changedFields).forEach(key => {
         if (key === 'dateOfBirth') {
-          formData.append(key, newCustomerFields[key].toISOString());
-        } else if (newCustomerFields[key] !== customer[key]) {
-          formData.append(key, newCustomerFields[key]);
+          formData.append(key, changedFields[key].toISOString());
+        } else {
+          formData.append(key, changedFields[key]);
         }
       });
 
@@ -156,7 +249,6 @@ export default function ChangeProfile() {
       const response = await api.patch('/customer', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setIsFetching(false);
 
       // Check for response status
       if (response.status >= 200 && response.status < 300) {
@@ -164,10 +256,22 @@ export default function ChangeProfile() {
         setSnackbarMessage('Cập nhật thông tin thành công!');
         setSnackbarVisible(true);
       } else {
-        Alert.alert('Lỗi', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        setStringErr(
+          response?.data?.reasons[0]?.message ?
+            response.data.reasons[0].message
+            :
+            "Lỗi mạng vui lòng thử lại sau"
+        );
+        setIsError(true);
       }
+      setIsFetching(false);
     } catch (error) {
-      setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
       setIsError(true);
     } finally {
       setIsFetching(false);
@@ -273,7 +377,7 @@ export default function ChangeProfile() {
                       ) : key === 'dateOfBirth' ? (
                         <Pressable onPress={() => setShowDatePicker(true)}>
                           <Text style={styles.datePickerText}>
-                            {formatDateToDisplay(value)}
+                            {value ? formatDateToDisplay(value) : "Chọn ngày sinh"}
                           </Text>
                         </Pressable>
                       ) : (
@@ -286,7 +390,7 @@ export default function ChangeProfile() {
                     ) : (
                       <Text style={styles.infoValue}>
                         {key === 'gender' ? (value === 'Male' ? 'Nam' : 'Nữ') :
-                          key === 'dateOfBirth' ? formatDateToDisplay(value) : value}
+                          key === 'dateOfBirth' ? value ? formatDateToDisplay(value) : "Chưa nhập ngày sinh" : value}
                       </Text>
                     )}
                   </View>
@@ -377,7 +481,7 @@ export default function ChangeProfile() {
 
       {showDatePicker && (
         <DateTimePicker
-          value={newCustomerFields.dateOfBirth}
+          value={newCustomerFields?.dateOfBirth ? newCustomerFields?.dateOfBirth : new Date()}
           mode="date"
           display="default"
           onChange={(event, selectedDate) => {
@@ -423,12 +527,12 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
     position: 'relative',
   },
   avatar: {
-    width: 140,
-    height: 140,
+    width: 120,
+    height: 120,
     borderRadius: 70,
   },
   editIconContainer: {

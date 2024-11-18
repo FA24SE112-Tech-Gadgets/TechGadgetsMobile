@@ -17,12 +17,9 @@ import Icon from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import useAuth from "../../utils/useAuth";
 import { jwtDecode } from "jwt-decode";
-import "core-js/stable/atob";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Modal from "react-native-modal";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
-import Hyperlink from "react-native-hyperlink";
 import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import * as Location from "expo-location"
 import { useTranslation } from "react-i18next";
@@ -190,9 +187,8 @@ const LoginScreen = () => {
       } else if (Platform.Version >= 30) {
         // For Android 11 (API level 30) to Android 12 (API level 31)
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
-        // Add any other permissions for Android 11 and 12
-      } else if (Platform.Version >= 30) {
         permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        permissions.push(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
       } else {
         // For Android 10 and below
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);

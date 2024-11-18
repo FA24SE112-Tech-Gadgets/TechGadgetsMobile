@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Correct import for Picker
-import api from '../Authorization/api';
+import api from '../../Authorization/api';
 import * as DocumentPicker from 'expo-document-picker';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
+import ErrModal from '../../CustomComponents/ErrModal';
+import { Snackbar } from 'react-native-paper';
+import { ScreenWidth } from '@rneui/base';
+import { AntDesign } from '@expo/vector-icons';
 
 export default function BusinessRegistrationCertificate() {
   const [assets, setAssets] = useState([]);
@@ -16,38 +20,54 @@ export default function BusinessRegistrationCertificate() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [billingMails, setBillingMails] = useState([]);
 
+  const [stringErr, setStringErr] = useState('');
+  const [isError, setIsError] = useState(false);
+
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const [isFetching, setIsFetching] = useState(false);
 
   const [isShopNameValid, setIsShopNameValid] = useState(true);
   const [isShopAddressValid, setIsShopAddressValid] = useState(true);
   const [isTaxCodeValid, setIsTaxCodeValid] = useState(true);
   const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
   const [isCompanyNameValid, setIsCompanyNameValid] = useState(true); // For company name validation
-  const [isCertificateUploaded, setIsCertificateUploaded] = useState(true);
+
   // File picker logic (for file uploads)
   const pickBusinessRegistrationCertificate = async () => {
     try {
       const docRes = await DocumentPicker.getDocumentAsync({
         type: [
-          "audio/*",
+          // "audio/*",
           "image/*",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
-          "application/vnd.ms-excel", // .xls
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+          // "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+          // "application/vnd.ms-excel", // .xls
+          // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
           "application/pdf", // .pdf
         ],
-        multiple: true, // Enable multi-file selection
+        multiple: false, // Enable multi-file selection
       });
 
-      if (docRes.type === 'cancel') {
+      if (docRes.type === 'cancel' || !docRes) {
         return; // Exit if the user cancels the picker
       }
 
-      setAssets([...assets, ...docRes.assets]); // Add selected files to existing assets
+      if (docRes?.assets) {
+        setAssets([...assets, ...docRes.assets]); // Add selected files to existing assets
+      } else {
+        setAssets([])
+      }
     } catch (error) {
-      console.log("Error while selecting certificate: ", error);
+      setStringErr(
+        error ?
+          error.toString()
+          :
+          "Lỗi chọn file"
+      );
+      setIsError(true);
     }
   };
-
 
   const handleAddMail = () => {
     setBillingMails([...billingMails, ""]); // Thêm email trống để người dùng nhập
@@ -67,7 +87,10 @@ export default function BusinessRegistrationCertificate() {
   const validateCompanyName = () => {
     if (businessModel !== 'Personal' && companyName.trim() === '') {
       setIsCompanyNameValid(false);
-      Alert.alert('Validation Error', 'Company name is required.');
+      setStringErr(
+        "Vui lòng nhập tên công ty"
+      );
+      setIsError(true);
       return false;
     }
     setIsCompanyNameValid(true);
@@ -76,11 +99,12 @@ export default function BusinessRegistrationCertificate() {
 
   const validateCertificate = () => {
     if (businessModel !== 'Personal' && assets.length === 0) {
-      setIsCertificateUploaded(false);
-      Alert.alert('Validation Error', 'Business registration certificate is required.');
+      setStringErr(
+        "Vui lòng gửi giấy phép kinh doanh"
+      );
+      setIsError(true);
       return false;
     }
-    setIsCertificateUploaded(true);
     return true;
   };
   // Form submission logic
@@ -89,7 +113,10 @@ export default function BusinessRegistrationCertificate() {
     if (!shopName.trim()) {
       setIsShopNameValid(false);
       valid = false;
-      Alert.alert("Validation Error", "Vui lòng nhập tên shop");
+      setStringErr(
+        "Vui lòng nhập tên cửa hàng"
+      );
+      setIsError(true);
       return;
     } else {
       setIsShopNameValid(true);
@@ -98,7 +125,10 @@ export default function BusinessRegistrationCertificate() {
     if (!shopAddress.trim()) {
       setIsShopAddressValid(false);
       valid = false;
-      Alert.alert("Validation Error", "Vui lòng nhập địa chỉ shop");
+      setStringErr(
+        "Vui lòng nhập địa chỉ cửa hàng"
+      );
+      setIsError(true);
       return;
     } else {
       setIsShopAddressValid(true);
@@ -106,7 +136,10 @@ export default function BusinessRegistrationCertificate() {
     if (!taxCode.trim()) {
       setIsTaxCodeValid(false);
       valid = false;
-      Alert.alert("Validation Error", "Vui lòng nhập mã số thuế");
+      setStringErr(
+        "Vui lòng nhập mã số thuế"
+      );
+      setIsError(true);
       return;
     } else {
       setIsTaxCodeValid(true);
@@ -114,7 +147,10 @@ export default function BusinessRegistrationCertificate() {
     if (!phoneNumber.trim()) {
       setIsPhoneNumberValid(false);
       valid = false;
-      Alert.alert("Validation Error", "Vui lòng nhập số điện thoại");
+      setStringErr(
+        "Vui lòng nhập số điện thoại"
+      );
+      setIsError(true);
       return;
     } else {
       setIsPhoneNumberValid(true);
@@ -153,19 +189,27 @@ export default function BusinessRegistrationCertificate() {
       });
     }
     try {
+      setIsFetching(true);
       const response = await api.post('/seller-applications', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      setIsFetching(false);
 
       // Check for response status before returning
       if (response.status >= 400 && response.status < 500) {
-        const errorMessage = response.data.reasons?.[0]?.message || 'Vui lòng thử lại.';
-        Alert.alert(`${errorMessage}`); // Show the error message in an alert
+        setStringErr(
+          response?.data?.reasons[0]?.message ?
+            response.data.reasons[0].message
+            :
+            "Lỗi mạng vui lòng thử lại sau"
+        );
+        setIsError(true);
       } else {
         // If response is successful
-        Alert.alert("Đơn đăng kí đã được gửi thành công");
+        setSnackbarMessage('Đơn đăng kí đã được gửi thành công');
+        setSnackbarVisible(true);
         setShopName('');
         setShopAddress('');
         setTaxCode('');
@@ -176,17 +220,14 @@ export default function BusinessRegistrationCertificate() {
         setBusinessModel('Personal');
       }
     } catch (error) {
-      if (error.response) {
-        // Extract and show the error message from the server response
-        const errorMessage = error.response.data.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
-        Alert.alert('Lỗi', errorMessage);
-      } else if (error.request) {
-        console.log('Request error:', error.request);
-        Alert.alert('Lỗi', 'Không thể kết nối với máy chủ.');
-      } else {
-        console.log('Error:', error.message);
-        Alert.alert('Lỗi', 'Đã xảy ra lỗi.');
-      }
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+      setIsFetching(false);
     }
 
   };
@@ -199,14 +240,12 @@ export default function BusinessRegistrationCertificate() {
       style={[styles.linearGradient]}
     >
       <LottieView
-        source={require("../../assets/animations/background-login.json")}
+        source={require("../../../assets/animations/background-login.json")}
         style={styles.background}
         autoPlay
         loop={false}
       />
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-
-
         <Text style={styles.title}>Đơn Đăng Ký</Text>
 
         <Text style={styles.label}>Tên Shop</Text>
@@ -258,19 +297,37 @@ export default function BusinessRegistrationCertificate() {
           </>
         )}
         {businessModel !== 'Personal' && (
-          <>
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "space-between"
+          }}>
             <TouchableOpacity
               onPress={pickBusinessRegistrationCertificate}
               style={[
                 styles.button,
-                assets.length > 0 ? styles.buttonSuccess : styles.buttonDefault // Change color based on assets
+                assets.length > 0 ? styles.buttonSuccess : styles.buttonDefault, // Change color based on assets
+                assets.length > 0 ? {
+                  width: ScreenWidth / 1.4
+                } : {
+                  width: ScreenWidth / 1.21
+                }
               ]}
             >
-              <Text style={styles.buttonText}>
-                {assets.length > 0 ? 'Files Selected' : 'Pick Business Registration Certificate'}
+              <Text
+                style={styles.buttonText}
+                numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
+                ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
+              >
+                {assets.length > 0 ? `File: ${assets[0].name}` : 'Chọn file giấy phép kinh doanh'}
               </Text>
             </TouchableOpacity>
-          </>
+            {
+              assets.length > 0 &&
+              <TouchableOpacity onPress={() => setAssets([])} style={styles.button}>
+                <AntDesign name="delete" size={24} color="#112A46" />
+              </TouchableOpacity>
+            }
+          </View>
         )}
         <Text style={styles.label}>Mã số thuế</Text>
         <TextInput
@@ -298,23 +355,18 @@ export default function BusinessRegistrationCertificate() {
         />
 
         <Text style={styles.label}>Emails nhận hóa đơn</Text>
-        {/* <TextInput
-        style={styles.input}
-        value={billingMails.join(", ")} 
-        onChangeText={(text) => setBillingMails(text.split(",").map(mail => mail.trim()))} 
-        placeholder="Enter Billing emails"
-      /> */}
+
         <View>
           {billingMails.map((mail, index) => (
             <View key={index} style={styles.emailRow}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { width: ScreenWidth / 1.4, marginBottom: 0 }]}
                 value={mail}
                 onChangeText={(text) => handleMailChange(text, index)}
                 placeholder="Nhập email nhận hóa"
               />
               <TouchableOpacity onPress={() => handleRemoveMail(index)} style={styles.button}>
-                <Text style={styles.buttonTextEmails}>Xóa</Text>
+                <AntDesign name="delete" size={24} color="#112A46" />
               </TouchableOpacity>
             </View>
           ))}
@@ -327,11 +379,31 @@ export default function BusinessRegistrationCertificate() {
         <TouchableOpacity
           onPress={handleSubmit}
           style={[styles.submitButton]} // Apply your custom styles here
+          disabled={isFetching}
         >
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>Gửi</Text>
+          {
+            isFetching &&
+            <ActivityIndicator color={"white"} />
+          }
         </TouchableOpacity>
 
+        <ErrModal
+          stringErr={stringErr}
+          isError={isError}
+          setIsError={setIsError}
+        />
+
       </ScrollView>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={styles.snackbar}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </LinearGradient>
   );
 }
@@ -366,8 +438,6 @@ const styles = StyleSheet.create({
   },
   linearGradient: {
     flex: 1,
-    paddingLeft: 15,
-    paddingRight: 15,
   },
   background: {
     position: "absolute",
@@ -382,28 +452,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 5,
+    justifyContent: "space-between",
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
   },
-  buttonTextEmails: {
-    color: "#ff0000", // This is the hex code for red
-    fontWeight: "bold",
-  },
-
   addButton: {
     color: "#fff",
-
   },
   addButtonText: {
-    color: "#fff",
+    color: "rgba(0, 0, 0, 0.3)",
     fontWeight: "bold",
   },
   button: {
     padding: 10,
     borderRadius: 5,
-    marginVertical: 10,
     alignItems: 'center',
   },
   buttonDefault: {
@@ -417,14 +481,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   submitButton: {
-    backgroundColor: '#FFCC33', // Set the background color to yellow
+    backgroundColor: '#112A46', // Set the background color to yellow
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
+    justifyContent: "center",
     marginVertical: 10,
+    flexDirection: "row",
+    gap: 10
   },
   submitButtonText: {
     color: 'white', // Set the text color (black)
     fontWeight: 'bold',
+  },
+  snackbar: {
+    bottom: 10,
   },
 });
