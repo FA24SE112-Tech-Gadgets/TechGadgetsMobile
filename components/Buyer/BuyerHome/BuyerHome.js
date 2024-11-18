@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign } from '@expo/vector-icons';

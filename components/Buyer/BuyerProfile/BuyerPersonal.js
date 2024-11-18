@@ -13,9 +13,7 @@ import MaskedView from "@react-native-masked-view/masked-view";
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import useAuth from "../../../utils/useAuth";
 import Hyperlink from "react-native-hyperlink";
-import { useTranslation } from "react-i18next";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useNavigation } from "@react-navigation/native";
 
@@ -23,9 +21,6 @@ export default function BuyerPersonal() {
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
   const navigation = useNavigation();
-  const { t } = useTranslation();
-
-  const { logout, user } = useAuth();
 
   return (
     <LinearGradient
@@ -39,7 +34,7 @@ export default function BuyerPersonal() {
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
       >
-        {/* TechGadget logo */}
+        {/* TechGadget Logo */}
         <View
           style={{
             flexDirection: "row",
@@ -51,12 +46,12 @@ export default function BuyerPersonal() {
         >
           <View
             style={{
-              height: 40,
-              width: 40,
+              height: 43,
+              width: 43,
               overflow: 'hidden',
               borderRadius: 50,
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <Image
@@ -83,14 +78,13 @@ export default function BuyerPersonal() {
             <LinearGradient
               start={{ x: 0, y: 0 }}
               end={{ x: 0.6, y: 0.6 }}
-              colors={["#fea92866", "#ed8900"]}
+              colors={["#EDCD2B", "#EDCD2B", "rgba(0,0,0, 0.7)"]}
             >
               <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
                 TechGadget
               </Text>
             </LinearGradient>
           </MaskedView>
-          <Text style={{ color: "#505050" }}></Text>
         </View>
 
         {/* Trung tâm tài khoản */}
@@ -135,63 +129,6 @@ export default function BuyerPersonal() {
           </Hyperlink>
         </View>
 
-        {/* Trang cá nhân */}
-        {/* <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "white",
-            padding: 10,
-            marginTop: 20,
-            borderRadius: 10,
-            justifyContent: "space-between",
-          }}
-          onPress={() => navigation.navigate("PersonalPage")}
-        >
-          {user.imageUrl ? (
-            <Image
-              source={{
-                uri: user.imageUrl,
-              }}
-              style={{
-                height: 45,
-                width: 45,
-                backgroundColor: "black",
-                borderRadius: 30,
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                height: 45,
-                width: 45,
-                borderRadius: 30,
-                backgroundColor: "#FEC6C4",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{ fontSize: 20, fontWeight: "bold", color: "white" }}
-              > */}
-                {/* {user.fullName.charAt(0)} */}
-              {/* </Text>
-            </View>
-          )}
-
-          <View
-            style={{
-              width: ScreenWidth / 1.5,
-            }}
-          >
-            <Text style={{ fontSize: 17 }}>Trang cá nhân</Text>
-            <Text style={{ fontSize: 15, fontWeight: "300" }}>
-              {user.fullName}
-            </Text>
-          </View>
-          <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-        </Pressable> */}
-
         {/* Cài đặt tài khoản */}
         <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
           Cài đặt tài khoản
@@ -216,11 +153,6 @@ export default function BuyerPersonal() {
             }}
             onPress={() => {
               navigation.navigate("PasswordAndSecure");
-              // TODO: Sẽ mở sau khi đã làm xong
-              // setIsError(true);
-              // setStringErr(
-              //   t("lock-feature")
-              // );
             }}
           >
             <View

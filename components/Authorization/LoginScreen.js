@@ -1,7 +1,7 @@
 import {
   ActivityIndicator,
+  Image,
   Keyboard,
-  Linking,
   PermissionsAndroid,
   Platform,
   Pressable,
@@ -17,12 +17,9 @@ import Icon from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import useAuth from "../../utils/useAuth";
 import { jwtDecode } from "jwt-decode";
-import "core-js/stable/atob";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Modal from "react-native-modal";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
-import Hyperlink from "react-native-hyperlink";
 import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import * as Location from "expo-location"
 import { useTranslation } from "react-i18next";
@@ -33,12 +30,17 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import useNotification from "../../utils/useNotification"
+import ggLogo from "../../assets/GoogleLogo.png"
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
-    <View style={styles.googleIconContainer}>
-      <Icon name="logo-google" size={24} color="white" />
-    </View>
+    <Image
+      style={{
+        width: 24,
+        height: 24,
+      }}
+      source={ggLogo}
+    />
     <Text style={styles.googleButtonText}>Sign in with Google</Text>
   </TouchableOpacity>
 );
@@ -190,9 +192,8 @@ const LoginScreen = () => {
       } else if (Platform.Version >= 30) {
         // For Android 11 (API level 30) to Android 12 (API level 31)
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
-        // Add any other permissions for Android 11 and 12
-      } else if (Platform.Version >= 30) {
         permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        permissions.push(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
       } else {
         // For Android 10 and below
         permissions.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
@@ -306,7 +307,7 @@ const LoginScreen = () => {
           <View style={{ position: "relative" }}>
             <TextInput
               style={styles.textInput}
-              placeholder={t('password-input')}
+              placeholder={"Mật khẩu"}
               secureTextEntry={showPassword ? false : true}
               value={password}
               onChangeText={(text) => setPassword(text)}
@@ -350,7 +351,7 @@ const LoginScreen = () => {
               fontSize: 18,
             }}
           >
-            {t('sign-in-btn')}
+            ĐĂNG NHẬP
           </Text>
           {
             isRecentPushed &&
@@ -485,14 +486,14 @@ const styles = StyleSheet.create({
   googleButtonContainer: {
     alignItems: 'center',
     marginTop: 20,
-    backgroundColor: '#4285F4',
+    backgroundColor: 'black',
     borderRadius: 30,
     overflow: 'hidden',
   },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4285F4',
+    backgroundColor: 'black',
     borderRadius: 40,
     width: 320,
     height: 48,
@@ -504,9 +505,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  googleIconContainer: {
-    marginRight: 12,
+    gap: 12
   },
   googleButtonText: {
     color: 'white',

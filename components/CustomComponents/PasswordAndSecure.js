@@ -4,8 +4,8 @@ import {
   ScrollView,
   Image,
   Pressable,
-  Dimensions,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import logo from "../../assets/adaptive-icon.png";
@@ -15,12 +15,9 @@ import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Snackbar } from "react-native-paper";
 import ErrModal from "./ErrModal";
-import { useNavigation } from "@react-navigation/native";
 import api from '../Authorization/api';
 
 export default function PasswordAndSecure() {
-  const screenHeight = Dimensions.get("window").height;
-  const screenWidth = Dimensions.get("window").width;
 
   const [isOpenChangePass, setOpenChangePass] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -30,7 +27,8 @@ export default function PasswordAndSecure() {
   const [isError, setIsError] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const navigation = useNavigation();
+
+  const [isFetching, setIsFetching] = useState(false);
 
   const handleUpdate = async () => {
     if (newPassword !== newConfirmPassword) {
@@ -40,10 +38,12 @@ export default function PasswordAndSecure() {
     }
 
     try {
+      setIsFetching(true);
       const response = await api.put('/user/change-password', {
         oldPassword: currentPassword,
         newPassword: newPassword
       });
+      setIsFetching(false);
 
       if (response.status === 200) {
         setOpenChangePass(false);
@@ -64,6 +64,7 @@ export default function PasswordAndSecure() {
       } else {
         setStringErr("Có lỗi xảy ra khi cập nhật mật khẩu");
       }
+      setIsFetching(false);
     }
   };
 
@@ -79,7 +80,7 @@ export default function PasswordAndSecure() {
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
       >
-        {/* TechGadget logo */}
+        {/* TechGadget Logo */}
         <View
           style={{
             flexDirection: "row",
@@ -89,15 +90,24 @@ export default function PasswordAndSecure() {
             marginTop: 10,
           }}
         >
-          <Image
+          <View
             style={{
-              width: 70,
-              height: 70,
-              borderColor: "black",
-              marginRight: 0,
+              height: 43,
+              width: 43,
+              overflow: 'hidden',
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            source={logo}
-          />
+          >
+            <Image
+              style={{
+                width: 48,
+                height: 48,
+              }}
+              source={logo}
+            />
+          </View>
           <MaskedView
             maskElement={
               <Text
@@ -114,14 +124,13 @@ export default function PasswordAndSecure() {
             <LinearGradient
               start={{ x: 0, y: 0 }}
               end={{ x: 0.6, y: 0.6 }}
-              colors={["#fea92866", "#ed8900"]}
+              colors={["#EDCD2B", "#EDCD2B", "rgba(0,0,0, 0.7)"]}
             >
               <Text style={{ opacity: 0, fontSize: 28, fontWeight: "bold" }}>
                 TechGadget
               </Text>
             </LinearGradient>
           </MaskedView>
-          <Text style={{ color: "#505050" }}></Text>
         </View>
 
         {/* Mật khẩu */}
@@ -165,7 +174,7 @@ export default function PasswordAndSecure() {
           >
             <View
               style={{
-                width: screenWidth / 1.5,
+                width: ScreenWidth / 1.5,
                 justifyContent: "center",
               }}
             >
@@ -177,7 +186,7 @@ export default function PasswordAndSecure() {
                 Đổi mật khẩu
               </Text>
             </View>
-            <Icon type="antdesign" name="right" color={"#FB6562"} size={20} />
+            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
           </Pressable>
 
         </View>
@@ -196,12 +205,10 @@ export default function PasswordAndSecure() {
         >
           {/* Bottom Modal Screen */}
           <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 0.8 }}
-            colors={["#FFFFFF", "#fea92866"]}
+            colors={["#FFFFFF", "#ed8900"]}
             style={{
-              width: screenWidth,
-              height: screenHeight / 1.5,
+              width: ScreenWidth,
+              height: ScreenHeight / 3,
               borderTopRightRadius: 20,
               borderTopLeftRadius: 20
             }}
@@ -209,103 +216,97 @@ export default function PasswordAndSecure() {
             {/* Thanh trên cùng */}
             <View
               style={{
-                alignItems: "center",
-                padding: 10,
+                width: ScreenWidth / 5,
+                height: ScreenHeight / 80,
+                backgroundColor: "#ed8900",
+                borderRadius: 30,
+                alignSelf: "center",
+                margin: 10,
               }}
-            >
-              <View
-                style={{
-                  width: screenWidth / 5,
-                  height: screenHeight / 80,
-                  backgroundColor: "#fea92866",
-                  borderRadius: 30,
-                }}
-              />
-            </View>
+            />
 
             <View
               style={{
-                height: screenHeight / 2.1,
-                alignItems: "center",
-                justifyContent: "center",
+                marginVertical: 10,
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+                gap: 10,
+                backgroundColor: "white",
+                width: ScreenWidth / 1.1,
+                borderRadius: 10,
+                alignSelf: "center"
               }}
             >
-              <View
+              <TextInput
                 style={{
-                  marginVertical: 10,
+                  borderColor: "#B7B7B7",
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  paddingVertical: 5,
                   paddingHorizontal: 10,
-                  paddingVertical: 10,
-                  gap: 10,
-                  backgroundColor: "white",
-                  width: screenWidth / 1.1,
-                  //   height: screenHeight / 4.9,
-                  borderRadius: 10,
+                  fontSize: 15,
                 }}
+                placeholder="Nhập mật khẩu hiện tại"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry={true}
+              />
+              <TextInput
+                style={{
+                  borderColor: "#B7B7B7",
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  paddingVertical: 5,
+                  paddingHorizontal: 10,
+                  fontSize: 15,
+                }}
+                placeholder="Nhập mật khẩu mới"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={true}
+              />
+              <TextInput
+                style={{
+                  borderColor: "#B7B7B7",
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  paddingVertical: 5,
+                  paddingHorizontal: 10,
+                  fontSize: 15,
+                }}
+                placeholder="Xác nhận mật khẩu mới"
+                value={newConfirmPassword}
+                onChangeText={setNewConfirmPassword}
+                secureTextEntry={true}
+              />
+              <Pressable
+                style={{
+                  backgroundColor: "#ed8900",
+                  paddingVertical: 5,
+                  paddingHorizontal: 10,
+                  marginTop: 10,
+                  borderRadius: 6,
+                  flexDirection: "row",
+                  gap: 10,
+                  justifyContent: "center"
+                }}
+                onPress={handleUpdate}
               >
-                <TextInput
+                <Text
                   style={{
-                    borderColor: "#B7B7B7",
-                    borderWidth: 1,
-                    borderRadius: 5,
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                    fontSize: 15,
+                    color: "white",
+                    textAlign: "center",
+                    textAlignVertical: "center",
+                    fontSize: 16,
                   }}
-                  placeholder="Nhập mật khẩu hiện tại"
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  secureTextEntry={true}
-                />
-                <TextInput
-                  style={{
-                    borderColor: "#B7B7B7",
-                    borderWidth: 1,
-                    borderRadius: 5,
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                    fontSize: 15,
-                  }}
-                  placeholder="Nhập mật khẩu mới"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry={true}
-                />
-                <TextInput
-                  style={{
-                    borderColor: "#B7B7B7",
-                    borderWidth: 1,
-                    borderRadius: 5,
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                    fontSize: 15,
-                  }}
-                  placeholder="Xác nhận mật khẩu mới"
-                  value={newConfirmPassword}
-                  onChangeText={setNewConfirmPassword}
-                  secureTextEntry={true}
-                />
-                <Pressable
-                  style={{
-                    backgroundColor: "#ed8900",
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                    marginTop: 10,
-                    borderRadius: 6,
-                  }}
-                  onPress={handleUpdate}
                 >
-                  <Text
-                    style={{
-                      color: "white",
-                      textAlign: "center",
-                      textAlignVertical: "center",
-                      fontSize: 16,
-                    }}
-                  >
-                    Cập nhật
-                  </Text>
-                </Pressable>
-              </View>
+                  Cập nhật
+                </Text>
+                {
+                  isFetching &&
+                  <ActivityIndicator color={"white"} />
+                }
+              </Pressable>
             </View>
           </LinearGradient>
         </Modal>

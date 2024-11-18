@@ -10,6 +10,7 @@ import {
     FlatList,
     TextInput,
     Pressable,
+    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ import RnModal from "react-native-modal";
 import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Snackbar } from 'react-native-paper';
 
 export default function GadgetSellerDetail({ route, navigation }) {
     const [gadget, setGadget] = useState(null);
@@ -39,6 +41,9 @@ export default function GadgetSellerDetail({ route, navigation }) {
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
 
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const formatVietnamDate = (time) => {
         const date = new Date(time);
         const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
@@ -47,6 +52,18 @@ export default function GadgetSellerDetail({ route, navigation }) {
         const year = vietnamTime.getUTCFullYear();
 
         return `${day}/${month}/${year}`;
+    };
+
+    {/* Group Specification*/ }
+    const groupSpecifications = (specs) => {
+        return specs.reduce((acc, spec) => {
+            const key = spec.specificationKey.name;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(spec);
+            return acc;
+        }, {});
     };
 
     // Fetch gadget detail
@@ -114,7 +131,24 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 );
                 setIsError(true);
             }
+        } else if (newQuantity != gadget.quantity) {
+            try {
+                await api.put(`/gadgets/${route.params.gadgetId}/quantity`, {
+                    quantity: newQuantity
+                });
+            } catch (error) {
+                console.log('Error updating gadget details:', error);
+                setStringErr(
+                    error.response?.data?.reasons[0]?.message ?
+                        error.response.data.reasons[0].message
+                        :
+                        "Lỗi mạng vui lòng thử lại sau"
+                );
+                setIsError(true);
+            }
         }
+        setSnackbarMessage("Cập nhật thành công");
+        setSnackbarVisible(true);
         setIsFetching(false);
         fetchGadgetDetail();
     }
@@ -414,25 +448,28 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 <View style={styles.tabContent}>
                     {activeTab === 'specs' ? (
                         <View style={styles.specsContainer}>
-                            {gadget.specificationValues.slice(0, isContentExpanded ? undefined : 4).map((spec, index) => (
-                                <View key={index}>
-                                    <View style={styles.specRow}>
-                                        <View style={styles.specKeyContainer}>
-                                            <Text style={styles.specKey}>{spec.specificationKey.name}</Text>
+                            {Object.entries(groupSpecifications(gadget.specificationValues))
+                                .slice(0, isContentExpanded ? undefined : 4)
+                                .map(([key, specs], index, array) => (
+                                    <View key={key}>
+                                        <View style={styles.specRow}>
+                                            <View style={styles.specKeyContainer}>
+                                                <Text style={styles.specKey}>{key}</Text>
+                                            </View>
+                                            <View style={styles.specValueContainer}>
+                                                {specs.map((spec, i) => (
+                                                    <View key={i} style={styles.specValueRow}>
+                                                        <Text style={styles.specValue}>
+                                                            {spec.value}{spec.specificationUnit?.name || ''}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </View>
                                         </View>
-                                        <View style={styles.specValueContainer}>
-                                            <Text style={styles.specValue}>
-                                                {spec.value} {spec.specificationUnit?.name}
-                                            </Text>
-                                        </View>
+                                        {index < array.length - 1 && <View style={styles.separator} />}
                                     </View>
-
-                                    {index < (isContentExpanded ? gadget.specificationValues.length - 1 : 3) && (
-                                        <View style={styles.separator} />
-                                    )}
-                                </View>
-                            ))}
-                            {gadget.specificationValues.length > 4 && (
+                                ))}
+                            {Object.entries(groupSpecifications(gadget.specificationValues)).length > 4 && (
                                 <TouchableOpacity
                                     style={styles.expandButton}
                                     onPress={() => setIsContentExpanded(!isContentExpanded)}
@@ -542,21 +579,36 @@ export default function GadgetSellerDetail({ route, navigation }) {
                         }
                     }}
                 >
-                    <Ionicons
-                        name="checkbox"
-                        size={55}
-                        color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
-                    />
+                    {
+                        isFetching ?
+                            <ActivityIndicator size={24} color="#ed8900" />
+                            :
+                            <Ionicons
+                                name="checkbox"
+                                size={55}
+                                color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
+                            />
+                    }
                 </TouchableOpacity>
             </View >
 
             <ImageGalleryModal />
             <ChooseForSaleModal />
+
             <ErrModal
                 stringErr={stringErr}
                 isError={isError}
                 setIsError={setIsError}
             />
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 3, alignSelf: "center" }}
+            >
+                {snackbarMessage}
+            </Snackbar>
         </LinearGradient >
     );
 }
@@ -751,6 +803,9 @@ const styles = StyleSheet.create({
     },
     specValueContainer: {
         flex: 3,
+    },
+    specValueRow: {
+        marginBottom: 2,
     },
     specKey: {
         fontSize: 16,

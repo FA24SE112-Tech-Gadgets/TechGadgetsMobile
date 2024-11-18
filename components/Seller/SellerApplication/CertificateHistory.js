@@ -1,15 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Pressable, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator } from 'react-native';
-import api from '../Authorization/api';
+import { View, Text, StyleSheet, Pressable, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator } from 'react-native';
+import api from '../../Authorization/api';
 import CertificateDetail from './CertificateDetail';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from '@react-navigation/native';
-import useAuth from "../../utils/useAuth";
+import useAuth from "../../../utils/useAuth";
 import { useNavigation } from "@react-navigation/native";
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
-import ErrModal from '../CustomComponents/ErrModal';
-import useNotification from '../../utils/useNotification';
+import ErrModal from '../../CustomComponents/ErrModal';
+import useNotification from '../../../utils/useNotification';
+import SellerApplicationItem from './SellerApplicationItem';
+import { Divider } from "@rneui/base";
+import { Snackbar } from 'react-native-paper';
 
 const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
@@ -23,6 +26,9 @@ const CertificateHistory = () => {
 
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
+
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -48,6 +54,7 @@ const CertificateHistory = () => {
     try {
       setIsFetching(true);
       const res = await api.get(`/seller-applications?Page=${page}&PageSize=10`);
+      setLoading(false);
       setIsFetching(false);
       const newData = res.data.items;
 
@@ -135,8 +142,14 @@ const CertificateHistory = () => {
       const response = await api.get(`${"/seller-applications"}/${id}`);
       setSelectedApplication(response.data);
       setIsPopupOpen(true);
-    } catch (err) {
-      console.log('Không thể lấy chi tiết đơn đăng ký', err);
+    } catch (error) {
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -175,7 +188,7 @@ const CertificateHistory = () => {
           }}
         >
           <LottieView
-            source={require("../../assets/animations/catRole.json")}
+            source={require("../../../assets/animations/catRole.json")}
             style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
             autoPlay
             loop
@@ -196,7 +209,6 @@ const CertificateHistory = () => {
   );
 
   return (
-
     <View style={styles.container}>
       <LinearGradient
         start={{ x: 0, y: 0 }}
@@ -205,12 +217,12 @@ const CertificateHistory = () => {
         style={[styles.linearGradient]}
       >
         <LottieView
-          source={require("../../assets/animations/background-login.json")}
+          source={require("../../../assets/animations/background-login.json")}
           style={styles.background}
           autoPlay
           loop={false}
         />
-        <Text style={styles.title}>Lịch Sử Đơn Đăng Ký</Text>
+        <Text style={[styles.title, { marginTop: 10 }]}>Lịch Sử Đơn Đăng Ký</Text>
         {applications.length === 0 ? (
           <View
             style={{
@@ -226,7 +238,7 @@ const CertificateHistory = () => {
               }}
             >
               <LottieView
-                source={require("../../assets/animations/catRole.json")}
+                source={require("../../../assets/animations/catRole.json")}
                 style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
                 autoPlay
                 loop
@@ -245,34 +257,21 @@ const CertificateHistory = () => {
           </View>
         ) : (
           <View style={styles.tableContainer}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableHeaderText}>Tên Cửa Hàng</Text>
-              <Text style={styles.tableHeaderText}>Mô Hình Kinh Doanh</Text>
-              <Text style={styles.tableHeaderText}>Trạng Thái</Text>
-              <Text style={styles.tableHeaderText}>Ngày Tạo</Text>
-              <Text style={styles.tableHeaderText}>Hành Động</Text>
-            </View>
             <FlatList
               data={applications}
               keyExtractor={item => item.id}
               renderItem={({ item, index }) => (
-                <View style={styles.tableRow}>
-                  <Text style={styles.tableCellText}>{item.shopName}</Text>
-                  <Text style={styles.tableCellText}>
-                    {item.businessModel === 'BusinessHousehold' ? 'Hộ Kinh Doanh' :
-                      item.businessModel === 'Personal' ? 'Cá Nhân' :
-                        item.businessModel === 'Company' ? 'Công Ty' : item.businessModel}
-                  </Text>
-                  <View style={[styles.statusContainer, item.status === 'Pending' ? styles.pendingStatus : item.status === 'Approved' ? styles.approvedStatus : styles.rejectedStatus]}>
-                    <Text style={styles.statusText}>
-                      {item.status === 'Pending' ? 'Đang Chờ' : item.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}
-                    </Text>
-                  </View>
-                  <Text style={styles.tableCellText}>{new Date(item.createdAt).toLocaleString()}</Text>
-                  <TouchableOpacity onPress={() => handleViewDetails(item.id)} style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Xem</Text>
-                  </TouchableOpacity>
-                </View>
+                <>
+                  <SellerApplicationItem
+                    {...item}
+                    handleViewDetails={handleViewDetails}
+                    setSnackbarVisible={setSnackbarVisible}
+                    setSnackbarMessage={setSnackbarMessage}
+                  />
+                  {index < applications.length - 1 && (
+                    <Divider style={{ marginVertical: 10 }} />
+                  )}
+                </>
               )}
               onScroll={handleScroll}
               scrollEventThrottle={16}
@@ -311,10 +310,23 @@ const CertificateHistory = () => {
         setIsError={setIsError}
       />
 
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={1500}
+        wrapperStyle={{ bottom: 0, zIndex: 3, alignSelf: "center" }}
+      >
+        {snackbarMessage}
+      </Snackbar>
+
       {isPopupOpen && selectedApplication && (
         <CertificateDetail
           application={selectedApplication}
           onClose={() => setIsPopupOpen(false)}
+          setSnackbarVisible={setSnackbarVisible}
+          setSnackbarMessage={setSnackbarMessage}
+          setStringErr={setStringErr}
+          setIsError={setIsError}
         />
       )}
     </View>
@@ -364,10 +376,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   tableContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    overflow: 'hidden',
+    paddingHorizontal: 10
   },
   tableHeader: {
     flexDirection: 'row',

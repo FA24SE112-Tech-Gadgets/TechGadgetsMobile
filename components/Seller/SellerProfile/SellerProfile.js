@@ -121,7 +121,11 @@ export default function SellerProfile() {
             justifyContent: "space-between",
           }}
           onPress={() => {
-            navigation.navigate("BuyerPersonal", { id: 1 });
+            if (user.seller == null) {
+              handleOpenError("Vui lòng đăng ký thông tin người bán để sử dụng tính năng này.")
+            } else {
+              navigation.navigate("BuyerPersonal");
+            }
           }}
         >
           <View
