@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
-import { FontAwesome, Ionicons, FontAwesome6 } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Platform } from 'react-native';
+import { FontAwesome, Ionicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Pdf from 'react-native-pdf';
@@ -42,6 +42,34 @@ const CertificateDetail = ({
       return 'pdf';
     } else {
       return 'unknown';
+    }
+  };
+
+  const downloadFile = async (url) => {
+    try {
+      const extension = url.split('.').pop().toLowerCase();
+
+      // Đường dẫn lưu file
+      const downloadDest = `${RNFS.DownloadDirectoryPath}/${application.id}.${extension}`;
+
+      // Tải file
+      const result = await RNFS.downloadFile({
+        fromUrl: url,
+        toFile: downloadDest,
+      }).promise;
+
+      if (result.statusCode === 200) {
+        setSnackbarMessage("Tải về thành công");
+        setSnackbarVisible(true);
+      } else {
+        Alert.alert("Lỗi", `Không thể tải file. Mã lỗi: ${result.statusCode}`);
+      }
+    } catch (error) {
+      console.log(error);
+      setStringErr(
+        "Lỗi tải xuống, vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
@@ -202,11 +230,34 @@ const CertificateDetail = ({
               }
             </View>
           </View>
+
           {application.businessRegistrationCertificateUrl && (
             <View style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
-                <FontAwesome6 name="newspaper" size={24} color="black" />
-                <Text style={styles.sectionTitle}>Giấy Đăng Ký Kinh Doanh</Text>
+              <View style={{
+                flexDirection: "row",
+                gap: 10
+              }}>
+                <View style={styles.sectionHeader}>
+                  <FontAwesome6 name="newspaper" size={24} color="black" />
+                  <Text style={styles.sectionTitle}>Giấy Đăng Ký Kinh Doanh</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.sectionHeader, {
+                    backgroundColor: "#f9f9f9",
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 10,
+                    borderWidth: 0.5,
+                    borderColor: "rgba(0, 0, 0, 0.5)"
+                  }]}
+                  disabled={application?.businessRegistrationCertificateUrl == null}
+                  onPress={() => {
+                    downloadFile(application.businessRegistrationCertificateUrl);
+                  }}
+                >
+                  <Entypo name="download" size={18} color="black" />
+                  <Text style={[styles.sectionTitle, { fontSize: 14 }]}>Tải xuống</Text>
+                </TouchableOpacity>
               </View>
               <View style={[styles.sectionContent, { marginBottom: 20 }]}>
                 {

@@ -10,6 +10,7 @@ import {
     FlatList,
     TextInput,
     Pressable,
+    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ import RnModal from "react-native-modal";
 import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Snackbar } from 'react-native-paper';
 
 export default function GadgetSellerDetail({ route, navigation }) {
     const [gadget, setGadget] = useState(null);
@@ -38,6 +40,9 @@ export default function GadgetSellerDetail({ route, navigation }) {
     const [isFetching, setIsFetching] = useState(false);
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
+
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
 
     const formatVietnamDate = (time) => {
         const date = new Date(time);
@@ -126,7 +131,24 @@ export default function GadgetSellerDetail({ route, navigation }) {
                 );
                 setIsError(true);
             }
+        } else if (newQuantity != gadget.quantity) {
+            try {
+                await api.put(`/gadgets/${route.params.gadgetId}/quantity`, {
+                    quantity: newQuantity
+                });
+            } catch (error) {
+                console.log('Error updating gadget details:', error);
+                setStringErr(
+                    error.response?.data?.reasons[0]?.message ?
+                        error.response.data.reasons[0].message
+                        :
+                        "Lỗi mạng vui lòng thử lại sau"
+                );
+                setIsError(true);
+            }
         }
+        setSnackbarMessage("Cập nhật thành công");
+        setSnackbarVisible(true);
         setIsFetching(false);
         fetchGadgetDetail();
     }
@@ -557,21 +579,36 @@ export default function GadgetSellerDetail({ route, navigation }) {
                         }
                     }}
                 >
-                    <Ionicons
-                        name="checkbox"
-                        size={55}
-                        color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
-                    />
+                    {
+                        isFetching ?
+                            <ActivityIndicator size={24} color="#ed8900" />
+                            :
+                            <Ionicons
+                                name="checkbox"
+                                size={55}
+                                color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
+                            />
+                    }
                 </TouchableOpacity>
             </View >
 
             <ImageGalleryModal />
             <ChooseForSaleModal />
+
             <ErrModal
                 stringErr={stringErr}
                 isError={isError}
                 setIsError={setIsError}
             />
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={1500}
+                wrapperStyle={{ bottom: 0, zIndex: 3, alignSelf: "center" }}
+            >
+                {snackbarMessage}
+            </Snackbar>
         </LinearGradient >
     );
 }
