@@ -4,7 +4,7 @@ import christmasTree from "../../assets/christmasTree.png"
 import christmasLeaf from "../../assets/christmasLeaf.png"
 import { ScreenWidth, ScreenHeight } from '@rneui/base';
 
-const SNOWFLAKE_COUNT = 20;
+const SNOWFLAKE_COUNT = 30;
 
 const Snowfall = ({ children, style }) => {
     const snowflakes = useRef(
@@ -102,8 +102,9 @@ const styles = StyleSheet.create({
         height: ScreenHeight * 0.25,
         width: ScreenWidth,
         position: 'absolute',
-        top: -100,
+        top: -130,
         left: 0,
+        opacity: 0.8
     },
     treeContainer: {
         position: 'absolute',
@@ -115,16 +116,18 @@ const styles = StyleSheet.create({
         width: 80,
         position: 'absolute',
         left: 0,
-        top: 5,
+        top: 50,
         resizeMode: 'contain',
+        opacity: 0.8
     },
     treeRight: {
         height: 120,
         width: 90,
         position: 'absolute',
         left: ScreenWidth / 1.2,
-        top: -10,
+        top: 40,
         resizeMode: 'contain',
+        opacity: 0.8
     },
     snowflake: {
         position: 'absolute',

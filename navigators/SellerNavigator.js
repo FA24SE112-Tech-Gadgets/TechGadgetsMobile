@@ -11,12 +11,12 @@ import useNotification from "../utils/useNotification"
 const Tab = createBottomTabNavigator();
 
 const SellerNavigator = () => {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, isBackgroundNoti } = useAuth();
     const { unreadNotifications, setUnreadNotifications, showNotification, setShowNotification } = useNotification();
 
     return (
         <Tab.Navigator
-            initialRouteName='SellerHome'
+            initialRouteName={!isBackgroundNoti ? 'SellerHome' : "SellerNotification"}
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarStyle: {

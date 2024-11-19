@@ -12,11 +12,12 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import useAuth from "../../utils/useAuth";
 import { jwtDecode } from "jwt-decode";
+import "core-js/stable/atob"; //For jwt decode
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
@@ -31,6 +32,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import useNotification from "../../utils/useNotification"
 import ggLogo from "../../assets/GoogleLogo.png"
+import messaging from '@react-native-firebase/messaging';
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
@@ -60,7 +62,6 @@ const LoginScreen = () => {
 
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
-  const [isResError, setIsResError] = useState(false);
 
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
@@ -266,7 +267,14 @@ const LoginScreen = () => {
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
-
+        // if (isBackgroundNoti) {
+        //   if (user?.role === "Customer") {
+        //     navigation.replace("BuyerNotification");
+        //   } else if (user?.role === "Seller") {
+        //     navigation.replace("SellerNotification");
+        //   }
+        // } else {
+        // }
         if (user?.role === "Customer") {
           navigation.replace("StackBuyerHome");
         } else if (user?.role === "Seller") {
