@@ -15,8 +15,8 @@ const AuthContext = createContext({
   login: async () => { },
   logout: async () => { },
   setUser: () => { },
-  isPayToWin: false,
-  setIsPayToWin: () => { },
+  isBackgroundNoti: false,
+  setIsBackgroundNoti: () => { },
   currentPackage: {},
   setCurrentPackage: () => { },
   fetchUser: async () => { },
@@ -27,8 +27,8 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPayToWin, setIsPayToWin] = useState(false);
   const [currentPackage, setCurrentPackage] = useState(null);
+  const [isBackgroundNoti, setIsBackgroundNoti] = useState(false);
 
   const fetchUser = async () => {
     const url = "/users/current";
@@ -76,8 +76,8 @@ const AuthProvider = ({ children }) => {
         setUser,
         isTimerRunning,
         setIsTimerRunning,
-        isPayToWin,
-        setIsPayToWin,
+        isBackgroundNoti,
+        setIsBackgroundNoti,
         currentPackage,
         setCurrentPackage,
         fetchUser

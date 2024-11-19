@@ -43,15 +43,15 @@ export default function GadgetDetail({ route, navigation }) {
 
     return `${day}/${month}/${year}`;
   };
-  
+
   useEffect(() => {
     fetchGadgetDetail();
   }, []);
-  
+
   useEffect(() => {
     setIsContentExpanded(false);
   }, [activeTab]);
-  
+
   {/* Group Specification*/ }
   const groupSpecifications = (specs) => {
     return specs.reduce((acc, spec) => {
@@ -105,13 +105,14 @@ export default function GadgetDetail({ route, navigation }) {
       setSnackbarMessage('Đơn hàng đã được tạo thành công');
       setSnackbarVisible(true);
     } catch (error) {
-      console.log('Error buying now:', error);
+      console.log('Error buying now:', error.response?.data?.reasons?.[0]?.message);
       setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
       setIsError(true);
+      setBuyNowModalVisible(false)
     }
   };
 
-  if (!gadget || isError) {
+  if (!gadget) {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{

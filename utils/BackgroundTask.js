@@ -2,18 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Button, Platform } from 'react-native';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 import api from '../components/Authorization/api';
 import { useNavigation } from '@react-navigation/native';
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-        priority: Notifications.AndroidNotificationPriority.MAX
-    }),
-});
+// Notifications.setNotificationHandler({
+//     handleNotification: async () => ({
+//         shouldShowAlert: true,
+//         shouldPlaySound: false,
+//         shouldSetBadge: false,
+//         priority: Notifications.AndroidNotificationPriority.MAX
+//     }),
+// });
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 
@@ -40,26 +40,26 @@ async function unregisterBackgroundFetchAsync() {
 }
 
 async function schedulePushNotification(data) {
-    await Notifications.scheduleNotificationAsync({
-        content: {
-            title: data?.userName || "Test title",
-            body: data?.content || "Test content",
-            data: {
-                notificationId: data?.id || 10,
-                data: 'goes here',
-                url: "techgadgets://BackgroundTask",
-                test: {
-                    test1: 'more data'
+    // await Notifications.scheduleNotificationAsync({
+    //     content: {
+    //         title: data?.userName || "Test title",
+    //         body: data?.content || "Test content",
+    //         data: {
+    //             notificationId: data?.id || 10,
+    //             data: 'goes here',
+    //             url: "techgadgets://BackgroundTask",
+    //             test: {
+    //                 test1: 'more data'
 
-                }
-            },
-            priority: Notifications.AndroidNotificationPriority.MAX
-        },
-        trigger: {
-            seconds: 2,
-            channelId: 'new-emails',
-        },
-    });
+    //             }
+    //         },
+    //         priority: Notifications.AndroidNotificationPriority.MAX
+    //     },
+    //     trigger: {
+    //         seconds: 2,
+    //         channelId: 'new-emails',
+    //     },
+    // });
 }
 
 async function registerForPushNotificationsAsync() {
@@ -93,25 +93,25 @@ export default function BackgroundTask() {
     const notificationListener = useRef();
     const responseListener = useRef();
 
-    useEffect(() => {
-        registerForPushNotificationsAsync();
-        checkStatusAsync();
+    // useEffect(() => {
+    //     registerForPushNotificationsAsync();
+    //     checkStatusAsync();
 
-        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            setNotification(notification);
-        });
+    //     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    //         setNotification(notification);
+    //     });
 
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-            console.log(response);
-        });
+    //     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    //         console.log(response);
+    //     });
 
-        return () => {
-            notificationListener.current &&
-                Notifications.removeNotificationSubscription(notificationListener.current);
-            responseListener.current &&
-                Notifications.removeNotificationSubscription(responseListener.current);
-        };
-    }, []);
+    //     return () => {
+    //         notificationListener.current &&
+    //             Notifications.removeNotificationSubscription(notificationListener.current);
+    //         responseListener.current &&
+    //             Notifications.removeNotificationSubscription(responseListener.current);
+    //     };
+    // }, []);
 
     const checkStatusAsync = async () => {
         const status = await BackgroundFetch.getStatusAsync();

@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import useAuth from '../utils/useAuth';
-import { FontAwesome } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import BuyerProfile from '../components/Buyer/BuyerProfile/BuyerProfile';
@@ -16,12 +15,12 @@ import SearchNaturalLanguage from '../components/Buyer/SearchNaturalLanguage/Sea
 const Tab = createBottomTabNavigator();
 
 const BuyerNavigator = () => {
-	const { isLoggedIn } = useAuth();
+	const { isLoggedIn, isBackgroundNoti } = useAuth();
 	const { unreadNotifications, setUnreadNotifications, showNotification, setShowNotification } = useNotification();
 
 	return (
 		<Tab.Navigator
-			initialRouteName='BuyerHome'
+			initialRouteName={!isBackgroundNoti ? 'BuyerHome' : "BuyerNotification"}
 			screenOptions={({ route }) => ({
 				headerShown: false,
 				tabBarStyle: {

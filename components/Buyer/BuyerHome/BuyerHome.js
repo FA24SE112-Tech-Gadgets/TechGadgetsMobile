@@ -39,8 +39,29 @@ export default function BuyerHome() {
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
 
-  const [maxBannerCount] = useState(4);
-  const [bannerArr, setBannerArr] = useState([]);
+  const [maxBannerCount] = useState(5);
+  const [bannerArr, setBannerArr] = useState([
+    {
+      thumbnailUrl: "https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/9a41c904-df8c-4c6c-9c6d-f57352a34550.jpg",
+      type: "Điện thoại"
+    },
+    {
+      thumbnailUrl: "https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/d2fc02bc-1f9d-451a-9958-a3e4d62e2a77.jpg",
+      type: "Điện thoại"
+    },
+    {
+      thumbnailUrl: "https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/55780111-4bee-4684-856a-6c61a61caa2f.jpg",
+      type: "Laptop"
+    },
+    {
+      thumbnailUrl: "https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/01218ab7-8843-4a16-ad81-1a6610dfe49f.jpg",
+      type: "Tai nghe"
+    },
+    {
+      thumbnailUrl: "https://storage.googleapis.com/fbdemo-f9d5f.appspot.com/Gadgets/b62600ae-ad35-4903-b012-0911dc4cb619.jpg",
+      type: "Loa"
+    },
+  ]);
 
   const flatListRef = useRef();
   const navigation = useNavigation();
@@ -159,13 +180,17 @@ export default function BuyerHome() {
   useFocusEffect(
     useCallback(() => {
       const fetchBanners = async () => {
-        for (const category of categories) {
-          if (bannerArr.length >= maxBannerCount) break; // Stop if bannerArr already has 4 items
-          await fetchHotGadgets(category.id); // Fetch gadgets for each category
-        }
-      };
+        const updatedBanners = bannerArr.map(banner => {
+          const matchingCategory = categories.find(category => category.name.toLowerCase() === banner.type.toLowerCase());
+          if (matchingCategory) {
+            return { ...banner, categoryId: matchingCategory.id, categoryName: matchingCategory.name };
+          }
+          return banner; // Keep banner unchanged if no matching category
+        });
 
-      if (categories.length > 0 && bannerArr.length < maxBannerCount) {
+        setBannerArr(updatedBanners);
+      };
+      if (categories.length > 0 && bannerArr.length <= maxBannerCount) {
         fetchBanners();
       }
     }, [categories])
@@ -390,9 +415,10 @@ export default function BuyerHome() {
                   data={categories}
                   renderItem={renderCategory}
                   ListHeaderComponent={
-                    bannerArr.length > 0 &&
+                    (bannerArr.length > 0 && bannerArr[0]?.categoryId) &&
                     <Snowfall style={{
-                      backgroundColor: "#112A46"
+                      backgroundColor: "#112A46",
+                      marginBottom: 15
                     }}>
                       <View style={styles.bannerContainer}>
                         <FlatList
@@ -403,52 +429,18 @@ export default function BuyerHome() {
                           showsHorizontalScrollIndicator={false}
                           renderItem={({ item }) => (
                             <TouchableOpacity onPress={() => {
-                              navigation.navigate('GadgetDetail', { gadgetId: item.id })
+                              navigation.navigate('CategoryGadgets', { categoryId: item.categoryId, categoryName: item.categoryName })
                             }}
                               style={styles.imageBtn}
                             >
-                              <View style={styles.gadgetImageItem}>
-                                <Image
-                                  source={{ uri: item.thumbnailUrl }}
-                                  style={styles.gadgetImage}
-                                  resizeMode="contain"
-                                />
-                                {item.discountPercentage > 0 && (
-                                  <View style={{
-                                    position: 'absolute',
-                                    bottom: 10,
-                                    right: 10,
-                                    backgroundColor: '#FF0000',
-                                    paddingHorizontal: 10,
-                                    paddingVertical: 5,
-                                    borderRadius: 10,
-                                    borderWidth: 0.5,
-                                    borderColor: "grey",
-                                  }}>
-                                    <Text style={[styles.discountText, { color: "white" }]}>-{item.discountPercentage}%</Text>
-                                  </View>
-                                )}
-                                <View style={{
-                                  position: "absolute",
-                                  bottom: 10,
-                                  left: 10,
-                                  backgroundColor: "rgba(0, 0, 0, 0.2)",
-                                  paddingHorizontal: 10,
-                                  paddingVertical: 5,
-                                  borderRadius: 10
-                                }}>
-                                  <Text
-                                    style={{
-                                      width: ScreenWidth / 3
-                                    }}
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                  >{item.name}</Text>
-                                </View>
-                              </View>
+                              <Image
+                                source={{ uri: item.thumbnailUrl }}
+                                style={styles.gadgetImageItem}
+                                resizeMode="contain"
+                              />
                             </TouchableOpacity>
                           )}
-                          keyExtractor={(item) => item.id}
+                          keyExtractor={(item, index) => index}
                           onLayout={() => {
                             if (flatListRef.current) {
                               flatListRef.current.scrollToIndex({ index: 0, animated: false });
@@ -580,9 +572,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ed8900',
   },
-  bannerContainer: {
-    marginBottom: 15,
-  },
   imageBtn: {
     justifyContent: "center",
     alignItems: "center",
@@ -590,18 +579,9 @@ const styles = StyleSheet.create({
   },
   gadgetImageItem: {
     justifyContent: "center",
-    width: ScreenWidth / 1.2,
+    width: ScreenWidth,
     alignItems: "center",
-    backgroundColor: "white",
-    height: ScreenHeight / 5,
-    borderWidth: 1.5,
-    borderRadius: 15,
-    borderColor: "rgb(254, 169, 40)"
-  },
-  gadgetImage: {
-    width: ScreenWidth / 1.1,
-    height: ScreenHeight / 1.5,
-    borderRadius: 8,
+    height: ScreenHeight / 4,
   },
   categoryList: {
     flex: 1,

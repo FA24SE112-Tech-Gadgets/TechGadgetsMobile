@@ -1,4 +1,4 @@
-import { createContext, useCallback, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import messaging from '@react-native-firebase/messaging';
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../Authorization/api";
@@ -32,7 +32,7 @@ const NotificationContext = createContext({
 })
 
 const NotificationProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, isBackgroundNoti, setIsBackgroundNoti, fetchUser } = useAuth();
     const [unreadNotifications, setUnreadNotifications] = useState(0);
     const [showNotification, setShowNotification] = useState(true);
 
@@ -232,6 +232,35 @@ const NotificationProvider = ({ children }) => {
             return unsubscribe;
         }, [showNotification])
     );
+
+    useEffect(() => {
+        const unsubscribe = messaging().onNotificationOpenedApp(async (remoteMessage) => {
+            console.log('Notification caused app to open from background state:', remoteMessage);
+            if (user) {
+                if (notifications && notifications.length == 0) {
+                    await fetchNotifications(1, "normal");
+                }
+                await fetchNewNotifications();
+            }
+            console.log("nhận đc bgNoti", showNotification);
+
+            if (showNotification) { //Nếu đang ở tab khác ngoài Notification thì mới đếm không thì không đếm
+                setUnreadNotifications((prevState) => prevState + 1);
+            }
+        });
+
+        // Check notification when app is opened from terminated state
+        messaging()
+            .getInitialNotification()
+            .then((remoteMessage) => {
+                if (remoteMessage) {
+                    console.log('App opened from terminated state by notification:', remoteMessage);
+                    setIsBackgroundNoti(true);
+                }
+            });
+
+        return unsubscribe;
+    }, []);
 
     return (
         <NotificationContext.Provider

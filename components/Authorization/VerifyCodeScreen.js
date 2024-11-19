@@ -65,6 +65,8 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         const { token, refreshToken } = response.data;
 
         const decodedToken = jwtDecode(token);
+        console.log("deco", decodedToken);
+
         const userInfo = JSON.parse(decodedToken.UserInfo);
         console.log(userInfo);
 
@@ -95,6 +97,8 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         setStringErr(data.reasons[0].message);
       }
     } catch (error) {
+      console.log("loi", error);
+
       setIsError(true);
       setStringErr(error.response?.data.reasons[0].message);
     }

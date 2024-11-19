@@ -144,8 +144,6 @@ const RootNavigator = () => {
           <SellerStack isLoggedIn={isLoggedIn} />
         )}
       </Stack.Screen>
-      {/* <Stack.Screen name="RegisterSeller" component={BusinessRegistrationCertificate} options={{ headerShown: false }}/>
-      <Stack.Screen name="RegisterSellerHistory" component={CertificateHistory} options={{ headerShown: false }}/> */}
       {/* Detail */}
       <Stack.Screen
         name="Details"
