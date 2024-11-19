@@ -32,7 +32,6 @@ import {
 } from '@react-native-google-signin/google-signin';
 import useNotification from "../../utils/useNotification"
 import ggLogo from "../../assets/GoogleLogo.png"
-import messaging from '@react-native-firebase/messaging';
 
 const CustomGoogleSignInButton = ({ onPress }) => (
   <TouchableOpacity style={styles.googleButton} onPress={onPress}>
@@ -267,14 +266,6 @@ const LoginScreen = () => {
   useFocusEffect(
     useCallback(() => {
       const fetchFunction = () => {
-        // if (isBackgroundNoti) {
-        //   if (user?.role === "Customer") {
-        //     navigation.replace("BuyerNotification");
-        //   } else if (user?.role === "Seller") {
-        //     navigation.replace("SellerNotification");
-        //   }
-        // } else {
-        // }
         if (user?.role === "Customer") {
           navigation.replace("StackBuyerHome");
         } else if (user?.role === "Seller") {

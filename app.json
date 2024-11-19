@@ -42,14 +42,6 @@
         }
       ],
       [
-        "expo-notifications",
-        {
-          "icon": "./assets/icon.png",
-          "color": "#ffffff",
-          "defaultChannel": "default"
-        }
-      ],
-      [
         "@rnmapbox/maps",
         {
           "RNMapboxMapsDownloadToken": "sk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTgzeWNyMDY5ZDJrczllYXFlNGcwayJ9.4ukbF2sMxF2Qmu0_JnlvCw",
@@ -82,23 +74,9 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.WAKE_LOCK",
-        "android.permission.SCHEDULE_EXACT_ALAR",
+        "android.permission.SCHEDULE_EXACT_ALARM",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "manifest": {
-        "meta-data": [
-          {
-            "android:name": "com.google.firebase.messaging.default_notification_channel_id",
-            "android:value": "default",
-            "tools:replace": "android:value"
-          },
-          {
-            "android:name": "com.google.firebase.messaging.default_notification_color",
-            "android:resource": "@color/notification_icon_color",
-            "tools:replace": "android:resource"
-          }
-        ]
-      },
       "package": "com.kietpt2003.WhatEat"
     },
     "web": {
