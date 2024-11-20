@@ -222,10 +222,12 @@ const BuyerCartItem = () => {
         //         return acc;
         //     }, {})
         // }));
-        const allSelected = cartItems[sellerId]?.every(item =>
-            selectedItems[sellerId]?.[item.gadget.id] ||
-            item.gadget.status !== "Inactive" && item.gadget.isForSale === true
-        );
+        const allSelected = cartItems[sellerId]?.every(item => {
+            if (selectedItems[sellerId]?.[item.gadget.id] ||
+                item.gadget.status !== "Inactive" && item.gadget.isForSale === true) {
+                return selectedItems[sellerId]?.[item.gadget.id]
+            }
+        });
 
         setSelectedItems(prevState => ({
             ...prevState,
@@ -251,9 +253,12 @@ const BuyerCartItem = () => {
         // });
         // setSelectedItems(newSelectedItems);
         const allSelected = sellers.every(seller =>
-            cartItems[seller.id]?.every(item =>
-                selectedItems[seller.id]?.[item.gadget.id] ||
-                item.gadget.status !== "Inactive" && item.gadget.isForSale === true
+            cartItems[seller.id]?.every(item => {
+                if (selectedItems[seller.id]?.[item.gadget.id] ||
+                    item.gadget.status !== "Inactive" && item.gadget.isForSale === true) {
+                    return selectedItems[seller.id]?.[item.gadget.id]
+                }
+            }
             )
         );
 
@@ -487,7 +492,9 @@ const BuyerCartItem = () => {
                                             (item) => selectedItems[seller.id]?.[item.gadget.id]
                                         )
                                     )}
-                                    onPress={toggleAllSelection}
+                                    onPress={() => {
+                                        toggleAllSelection()
+                                    }}
                                     title="Chọn tất cả"
                                     containerStyle={styles.selectAllCheckbox}
                                 />
