@@ -241,8 +241,9 @@ const NotificationProvider = ({ children }) => {
             if (user) {
                 if (notifications && notifications.length == 0) {
                     await fetchNotifications(1, "normal");
+                } else {
+                    await fetchNewNotifications();
                 }
-                await fetchNewNotifications();
             }
             console.log("nhận đc bgNoti", showNotification);
 

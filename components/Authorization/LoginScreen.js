@@ -58,7 +58,6 @@ const LoginScreen = () => {
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
   const [isRecentPushed, setIsRecentPushed] = useState(false);
 
   const [stringErr, setStringErr] = useState("");
@@ -339,13 +338,6 @@ const LoginScreen = () => {
             )}
           </View>
         </View>
-        {
-          errorMsg?.length > 0 ? (
-            <Text style={styles.errorMessage}>{errorMsg}</Text>
-          ) : (
-            <View style={{ height: 10 }}></View>
-          )
-        }
         <Pressable
           style={[
             styles.loginButton,
