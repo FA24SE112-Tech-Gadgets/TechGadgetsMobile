@@ -61,8 +61,10 @@ export default function SellerHome() {
 
     const fetchGadgets = async (categoryId) => {
         try {
+            setIsFetching(true);
             const response = await api.get(`/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&Page=${currentPage}&PageSize=10`);
-            // setGadgets(prev => ({ ...prev, [categoryId]: response.data.items }));
+            setIsFetching(false);
+
             setGadgets(prev => {
                 const updatedGadgets = { ...prev, [categoryId]: response.data.items };
                 checkIfEmpty(updatedGadgets); // Kiểm tra sau khi cập nhật
@@ -77,6 +79,7 @@ export default function SellerHome() {
                     "Lỗi mạng vui lòng thử lại sau"
             );
             setIsError(true);
+            setIsFetching(false);
         }
     };
 
@@ -232,7 +235,7 @@ export default function SellerHome() {
                 </View>
             </View>
 
-            {categories.length === 0 ? (
+            {(categories.length === 0 || (isEmpty && !isFetching) || isFetching) ? (
                 <View
                     style={{
                         flex: 1,
@@ -260,7 +263,7 @@ export default function SellerHome() {
                                 textAlign: "center",
                             }}
                         >
-                            {(isEmpty && isFetching) ? "Không tìm thấy sản phẩm" : "Đang load dữ liệu"}
+                            {isFetching ? "Đang load dữ liệu" : isEmpty && "Không tìm thấy sản phẩm nào"}
                         </Text>
                     </View>
                 </View>

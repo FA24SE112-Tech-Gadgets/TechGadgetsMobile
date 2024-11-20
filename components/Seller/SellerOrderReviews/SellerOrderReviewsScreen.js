@@ -79,6 +79,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsFetching(false);
                 }
             };
 
@@ -138,6 +139,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     };
 
@@ -247,7 +249,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                                     textAlign: "center",
                                 }}
                             >
-                                Không có đánh giá nào
+                                {isFetching ? "Đang tải dữ liệu đánh giá" : "Không có đánh giá nào"}
                             </Text>
                         </View>
                     </View>

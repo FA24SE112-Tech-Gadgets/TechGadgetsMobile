@@ -119,6 +119,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
                             error.toString()
                     );
                     setIsError(true);
+                    setIsFetching(false);
                 }
             };
 

@@ -70,9 +70,11 @@ export default function SellerOrders() {
 
             const fetchItems = async () => {
                 try {
+                    setIsFetching(true);
                     const res = await api.get(
                         `/seller-orders?${filter}&CustomerPhoneNumber=${searchBounceString}&Page=1&PageSize=10`
                     );
+                    setIsFetching(false);
                     const newData = res.data.items;
 
                     if (newData == null || newData.length == 0) {
@@ -89,6 +91,7 @@ export default function SellerOrders() {
                             "Lỗi mạng vui lòng thử lại sau"
                     );
                     setIsError(true);
+                    setIsFetching(false);
                 }
             };
             fetchItems();
@@ -130,6 +133,7 @@ export default function SellerOrders() {
                     :
                     "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     }
 
@@ -166,6 +170,7 @@ export default function SellerOrders() {
                             "Lỗi mạng vui lòng thử lại sau"
                     );
                     setIsError(true);
+                    setIsFetching(false);
                 }
             };
 
@@ -320,7 +325,7 @@ export default function SellerOrders() {
                                     textAlign: "center",
                                 }}
                             >
-                                {isSearching ? "Không tìm thấy đơn hàng nào" : "Không có đơn hàng nào"}
+                                {isFetching ? "Đang tìm kiếm đơn hàng" : isSearching ? "Không tìm thấy đơn hàng nào" : "Không có đơn hàng nào"}
                             </Text>
                         </View>
                     </View>

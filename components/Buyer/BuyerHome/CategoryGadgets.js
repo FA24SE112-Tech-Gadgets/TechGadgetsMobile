@@ -28,7 +28,6 @@ export default function CategoryGadgets({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [favorites, setFavorites] = useState({});
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [brands, setBrands] = useState([]);
   const [filters, setFilters] = useState([]);

@@ -189,6 +189,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                             error.toString()
                     );
                     setIsError(true);
+                    setIsFetching(false);
                 }
             };
 
@@ -375,7 +376,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                             textAlign: "center",
                         }}
                     >
-                        Đang load dữ liệu
+                        {isFetching ? "Đang tải dữ liệu đơn hàng" : "Không tìm thấy thông tin đơn hàng"}
                     </Text>
                 </View>
             </LinearGradient>
@@ -602,7 +603,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                                 textAlign: "center",
                             }}
                         >
-                            Đang lấy dữ liệu
+                            {isFetching ? "Đang tải dữ liệu đơn hàng" : "Không tải được dữ liệu đơn hàng"}
                         </Text>
                     </View>
                 </View>

@@ -1,30 +1,40 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Modal from 'react-native-modal';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import api from '../../Authorization/api';
+import ErrModal from '../../CustomComponents/ErrModal';
+import LottieView from 'lottie-react-native';
 
 const ReviewList = ({ route }) => {
     const { gadgetId } = route.params;
+
     const [reviews, setReviews] = useState([]);
-    const [page, setPage] = useState(1);
-    const [hasNextPage, setHasNextPage] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+
     const [isLoading, setIsLoading] = useState(false);
+
     const [sortOption, setSortOption] = useState('Ngày gần nhất');
     const [isModalVisible, setModalVisible] = useState(false);
+
     const navigation = useNavigation();
 
-    const fetchReviews = useCallback(async (refresh = false) => {
-        if (isLoading || (!hasNextPage && !refresh)) return;
+    const [stringErr, setStringErr] = useState('');
+    const [isError, setIsError] = useState(false);
 
-        setIsLoading(true);
+    const [isFetching, setIsFetching] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [hasMoreData, setHasMoreData] = useState(true);
+
+    // review pagination
+    const fetchReviews = async (page) => {
         try {
-            let url = `/reviews/gadget/${gadgetId}?Page=${refresh ? 1 : page}&PageSize=10`;
+            let url = `/reviews/gadget/${gadgetId}?Page=${page}&PageSize=10`;
 
-            switch(sortOption) {
+            switch (sortOption) {
                 case 'Ngày gần nhất':
                     url += '&SortByDate=DESC';
                     break;
@@ -45,23 +55,39 @@ const ReviewList = ({ route }) => {
                     break;
             }
 
-            const response = await api.get(url);
-            const newReviews = response.data.items;
-            setReviews(refresh ? newReviews : [...reviews, ...newReviews]);
-            setHasNextPage(response.data.hasNextPage);
-            setPage(refresh ? 2 : page + 1);
-        } catch (error) {
-            console.log('Error fetching reviews:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [gadgetId, isLoading, hasNextPage, page, reviews, sortOption]);
+            setIsFetching(true);
+            const res = await api.get(url);
+            setIsFetching(false);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchReviews(true);
-        }, [fetchReviews])
-    );
+            const newData = res.data.items;
+
+            if (newData && newData.length > 0) {
+                const allReviews = [
+                    ...reviews,
+                    ...newData.filter(
+                        (newReview) =>
+                            !reviews.some(
+                                (existingReview) =>
+                                    existingReview.id === newReview.id
+                            )
+                    ),
+                ];
+                setReviews(allReviews);
+            }
+
+            // Update hasMoreData status
+            setHasMoreData(res.data.hasNextPage);
+        } catch (error) {
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
+            setIsFetching(false);
+        }
+    }
 
     const renderReviewItem = ({ item }) => (
         <View style={styles.reviewItem}>
@@ -98,6 +124,37 @@ const ReviewList = ({ route }) => {
         </View>
     );
 
+    const handleScroll = () => {
+        if (isFetching) return; // Ngăn không gọi nếu đang fetch
+
+        if (hasMoreData) {
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage); // Cập nhật page nếu vẫn còn dữ liệu
+            fetchReviews(nextPage); // Gọi fetchReviews với trang tiếp theo
+        } else {
+            setIsFetching(true);
+            fetchReviews(currentPage); // Gọi fetchReviews nhưng không tăng currentPage
+        }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchReviews(1); // Fetch new data (page 1)
+        setRefreshing(false);
+    };
+
+    const renderFooter = () => {
+        if (!isFetching) return null;
+        return (
+            <View style={{
+                padding: 5,
+                alignItems: 'center'
+            }}>
+                <ActivityIndicator color={"#ed8900"} />
+            </View>
+        );
+    };
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -108,26 +165,135 @@ const ReviewList = ({ route }) => {
     };
 
     const handleSortOption = (option) => {
-        setSortOption(option);
-        setModalVisible(false);
-        fetchReviews(true);
+        if (option != sortOption) {
+            setSortOption(option);
+            setModalVisible(false);
+            setReviews([]);
+            setCurrentPage(1);
+            const init = async () => {
+                try {
+                    setIsFetching(true);
+                    let url = `/reviews/gadget/${gadgetId}?Page=1&PageSize=10`;
+
+                    switch (option) {
+                        case 'Ngày gần nhất':
+                            url += '&SortByDate=DESC';
+                            break;
+                        case 'Ngày xa nhất':
+                            url += '&SortByDate=ASC';
+                            break;
+                        case 'Cao đến thấp':
+                            url += '&SortByRating=DESC';
+                            break;
+                        case 'Thấp đến cao':
+                            url += '&SortByRating=ASC';
+                            break;
+                        case 'Tích cực':
+                            url += '&IsPositive=true';
+                            break;
+                        case 'Tiêu cực':
+                            url += '&IsPositive=false';
+                            break;
+                    }
+                    const res = await api.get(url);
+                    setIsFetching(false);
+                    const newData = res.data.items;
+
+                    if (newData && newData.length > 0) {
+                        setReviews(newData);
+                    }
+
+                    if (!res.data.hasNextPage) {
+                        setHasMoreData(false);
+                    }
+
+                } catch (error) {
+                    setIsError(true);
+                    setStringErr(
+                        error.response?.data?.reasons[0]?.message ?
+                            error.response.data.reasons[0].message
+                            :
+                            "Lỗi mạng vui lòng thử lại sau"
+                    );
+                    setIsFetching(false);
+                }
+            };
+
+            init();
+        }
     };
+
+    //Reset to default state
+    useFocusEffect(
+        useCallback(() => {
+            setReviews([]);
+            setCurrentPage(1);
+            setSortOption("Ngày gần nhất");
+        }, [])
+    );
+
+    //For refresh page
+    useFocusEffect(
+        useCallback(() => {
+            if (refreshing) {
+                setReviews([]);
+                setCurrentPage(1);
+                fetchReviews(1);
+                setRefreshing(false);
+            }
+        }, [refreshing])
+    );
+
+    // Initial Fetch when component mounts
+    useFocusEffect(
+        useCallback(() => {
+            fetchReviews(1); // Fetch the first page
+        }, [])
+    );
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
-            <View style={styles.header}>
+            {/* Header */}
+            <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                padding: 16,
+                borderWidth: 1,
+                borderBottomLeftRadius: 20,
+                borderBottomRightRadius: 20,
+                borderColor: 'rgb(254, 169, 40)',
+                backgroundColor: 'rgba(254, 169, 40, 0.3)',
+            }}>
+                {/* Back Button */}
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={styles.backButton}
+                    style={{
+                        padding: 8,
+                        borderRadius: 20,
+                        backgroundColor: "rgba(254, 161, 40, 0.5)",
+                        borderWidth: 1,
+                        borderColor: "rgb(254, 161, 40)",
+                    }}
                 >
                     <AntDesign name="arrowleft" size={24} color="black" />
                 </TouchableOpacity>
-                <Text style={styles.headerTxt}>Danh sách đánh giá</Text>
+
+                <Text style={{
+                    fontSize: 18,
+                    fontWeight: "500"
+                }}>Danh sách đánh giá</Text>
             </View>
+
+            {/* Filter Sort */}
             <View style={styles.filterContainer}>
                 <TouchableOpacity
-                    style={styles.filterButton}
+                    style={[styles.filterButton, {
+                        backgroundColor: isLoading ? "#cccccc" : "#ed8900",
+                        borderColor: isLoading ? "#999999" : "#ed8900",
+                    }]}
                     onPress={toggleModal}
+                    disabled={isLoading}
                 >
                     <Text style={styles.filterButtonText}>
                         {sortOption}
@@ -140,18 +306,64 @@ const ReviewList = ({ route }) => {
                     />
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={reviews}
-                renderItem={renderReviewItem}
-                keyExtractor={(item) => item.id}
-                onEndReached={() => fetchReviews()}
-                onEndReachedThreshold={0.1}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>Không có đánh giá nào.</Text>
-                }
-            />
-            <Modal 
-                isVisible={isModalVisible} 
+
+            <View
+                style={{
+                    height: ScreenHeight / 1.3,
+                }}
+            >
+                {reviews.length === 0 ? (
+                    <View
+                        style={{
+                            height: ScreenHeight / 1.7,
+                        }}
+                    >
+                        <View
+                            style={{
+                                flex: 1,
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <LottieView
+                                source={require("../../../assets/animations/catRole.json")}
+                                style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                                autoPlay
+                                loop
+                                speed={0.8}
+                            />
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    width: ScreenWidth / 1.5,
+                                    textAlign: "center",
+                                }}
+                            >
+                                {isFetching ? "Đang tải đánh giá" : "Không có đánh giá nào"}
+                            </Text>
+                        </View>
+                    </View>
+                ) : (
+                    <View style={{ marginBottom: 20, marginTop: 16 }}>
+                        <FlatList
+                            data={reviews}
+                            keyExtractor={item => item.id}
+                            renderItem={renderReviewItem}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
+                            ListFooterComponent={renderFooter}
+                            initialNumToRender={10}
+                            showsVerticalScrollIndicator={false}
+                            overScrollMode="never"
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                        />
+                    </View>
+                )}
+            </View>
+
+            <Modal
+                isVisible={isModalVisible}
                 onBackdropPress={toggleModal}
                 onSwipeComplete={toggleModal}
                 swipeDirection="down"
@@ -188,6 +400,12 @@ const ReviewList = ({ route }) => {
                     ))}
                 </View>
             </Modal>
+
+            <ErrModal
+                stringErr={stringErr}
+                isError={isError}
+                setIsError={setIsError}
+            />
         </LinearGradient>
     );
 };
@@ -196,44 +414,22 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-        padding: 16,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-        borderColor: 'rgb(254, 169, 40)',
-        backgroundColor: 'rgba(254, 169, 40, 0.3)',
-    },
-    backButton: {
-        padding: 8,
-        borderRadius: 20,
-        backgroundColor: "rgba(254, 161, 40, 0.5)",
-        borderWidth: 1,
-        borderColor: "rgb(254, 161, 40)",
-    },
-    headerTxt: {
-        fontSize: 18,
-        fontWeight: "500"
-    },
     filterContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
         padding: 16,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
     },
     filterButton: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 8,
-        backgroundColor: '#fea128',
         borderRadius: 20,
     },
     filterButtonText: {
         color: 'white',
         fontWeight: '500',
         marginRight: 4,
+        fontSize: 18,
     },
     reviewItem: {
         backgroundColor: 'white',

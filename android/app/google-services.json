@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "487441071572-jaufpdmv3bkbc6fnivefgd423s3coi58.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kietpt2003.WhatEat",
+            "certificate_hash": "48bfcb5e6779962c436eff1dc2cd8b8b0f6dd01f"
+          }
+        },
+        {
           "client_id": "487441071572-2ap1f43doe3ougaclupk9fe7qingl742.apps.googleusercontent.com",
           "client_type": 3
         }

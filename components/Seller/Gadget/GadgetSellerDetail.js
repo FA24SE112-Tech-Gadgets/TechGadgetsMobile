@@ -130,6 +130,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                         "Lỗi mạng vui lòng thử lại sau"
                 );
                 setIsError(true);
+                setIsFetching(false);
             }
         } else if (newQuantity != gadget.quantity) {
             try {
@@ -145,6 +146,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                         "Lỗi mạng vui lòng thử lại sau"
                 );
                 setIsError(true);
+                setIsFetching(false);
             }
         }
         setSnackbarMessage("Cập nhật thành công");
@@ -182,7 +184,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             textAlign: "center",
                         }}
                     >
-                        Đang load dữ liệu
+                        {isFetching ? "Đang load dữ liệu" : "Không tìm thấy sản phẩm"}
                     </Text>
                 </View>
             </LinearGradient>

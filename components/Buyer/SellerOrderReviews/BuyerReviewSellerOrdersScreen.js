@@ -7,7 +7,7 @@ import {
     FlatList,
 } from "react-native";
 import React, { useCallback, useState } from "react";
-import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import api from "../../Authorization/api";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
@@ -79,6 +79,7 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsFetching(false);
                 }
             };
 
@@ -155,6 +156,7 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     };
 
@@ -264,7 +266,7 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                                     textAlign: "center",
                                 }}
                             >
-                                Không có đánh giá nào
+                                {isFetching ? "Đang tải nội dung đánh giá" : "Không có đánh giá nào"}
                             </Text>
                         </View>
                     </View>
@@ -286,9 +288,6 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                                         setSnackbarVisible={setSnackbarVisible}
                                         updateReviewById={updateReviewById}
                                     />
-                                    {/* {index < reviews.length - 1 && (
-                                        <Divider style={{ marginVertical: 10 }} />
-                                    )} */}
                                 </>
                             )}
                             onScroll={handleScroll}

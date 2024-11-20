@@ -29,10 +29,14 @@ export default function GadgetDetail({ route, navigation }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [buyNowModalVisible, setBuyNowModalVisible] = useState(false);
+
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
   const [stringErr, setStringErr] = useState('');
   const [isError, setIsError] = useState(false);
+
+  const [isFetching, setIsFetching] = useState(false);
 
   const formatVietnamDate = (time) => {
     const date = new Date(time);
@@ -66,7 +70,10 @@ export default function GadgetDetail({ route, navigation }) {
 
   const fetchGadgetDetail = async () => {
     try {
+      setIsFetching(true);
       const response = await api.get(`/gadgets/${route.params.gadgetId}`);
+      setIsFetching(false);
+
       setGadget(response.data);
     } catch (error) {
       console.log('Error fetching gadget details:', error);
@@ -77,6 +84,7 @@ export default function GadgetDetail({ route, navigation }) {
           "Lỗi mạng vui lòng thử lại sau"
       );
       setIsError(true);
+      setIsFetching(false);
     }
   };
 
@@ -112,7 +120,7 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
-  if (!gadget) {
+  if (gadget === null || gadget?.status === "Inactive") {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{
@@ -141,7 +149,7 @@ export default function GadgetDetail({ route, navigation }) {
               textAlign: "center",
             }}
           >
-            {isError ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Đang load dữ liệu"}
+            {isFetching ? "Đang tải dữ liệu sản phẩm" : gadget?.status === "Inactive" ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Không tìm thấy thông tin sản phẩm"}
           </Text>
         </View>
       </LinearGradient>
@@ -416,7 +424,12 @@ export default function GadgetDetail({ route, navigation }) {
             </View>
           )}
         </View>
-        <ReviewSummary gadgetId={route.params.gadgetId} navigation={navigation} />
+        <ReviewSummary
+          gadgetId={route.params.gadgetId}
+          navigation={navigation}
+          setIsError={setIsError}
+          setStringErr={setStringErr}
+        />
       </ScrollView>
 
       {/* Bottom Bar */}

@@ -118,7 +118,11 @@ const FavoriteList = () => {
                     </Text>
                     <View style={styles.shopInfo}>
                         <Image source={{ uri: item.gadget.brand.logoUrl }} style={styles.brandLogo} />
-                        <Text style={styles.shopName} numberOfLines={1}>{item.gadget.seller.shopName}</Text>
+                        <Text
+                            style={styles.shopName}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >{item.gadget.seller.shopName}</Text>
                     </View>
                     <View style={styles.statusContainer}>
                         <Text style={styles.statusLabel}>Tình trạng: </Text>
@@ -442,6 +446,7 @@ const styles = StyleSheet.create({
     shopName: {
         fontSize: 14,
         color: '#616161',
+        width: ScreenWidth / 2.5
     },
 });
 

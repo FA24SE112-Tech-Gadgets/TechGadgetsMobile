@@ -18,8 +18,6 @@ const CertificateHistory = () => {
   const [applications, setApplications] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [loading, setLoading] = useState(true);
-
   const [isFetching, setIsFetching] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
@@ -54,7 +52,6 @@ const CertificateHistory = () => {
     try {
       setIsFetching(true);
       const res = await api.get(`/seller-applications?Page=${page}&PageSize=10`);
-      setLoading(false);
       setIsFetching(false);
       const newData = res.data.items;
 
@@ -88,7 +85,6 @@ const CertificateHistory = () => {
       );
       setIsError(true);
       setIsFetching(false);
-      setLoading(false);
     }
   };
 
@@ -172,7 +168,7 @@ const CertificateHistory = () => {
     }, [])
   );
 
-  if (loading) return (
+  if (isFetching) return (
     <LinearGradient colors={['#F9F9F9', '#fea92866']} style={styles.loadingContainer}>
       <View
         style={{

@@ -49,7 +49,7 @@ const CustomGoogleSignInButton = ({ onPress }) => (
 
 const LoginScreen = () => {
   GoogleSignin.configure({
-    webClientId: "487441071572-to4p5i02csdckhm8ebaff3p3tl4nvd27.apps.googleusercontent.com",
+    webClientId: "487441071572-2ap1f43doe3ougaclupk9fe7qingl742.apps.googleusercontent.com",
   })
 
   const navigation = useNavigation()

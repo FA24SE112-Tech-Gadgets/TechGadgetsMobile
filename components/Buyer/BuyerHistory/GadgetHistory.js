@@ -14,8 +14,6 @@ import { AntDesign } from '@expo/vector-icons';
 import { Divider, ScreenHeight, ScreenWidth } from "@rneui/base";
 import LottieView from 'lottie-react-native';
 import { Snackbar } from "react-native-paper";
-
-// Assume these are imported from your project
 import api from '../../Authorization/api';
 import ErrModal from '../../CustomComponents/ErrModal';
 

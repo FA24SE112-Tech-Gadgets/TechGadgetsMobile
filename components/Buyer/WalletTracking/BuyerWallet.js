@@ -121,6 +121,7 @@ export default function Component() {
         } catch (error) {
             setStringErr(error.response?.data?.reasons?.[0]?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
             setIsError(true);
+            setIsFetching(false);
         }
     };
 

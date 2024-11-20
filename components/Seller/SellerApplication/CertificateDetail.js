@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { FontAwesome, Ionicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import Clipboard from '@react-native-clipboard/clipboard';

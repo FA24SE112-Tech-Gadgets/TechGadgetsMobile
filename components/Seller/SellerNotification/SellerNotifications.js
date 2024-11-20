@@ -180,7 +180,7 @@ export default function SellerNotifications() {
                                     textAlign: "center",
                                 }}
                             >
-                                Không có thông báo nào
+                                {isFetching ? "Đang tải thông báo" : "Không có thông báo nào"}
                             </Text>
                         </View>
                     </View>
