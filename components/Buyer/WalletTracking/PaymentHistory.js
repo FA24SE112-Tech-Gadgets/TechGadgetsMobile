@@ -69,6 +69,18 @@ const PaymentHistory = () => {
       <View style={styles.transactionItem}>
         <View style={styles.idContainer}>
           <Text style={styles.idText} numberOfLines={1} ellipsizeMode="tail">
+            Mã đơn hàng: {item.orderId}
+          </Text>
+          <TouchableOpacity
+            disabled={!item?.orderId}
+            onPress={() => copyToClipboard(item?.orderId)}
+          >
+            <Text style={styles.copyText}>Sao chép</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.idContainer, { marginBottom: 0 }]}>
+          <Text style={[styles.paymentMethod, { width: ScreenWidth / 1.4 }]} numberOfLines={1} ellipsizeMode="tail">
             Mã giao dịch: {item.id}
           </Text>
           <TouchableOpacity
