@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import useAuth from "../../utils/useAuth";
@@ -20,7 +20,7 @@ import { jwtDecode } from "jwt-decode";
 import "core-js/stable/atob"; //For jwt decode
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScreenHeight, ScreenWidth } from "@rneui/base";
+import { ScreenWidth } from "@rneui/base";
 import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import * as Location from "expo-location"
 import { useTranslation } from "react-i18next";
@@ -49,9 +49,7 @@ const CustomGoogleSignInButton = ({ onPress }) => (
 
 const LoginScreen = () => {
   GoogleSignin.configure({
-    webClientId: NODE_ENV == "development" ?
-      '918667179231-gc42utvqvgb3pu9949ce3c7225vrk9tr.apps.googleusercontent.com'
-      : "918667179231-c1ninpp8fc7akdh9radu56lnpb7a346l.apps.googleusercontent.com",
+    webClientId: "487441071572-to4p5i02csdckhm8ebaff3p3tl4nvd27.apps.googleusercontent.com",
   })
 
   const navigation = useNavigation()

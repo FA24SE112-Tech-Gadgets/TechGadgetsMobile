@@ -277,22 +277,34 @@ export default function RegisterScreen({ navigation }) {
           </View>
 
           {/* role */}
-          <Text style={styles.roleText}>Bạn là: </Text>
-          <View style={styles.roleSelectionContainer}>
-            <Pressable
-              style={styles.checkboxContainer}
-              onPress={() => handleChangeData("role", "Customer")}
-            >
-              <Checkbox status={account.role === "Customer" ? 'checked' : 'unchecked'} />
-              <Text>customer</Text>
-            </Pressable>
-            <Pressable
-              style={styles.checkboxContainer}
-              onPress={() => handleChangeData("role", "Seller")}
-            >
-              <Checkbox status={account.role === "Seller" ? 'checked' : 'unchecked'} />
-              <Text>seller</Text>
-            </Pressable>
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 15
+          }}>
+            <Text style={styles.roleText}>Bạn là: </Text>
+            <View style={styles.roleSelectionContainer}>
+              <Pressable
+                style={styles.checkboxContainer}
+                onPress={() => handleChangeData("role", "Customer")}
+              >
+                <Checkbox
+                  status={account.role === "Customer" ? 'checked' : 'unchecked'}
+                  color="black"
+                />
+                <Text>customer</Text>
+              </Pressable>
+              <Pressable
+                style={styles.checkboxContainer}
+                onPress={() => handleChangeData("role", "Seller")}
+              >
+                <Checkbox
+                  status={account.role === "Seller" ? 'checked' : 'unchecked'}
+                  color="black"
+                />
+                <Text>seller</Text>
+              </Pressable>
+            </View>
           </View>
 
           {/* ĐĂNG KÝ */}
@@ -617,13 +629,13 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,  // Space between text and checkboxes
-
+    flex: 0.3
   },
   roleSelectionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
+    alignItems: "center",
+    flex: 0.7
   },
   checkboxContainer: {
     flexDirection: 'row',

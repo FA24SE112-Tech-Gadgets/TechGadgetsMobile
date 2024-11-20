@@ -73,25 +73,6 @@ export default function BuyerProfile() {
     }, 5000); // Ẩn câu nói sau 5 giây
   };
 
-  async function createPaymentLink(type, accountRole) {
-    try {
-      const res = await api.post(accountRole === "user" ? `/subscriptions/users` : `/subscriptions/restaurants`,
-        {
-          type: type
-        }
-      )
-      return res.data;
-    } catch (error) {
-      setStringErr(
-        error.response?.data?.reasons[0]?.message ?
-          error.response.data.reasons[0].message
-          :
-          t("network-error")
-      );
-      setIsError(true);
-    }
-  }
-
   return (
     <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1 }}>
       {/* Header */}

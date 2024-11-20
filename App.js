@@ -56,8 +56,6 @@ export default function App() {
             SellerProfile: "SellerProfile"
           }
         },
-        PaymentSuccess: "PaymentSuccess",
-        PaymentFail: "PaymentFail",
         NotFound: '*',
       },
     }

@@ -12,7 +12,12 @@
           "package_name": "com.kietpt2003.WhatEat"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "487441071572-to4p5i02csdckhm8ebaff3p3tl4nvd27.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDdq05xgsXfwffEuRvhdVqReLNspumUymU"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "487441071572-to4p5i02csdckhm8ebaff3p3tl4nvd27.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
