@@ -8,6 +8,7 @@ import { Snackbar, Divider } from 'react-native-paper';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Clipboard from '@react-native-clipboard/clipboard';
 import api from '../../Authorization/api';
+import LottieView from 'lottie-react-native';
 
 const RefundHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -196,15 +197,39 @@ const RefundHistory = () => {
             />
           </View>
 
-          <FlatList
-            data={transactions}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.1}
-            ListFooterComponent={renderFooter}
-            contentContainerStyle={styles.listContent}
-          />
+          {loading ? (
+            <View style={styles.emptyContainer}>
+              <LottieView
+                source={require("../../../assets/animations/catRole.json")}
+                style={styles.lottieAnimation}
+                autoPlay
+                loop
+                speed={0.8}
+              />
+              <Text style={styles.emptyText}>Đang load dữ liệu...</Text>
+            </View>
+          ) : transactions.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <LottieView
+                source={require("../../../assets/animations/catRole.json")}
+                style={styles.lottieAnimation}
+                autoPlay
+                loop
+                speed={0.8}
+              />
+              <Text style={styles.emptyText}>Lịch sử hoàn tiền trống</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={transactions}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.1}
+              ListFooterComponent={renderFooter}
+              contentContainerStyle={styles.listContent}
+            />
+          )}
         </View>
 
         <Snackbar
@@ -409,6 +434,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 10,
     marginBottom: 10,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: ScreenHeight / 1.5,
+  },
+  lottieAnimation: {
+    width: ScreenWidth,
+    height: ScreenWidth / 1.3,
+  },
+  emptyText: {
+    fontSize: 18,
+    width: ScreenWidth / 1.5,
+    textAlign: "center",
   },
   listContent: {
     flexGrow: 1,
