@@ -9,14 +9,12 @@ import Policy from "../components/CustomComponents/Policy";
 import ChangeProfile from "../components/CustomComponents/ChangeProfile";
 import VerifyCodeScreen from "../components/Authorization/VerifyCodeScreen";
 import AuthRoute from "../components/Authorization/AuthRoute";
-import ApplicationRequest from "../components/Buyer/ApplicationRequest";
-import Details from "../components/Buyer/Detail/Detail";
 import { MaterialCommunityIcons, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import BusinessRegistrationCertificate from "../components/Seller/SellerApplication/BusinessRegistrationCertificate";
 import CertificateHistory from "../components/Seller/SellerApplication/CertificateHistory";
 import PasswordAndSecure from "../components/CustomComponents/PasswordAndSecure";
-import GadgetDetail from "../components/Buyer/Detail/GadgetDetail";
+import GadgetDetail from "../components/Buyer/Gadget/GadgetDetail";
 import CategoryGadgets from "../components/Buyer/BuyerHome/CategoryGadgets";
 import BuyerWallet from "../components/Buyer/WalletTracking/BuyerWallet";
 import DepositHistory from "../components/Buyer/WalletTracking/DepositHistory";
@@ -141,12 +139,6 @@ const RootNavigator = () => {
           <SellerStack isLoggedIn={isLoggedIn} />
         )}
       </Stack.Screen>
-      {/* Detail */}
-      <Stack.Screen
-        name="Details"
-        component={Details}
-        options={{ title: 'Chi tiết sản phẩm' }}
-      />
       <Stack.Screen
         name="GadgetDetail"
         component={GadgetDetail}
@@ -236,13 +228,6 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <PasswordAndSecure />
-          </AuthRoute>
-        )}
-      </Stack.Screen>
-      <Stack.Screen name="ApplicationRequest" >
-        {() => (
-          <AuthRoute>
-            <ApplicationRequest />
           </AuthRoute>
         )}
       </Stack.Screen>

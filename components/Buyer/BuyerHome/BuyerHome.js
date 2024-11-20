@@ -30,6 +30,7 @@ export default function BuyerHome() {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [searching, setSearching] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
 
@@ -139,7 +140,10 @@ export default function BuyerHome() {
     }
     setLoading(true);
     try {
+      setSearching(true);
       const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
+      setSearching(false);
+
       setSearchResults(response.data.items.map(item => ({
         ...item,
         isFavorite: item.isFavorite || false // Ensure isFavorite is always present
@@ -154,6 +158,7 @@ export default function BuyerHome() {
       );
     } finally {
       setLoading(false);
+      setSearching(false);
     }
   }, [debouncedSearchQuery, currentPage]);
 
@@ -161,6 +166,7 @@ export default function BuyerHome() {
     useCallback(() => {
       setCategories([]);
       setGadgets({});
+      setSearchQuery("");
       setSearchResults([]);
       setCurrentPage(1);
       fetchCategories();
@@ -366,7 +372,7 @@ export default function BuyerHome() {
             textAlign: "center",
           }}
         >
-          Đang load dữ liệu
+          Đang tải dữ liệu sản phẩm
         </Text>
       </View>
     </LinearGradient>
@@ -405,8 +411,29 @@ export default function BuyerHome() {
               searchResults.length > 0 ? (
                 renderSearchResults()
               ) : (
-                <View style={styles.noResultsContainer}>
-                  <Text style={styles.noResultsText}>Không tìm thấy từ khóa của bạn</Text>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <LottieView
+                    source={require("../../../assets/animations/catRole.json")}
+                    style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                    autoPlay
+                    loop
+                    speed={0.8}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      width: ScreenWidth / 1.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    {searching ? "Đang tìm sản phẩm" : "Không tìm thấy từ khóa của bạn"}
+                  </Text>
                 </View>
               )
             ) : (
@@ -685,14 +712,5 @@ const styles = StyleSheet.create({
   },
   searchResultPrice: {
     fontSize: 18,
-  },
-  noResultsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noResultsText: {
-    fontSize: 16,
-    color: '#666',
   },
 });

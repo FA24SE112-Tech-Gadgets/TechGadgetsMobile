@@ -30,9 +30,9 @@ export default function App() {
           screens: {
             BuyerHome: "BuyerHome",
             SearchNaturalLanguage: "SearchNaturalLanguage",
-            OrdersHistory: "OrdersHistory",
-            BuyerProfile: "BuyerProfile",
+            BuyerOrder: "BuyerOrder",
             BuyerNotification: "BuyerNotification",
+            BuyerProfile: "BuyerProfile",
           }
         },
         SellerGadgetByCategory: "SellerGadgetByCategory",

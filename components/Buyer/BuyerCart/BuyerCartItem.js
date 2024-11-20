@@ -138,6 +138,7 @@ const BuyerCartItem = () => {
             console.log('Error removing gadget:', error);
             setSnackbarMessage('Xóa sản phẩm không thành công');
             setSnackbarVisible(true);
+            setIsFetching(false);
         }
     };
 
@@ -154,6 +155,7 @@ const BuyerCartItem = () => {
             await refreshCart();
             setSnackbarMessage('Xóa không thành công');
             setSnackbarVisible(true);
+            setIsFetching(false);
         }
     };
 
@@ -170,6 +172,7 @@ const BuyerCartItem = () => {
             console.log('Error removing all items:', error);
             setSnackbarMessage('Không thể xóa tất cả sản phẩm');
             setSnackbarVisible(true);
+            setIsFetching(false);
         }
     };
 
@@ -188,6 +191,7 @@ const BuyerCartItem = () => {
                     "Lỗi mạng vui lòng thử lại sau"
             );
             setIsError(true);
+            setIsFetching(false);
         }
     };
 
@@ -478,6 +482,7 @@ const BuyerCartItem = () => {
 
                 <Text style={styles.headerTxt}>Giỏ hàng của tôi</Text>
             </View>
+
             <FlatList
                 data={sellers}
                 renderItem={renderShopItem}
@@ -520,6 +525,7 @@ const BuyerCartItem = () => {
                     <RefreshControl refreshing={refreshing} onRefresh={refreshCart} />
                 }
             />
+
             {sellers.length > 0 && (
                 <View style={styles.bottomContainer}>
                     <View style={styles.totalContainer}>
@@ -553,6 +559,7 @@ const BuyerCartItem = () => {
                     )}
                 </View>
             )}
+
             <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Xác nhận thanh toán</Text>

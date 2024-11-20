@@ -75,9 +75,9 @@ export default function BuyerOrders() {
                     :
                     "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     }
-
 
     const handleSortOption = (option) => {
         if (option != sortOption) {
@@ -114,6 +114,7 @@ export default function BuyerOrders() {
                             : "Lỗi mạng vui lòng thử lại sau"
                     );
                     setIsError(true);
+                    setIsFetching(false);
                 }
             };
 
@@ -204,7 +205,7 @@ export default function BuyerOrders() {
                             speed={0.8}
                         />
                         <Text style={styles.emptyText}>
-                            Không có đơn hàng nào
+                            {isFetching ? "Đang tải dữ liệu đơn hàng" : "Không có đơn hàng nào"}
                         </Text>
                     </View>
                 ) : (

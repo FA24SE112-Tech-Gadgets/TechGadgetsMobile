@@ -1,24 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Image,
   Pressable,
   TextInput,
   ActivityIndicator,
-  Alert,
   StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Icon, ScreenHeight, ScreenWidth } from '@rneui/base';
+import { Icon } from '@rneui/base';
 import { Snackbar } from 'react-native-paper';
 import api from '../Authorization/api';
 import * as DocumentPicker from 'expo-document-picker';
 import ErrModal from './ErrModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import LottieView from 'lottie-react-native';
 import useAuth from '../../utils/useAuth';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
@@ -106,46 +103,6 @@ export default function ChangeProfile() {
       setNewSellerFields(prev => ({ ...prev, [field]: value }));
     }
   };
-
-  // const handleSellerSave = async () => {
-  //   try {
-  //     setIsFetching(true);
-  //     const formData = new FormData();
-  //     Object.keys(newSellerFields).forEach(key => {
-  //       formData.append(key, newSellerFields[key]);
-  //     });
-
-  //     const response = await api.patch('/seller', formData, {
-  //       headers: { 'Content-Type': 'multipart/form-data' },
-  //     });
-  //     setIsFetching(false);
-
-  //     // Check for response status
-  //     if (response.status >= 200 && response.status < 300) {
-  //       setIsEditing(false);
-  //       setSnackbarMessage('Cập nhật thông tin thành công!');
-  //       setSnackbarVisible(true);
-  //     } else {
-  //       setStringErr(
-  //         response?.data?.reasons[0]?.message ?
-  //           response.data.reasons[0].message
-  //           :
-  //           "Lỗi mạng vui lòng thử lại sau"
-  //       );
-  //       setIsError(true);
-  //     }
-  //   } catch (error) {
-  //     setStringErr(
-  //       error.response?.data?.reasons[0]?.message ?
-  //         error.response.data.reasons[0].message
-  //         :
-  //         "Lỗi mạng vui lòng thử lại sau"
-  //     );
-  //     setIsError(true);
-  //   } finally {
-  //     setIsFetching(false);
-  //   }
-  // };
 
   const handleSellerSave = async () => {
     try {

@@ -79,6 +79,7 @@ export function WalletTrackingScreen({ route, navigation }) {
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsFetching(false);
                 }
             };
 
@@ -119,6 +120,7 @@ export function WalletTrackingScreen({ route, navigation }) {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     }
 
@@ -246,7 +248,7 @@ export function WalletTrackingScreen({ route, navigation }) {
                                     textAlign: "center",
                                 }}
                             >
-                                Chưa có lịch sử giao dịch nào...
+                                {isFetching ? "Đang tải dữ liệu giao dịch" : "Chưa có lịch sử giao dịch nào..."}
                             </Text>
                         </View>
                     </View>

@@ -12,6 +12,7 @@ import CustomMapModal from '../../CustomComponents/CustomMapModal';
 import { Snackbar } from 'react-native-paper';
 
 export default function SearchNaturalLanguage() {
+    const [hasStartedSearch, setHasStartedSearch] = useState(false);
     const [searchInput, setSearchInput] = useState("");
 
     const [isOpenBigMap, setOpenBigMap] = useState(false);
@@ -34,6 +35,7 @@ export default function SearchNaturalLanguage() {
 
     const handleSearch = async () => {
         try {
+            setHasStartedSearch(true);
             //Delete state before fetching
             setGadgets([]);
             setSelectedLocation(null);
@@ -77,6 +79,7 @@ export default function SearchNaturalLanguage() {
     //Reset to default state
     useFocusEffect(
         useCallback(() => {
+            setHasStartedSearch(false);
             setGadgets([]);
             setSellers([]);
             setSearchInput("");
@@ -115,7 +118,7 @@ export default function SearchNaturalLanguage() {
                                     textAlign: "center",
                                 }}
                             >
-                                {isFetching ? "Đang tìm kiếm..." : "Không tìm thấy nội dung phù hợp"}
+                                {isFetching ? "Đang tìm kiếm..." : !hasStartedSearch ? "Hãy nhập nội dung muốn tìm kiếm" : "Không tìm thấy nội dung phù hợp"}
                             </Text>
                         </View>
                     </>

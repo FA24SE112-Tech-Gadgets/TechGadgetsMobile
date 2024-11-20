@@ -98,6 +98,7 @@ const NotificationProvider = ({ children }) => {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     };
 
@@ -141,6 +142,7 @@ const NotificationProvider = ({ children }) => {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     };
 

@@ -66,13 +66,15 @@ export default function SellerGadgetByCategory({ navigation, route }) {
 
             const fetchItems = async () => {
                 try {
+                    setIsFetching(true);
                     const res = await api.get(
                         `/gadgets/category/${categoryId}/current-seller?Name=${searchBounceString}&${filter}&Page=1&PageSize=10`
                     );
+                    setIsFetching(false);
                     const newData = res.data.items;
 
                     if (newData == null || newData.length == 0) {
-                        setGadgets([])
+                        setGadgets([]);
                         return; // Stop the process if there is no more data
                     }
 
@@ -85,6 +87,8 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsFetching(false);
+                    setIsSearching(false);
                 }
             };
             fetchItems();
@@ -124,6 +128,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                             :
                             "Lỗi mạng vui lòng thử lại sau"
                     );
+                    setIsFetching(false);
                 }
             };
 
@@ -166,6 +171,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     "Lỗi mạng vui lòng thử lại sau"
             );
             setIsError(true);
+            setIsFetching(false);
         }
     }
 
@@ -316,7 +322,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                                     textAlign: "center",
                                 }}
                             >
-                                {isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
+                                {isFetching ? "Đang tìm sản phẩm" : isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
                             </Text>
                         </View>
                     </View>

@@ -45,6 +45,7 @@ export default function BuyerNotifications() {
                     ? error.response.data.reasons[0].message
                     : "Lỗi mạng vui lòng thử lại sau"
             );
+            setIsFetching(false);
         }
     }
 
@@ -180,7 +181,7 @@ export default function BuyerNotifications() {
                                     textAlign: "center",
                                 }}
                             >
-                                Không có thông báo nào
+                                {isFetching ? "Đang tải dữ liệu đơn hàng" : "Không có thông báo nào"}
                             </Text>
                         </View>
                     </View>

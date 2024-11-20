@@ -109,10 +109,8 @@ export default function BusinessRegistrationCertificate() {
   };
   // Form submission logic
   const handleSubmit = async () => {
-    let valid = true;
     if (!shopName.trim()) {
       setIsShopNameValid(false);
-      valid = false;
       setStringErr(
         "Vui lòng nhập tên cửa hàng"
       );
@@ -124,7 +122,6 @@ export default function BusinessRegistrationCertificate() {
 
     if (!shopAddress.trim()) {
       setIsShopAddressValid(false);
-      valid = false;
       setStringErr(
         "Vui lòng nhập địa chỉ cửa hàng"
       );
@@ -135,7 +132,6 @@ export default function BusinessRegistrationCertificate() {
     }
     if (!taxCode.trim()) {
       setIsTaxCodeValid(false);
-      valid = false;
       setStringErr(
         "Vui lòng nhập mã số thuế"
       );
@@ -146,7 +142,6 @@ export default function BusinessRegistrationCertificate() {
     }
     if (!phoneNumber.trim()) {
       setIsPhoneNumberValid(false);
-      valid = false;
       setStringErr(
         "Vui lòng nhập số điện thoại"
       );
@@ -159,7 +154,6 @@ export default function BusinessRegistrationCertificate() {
     const isCertificateValid = validateCertificate();
 
     if (!isCompanyNameValid || !isCertificateValid) {
-      valid = false;
       return;
     }
     const formData = new FormData();
