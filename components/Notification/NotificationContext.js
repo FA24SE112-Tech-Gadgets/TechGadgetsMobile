@@ -219,8 +219,9 @@ const NotificationProvider = ({ children }) => {
                 if (user) {
                     if (notifications && notifications.length == 0) {
                         await fetchNotifications(1, "normal");
+                    } else {
+                        await fetchNewNotifications();
                     }
-                    await fetchNewNotifications();
                 }
                 console.log("nhận đc noti", showNotification);
 
@@ -233,6 +234,7 @@ const NotificationProvider = ({ children }) => {
         }, [showNotification])
     );
 
+    //For click to notification from the background
     useEffect(() => {
         const unsubscribe = messaging().onNotificationOpenedApp(async (remoteMessage) => {
             console.log('Notification caused app to open from background state:', remoteMessage);

@@ -40,15 +40,21 @@ export default function BuyerNotificationItem({
             }
             switch (type) {
                 case "WalletTracking":
-                    navigation.navigate("WalletTrackingScreen");
+                    if (title.includes("Nạp")) {
+                        navigation.navigate("DepositHistory");
+                    } else {
+                        navigation.navigate("RefundHistory");
+                    }
                     break;
                 case "SellerOrder":
                     if (sellerOrderId) {
                         navigation.navigate('BuyerOrderDetail', { sellerOrderId: sellerOrderId })
                     }
                     break;
-                case "User":
                 case "Order":
+                    navigation.navigate("PaymentHistory");
+                    break;
+                case "User":
                 default:
                     break;
             }

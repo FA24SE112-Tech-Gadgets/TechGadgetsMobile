@@ -49,7 +49,9 @@ const CustomGoogleSignInButton = ({ onPress }) => (
 
 const LoginScreen = () => {
   GoogleSignin.configure({
-    webClientId: '918667179231-suhe212hae2usf0v7o8bcsdj5fd81cto.apps.googleusercontent.com',
+    webClientId: NODE_ENV == "development" ?
+      '918667179231-gc42utvqvgb3pu9949ce3c7225vrk9tr.apps.googleusercontent.com'
+      : "918667179231-c1ninpp8fc7akdh9radu56lnpb7a346l.apps.googleusercontent.com",
   })
 
   const navigation = useNavigation()
@@ -120,7 +122,12 @@ const LoginScreen = () => {
           email: userEmail,
         });
       } else {
-        setStringErr(error.response.data.reasons[0].message);
+        setStringErr(
+          error.response?.data?.reasons[0]?.message ?
+            error.response.data.reasons[0].message
+            :
+            "Lỗi mạng vui lòng thử lại sau"
+        );
         setIsError(true);
       }
     } finally {
@@ -172,8 +179,15 @@ const LoginScreen = () => {
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         console.log("PLAY_SERVICES_NOT_AVAILABLE");
       } else {
-        console.log("Some other error happened", error);
+        console.log("Some other error happened", error.toString());
       }
+      setStringErr(
+        error ?
+          error.toString()
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
     }
   };
 
