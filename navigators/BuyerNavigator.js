@@ -35,9 +35,6 @@ const BuyerNavigator = () => {
 				tabBarInactiveTintColor: "#757575",
 				// tabBarActiveBackgroundColor: "#ed8900",
 				tabBarHideOnKeyboard: true,
-				// tabBarItemStyle: {
-				// 	display: route.name === 'BackgroundTask' ? 'none' : 'flex',
-				// }
 			})}
 			screenListeners={({ route }) => ({
 				tabPress: () => {

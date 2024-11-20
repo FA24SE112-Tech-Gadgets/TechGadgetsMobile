@@ -8,9 +8,6 @@ import BuyerPersonal from "../components/Buyer/BuyerProfile/BuyerPersonal";
 import Policy from "../components/CustomComponents/Policy";
 import ChangeProfile from "../components/CustomComponents/ChangeProfile";
 import VerifyCodeScreen from "../components/Authorization/VerifyCodeScreen";
-import TransferInfo from "../components/Payment/TransferInfo";
-import PaymentSuccess from "../components/Payment/PaymentSuccess";
-import PaymentFail from "../components/Payment/PaymentFail";
 import AuthRoute from "../components/Authorization/AuthRoute";
 import ApplicationRequest from "../components/Buyer/ApplicationRequest";
 import Details from "../components/Buyer/Detail/Detail";
@@ -242,13 +239,6 @@ const RootNavigator = () => {
           </AuthRoute>
         )}
       </Stack.Screen>
-      <Stack.Screen name="TransferInfo" >
-        {() => (
-          <AuthRoute>
-            <TransferInfo />
-          </AuthRoute>
-        )}
-      </Stack.Screen>
       <Stack.Screen name="ApplicationRequest" >
         {() => (
           <AuthRoute>
@@ -260,20 +250,6 @@ const RootNavigator = () => {
         {() => (
           <AuthRoute>
             <BuyerCartItem />
-          </AuthRoute>
-        )}
-      </Stack.Screen>
-      <Stack.Screen name="PaymentSuccess" >
-        {() => (
-          <AuthRoute>
-            <PaymentSuccess />
-          </AuthRoute>
-        )}
-      </Stack.Screen>
-      <Stack.Screen name="PaymentFail" >
-        {() => (
-          <AuthRoute>
-            <PaymentFail />
           </AuthRoute>
         )}
       </Stack.Screen>
@@ -342,7 +318,6 @@ const RootNavigator = () => {
         )}
       </Stack.Screen>
     </Stack.Navigator>
-
   );
 };
 
