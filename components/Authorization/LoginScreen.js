@@ -164,6 +164,10 @@ const LoginScreen = () => {
       const userInfo = await GoogleSignin.signIn();
       console.log(userInfo);
 
+      if (!userInfo.data) {
+        return;
+      }
+
       const token = await GoogleSignin.getTokens();
       console.log('Access Token:', token.accessToken);
 

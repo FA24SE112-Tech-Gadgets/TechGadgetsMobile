@@ -344,7 +344,7 @@ const ReviewList = ({ route }) => {
                         </View>
                     </View>
                 ) : (
-                    <View style={{ marginBottom: 20, marginTop: 16 }}>
+                    <View style={{ marginTop: 5, height: ScreenHeight / 1.235 }}>
                         <FlatList
                             data={reviews}
                             keyExtractor={item => item.id}
@@ -436,7 +436,9 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 8,
         marginHorizontal: 16,
-        borderRadius: 8,
+        borderRadius: 10 + 16,
+        borderColor: "rgba(0,0,0,0.5)",
+        borderWidth: 0.5
     },
     reviewHeader: {
         flexDirection: 'row',
@@ -480,7 +482,9 @@ const styles = StyleSheet.create({
     sellerReply: {
         backgroundColor: '#f0f0f0',
         padding: 8,
-        borderRadius: 4,
+        borderRadius: 10,
+        borderColor: "rgba(0,0,0,0.5)",
+        borderWidth: 0.5
     },
     sellerReplyHeader: {
         fontWeight: 'bold',

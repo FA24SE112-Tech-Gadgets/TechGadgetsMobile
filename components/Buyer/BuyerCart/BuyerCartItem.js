@@ -417,7 +417,7 @@ const BuyerCartItem = () => {
                     style={styles.watermarkContainer}
                     onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.gadget.id })}
                 >
-                    <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                    <Text style={styles.watermarkText}>Ngừng bán</Text>
                 </TouchableOpacity>
             )}
             {(item.gadget.status !== "Active" && !editMode) && (

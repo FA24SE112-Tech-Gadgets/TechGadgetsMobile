@@ -44,7 +44,7 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
                 )}
                 {(!isForSale && gadgetStatus === "Active") && (
                     <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                        <Text style={styles.watermarkText}>Ngừng bán</Text>
                     </View>
                 )}
 

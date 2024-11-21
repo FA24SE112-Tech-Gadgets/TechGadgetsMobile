@@ -31,6 +31,8 @@ export default function GadgetSellerDetail({ route, navigation }) {
     const [newIsForSale, setNewIsForSale] = useState(false);
     const [newQuantity, setNewQuantity] = useState(0);
 
+    const [showBottomBar, setShowBottomBar] = useState(true);
+
     const [isForSaleModalVisible, setIsForSaleModalVisible] = useState(false);
 
     const [imageModalVisible, setImageModalVisible] = useState(false);
@@ -294,7 +296,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             setIsForSaleModalVisible(false)
                         }}
                     >
-                        <Text style={styles.modalOptionText}>Ngừng kinh doanh</Text>
+                        <Text style={styles.modalOptionText}>Ngừng bán</Text>
                         {!newIsForSale ? (
                             <MaterialCommunityIcons name="check-circle" size={24} color="#fea128" />
                         ) : (
@@ -312,7 +314,18 @@ export default function GadgetSellerDetail({ route, navigation }) {
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
-            <ScrollView>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                onScroll={() => {
+                    setShowBottomBar(false);
+                }}
+                onMomentumScrollEnd={() => {
+                    setShowBottomBar(true);
+                }}
+                contentContainerStyle={{
+                    paddingBottom: ScreenWidth / 4.5
+                }}
+            >
                 {/* Main Image with Brand Logo */}
                 <View style={{
                     position: 'relative',
@@ -535,64 +548,67 @@ export default function GadgetSellerDetail({ route, navigation }) {
             </ScrollView >
 
             {/* Bottom Bar */}
-            <View View style={styles.bottomBar} >
-                {/* Gadget quantity */}
-                <View style={styles.quantityContainer}>
-                    <Text style={styles.quantityText}>Kho:</Text>
-                    <TextInput
-                        style={{
-                            backgroundColor: "#F9F9F9",
-                            borderRadius: 10,
-                            width: 50,
-                            textAlign: "center"
-                        }} value={newQuantity.toString()} keyboardType='number-pad'
-                        onChangeText={(text) => {
-                            setNewQuantity(text)
-                        }}
-                    />
-                </View>
+            {
+                showBottomBar &&
+                <View View style={styles.bottomBar} >
+                    {/* Gadget quantity */}
+                    <View style={styles.quantityContainer}>
+                        <Text style={styles.quantityText}>Kho:</Text>
+                        <TextInput
+                            style={{
+                                backgroundColor: "#F9F9F9",
+                                borderRadius: 10,
+                                width: 50,
+                                textAlign: "center"
+                            }} value={newQuantity.toString()} keyboardType='number-pad'
+                            onChangeText={(text) => {
+                                setNewQuantity(text)
+                            }}
+                        />
+                    </View>
 
-                {/* Gadget isForSale */}
-                <TouchableOpacity
-                    style={[
+                    {/* Gadget isForSale */}
+                    <TouchableOpacity
+                        style={[
+                            {
+                                backgroundColor: newIsForSale ? "rgba(77, 218, 98,0.5)" : "rgba(210, 65, 82,0.5)",
+                                borderColor: newIsForSale ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
+                            },
+                            styles.gadgetStatusBtn
+                        ]}
+                        onPress={() => {
+                            setIsForSaleModalVisible(true)
+                        }}
+                    >
+                        <Text style={styles.gadgetStatusTxt}>{newIsForSale ? "Đang kinh doanh" : "Ngừng bán"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        disabled={(newIsForSale == gadget.isForSale && newQuantity == gadget.quantity) || isFetching}
+                        onPress={() => {
+                            if (gadget.status !== "Active") {
+                                setStringErr(
+                                    "Sản phẩm của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết."
+                                );
+                                setIsError(true);
+                            } else {
+                                //TODO: handle call api patch
+                                handleUpdateGadget();
+                            }
+                        }}
+                    >
                         {
-                            backgroundColor: newIsForSale ? "rgba(77, 218, 98,0.5)" : "rgba(210, 65, 82,0.5)",
-                            borderColor: newIsForSale ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
-                        },
-                        styles.gadgetStatusBtn
-                    ]}
-                    onPress={() => {
-                        setIsForSaleModalVisible(true)
-                    }}
-                >
-                    <Text style={styles.gadgetStatusTxt}>{newIsForSale ? "Đang kinh doanh" : "Ngừng kinh doanh"}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    disabled={(newIsForSale == gadget.isForSale && newQuantity == gadget.quantity) || isFetching}
-                    onPress={() => {
-                        if (gadget.status !== "Active") {
-                            setStringErr(
-                                "Sản phẩm của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết."
-                            );
-                            setIsError(true);
-                        } else {
-                            //TODO: handle call api patch
-                            handleUpdateGadget();
+                            isFetching ?
+                                <ActivityIndicator size={24} color="#ed8900" />
+                                :
+                                <Ionicons
+                                    name="checkbox"
+                                    size={55}
+                                    color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
+                                />
                         }
-                    }}
-                >
-                    {
-                        isFetching ?
-                            <ActivityIndicator size={24} color="#ed8900" />
-                            :
-                            <Ionicons
-                                name="checkbox"
-                                size={55}
-                                color={(newIsForSale != gadget.isForSale || newQuantity != gadget.quantity) ? "rgb(77, 218, 98)" : "rgba(0, 0, 0, 0.5)"}
-                            />
-                    }
-                </TouchableOpacity>
-            </View >
+                    </TouchableOpacity>
+                </View >
+            }
 
             <ImageGalleryModal />
             <ChooseForSaleModal />

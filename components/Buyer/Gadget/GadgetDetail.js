@@ -30,6 +30,8 @@ export default function GadgetDetail({ route, navigation }) {
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [buyNowModalVisible, setBuyNowModalVisible] = useState(false);
 
+  const [showBottomBar, setShowBottomBar] = useState(true);
+
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
@@ -163,6 +165,9 @@ export default function GadgetDetail({ route, navigation }) {
       onBackButtonPress={() => setImageModalVisible(false)}
       useNativeDriver
       hideModalContentWhileAnimating
+      style={{
+        margin: 0
+      }}
     >
       <View style={styles.modalContainer}>
         <TouchableOpacity
@@ -233,7 +238,18 @@ export default function GadgetDetail({ route, navigation }) {
 
   return (
     <LinearGradient colors={['#FFFFFF', '#fea92866']} style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={() => {
+          setShowBottomBar(false);
+        }}
+        onMomentumScrollEnd={() => {
+          setShowBottomBar(true);
+        }}
+        contentContainerStyle={{
+          paddingBottom: ScreenWidth / 4.5
+        }}
+      >
         {/* Main Image with Brand Logo */}
         <View style={styles.mainImageContainer}>
           <Image
@@ -248,7 +264,7 @@ export default function GadgetDetail({ route, navigation }) {
           )}
           {!gadget.isForSale && (
             <View style={styles.soldOutWatermark}>
-              <Text style={styles.soldOutText}>Ngừng kinh doanh</Text>
+              <Text style={styles.soldOutText}>Ngừng bán</Text>
             </View>
           )}
           <View style={styles.header}>
@@ -433,44 +449,47 @@ export default function GadgetDetail({ route, navigation }) {
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.quantityContainer}>
+      {
+        showBottomBar &&
+        <View style={styles.bottomBar}>
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity
+              onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              style={styles.quantityButton}
+            >
+              <AntDesign name="minus" size={20} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{quantity}</Text>
+            <TouchableOpacity
+              onPress={() => setQuantity(Math.min(gadget.quantity, quantity + 1))}
+              style={styles.quantityButton}
+            >
+              <AntDesign name="plus" size={20} color="#333" />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            onPress={() => setQuantity(Math.max(1, quantity - 1))}
-            style={styles.quantityButton}
+            style={styles.cartButton}
+            onPress={addToCart}
           >
-            <AntDesign name="minus" size={20} color="#333" />
+            <Feather name="shopping-cart" size={20} color="#fea128" />
           </TouchableOpacity>
-          <Text style={styles.quantityText}>{quantity}</Text>
           <TouchableOpacity
-            onPress={() => setQuantity(Math.min(gadget.quantity, quantity + 1))}
-            style={styles.quantityButton}
+            style={[
+              styles.buyNowButton,
+              !gadget.isForSale && styles.disabledBuyNowButton
+            ]}
+            onPress={() => gadget.isForSale && setBuyNowModalVisible(true)}
+            disabled={!gadget.isForSale}
           >
-            <AntDesign name="plus" size={20} color="#333" />
+            <Text style={[
+              styles.buyNowButtonText,
+              !gadget.isForSale && styles.disabledBuyNowButtonText
+            ]}>
+              {gadget.isForSale ? 'Mua ngay' : 'Ngừng bán'}
+            </Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={addToCart}
-        >
-          <Feather name="shopping-cart" size={24} color="#fea128" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.buyNowButton,
-            !gadget.isForSale && styles.disabledBuyNowButton
-          ]}
-          onPress={() => gadget.isForSale && setBuyNowModalVisible(true)}
-          disabled={!gadget.isForSale}
-        >
-          <Text style={[
-            styles.buyNowButtonText,
-            !gadget.isForSale && styles.disabledBuyNowButtonText
-          ]}>
-            {gadget.isForSale ? 'Mua ngay' : 'Ngừng kinh doanh'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      }
 
       <ImageGalleryModal />
       <BuyNowModal />
@@ -729,19 +748,27 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     flexDirection: 'row',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: 'white',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: '#f9f9f9',
     alignItems: 'center',
+    width: ScreenWidth / 1.05,
+    alignSelf: "center",
+    bottom: 10,
+    position: "absolute",
+    borderRadius: 15,
+    justifyContent: "space-between",
+    gap: 10
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 8,
-    marginRight: 12,
+    height: ScreenWidth / 9,
   },
   quantityButton: {
     padding: 8,
@@ -751,18 +778,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   cartButton: {
-    padding: 12,
     borderWidth: 1,
     borderColor: '#fea128',
     borderRadius: 8,
-    marginRight: 12,
+    width: ScreenWidth / 9,
+    height: ScreenWidth / 9,
+    justifyContent: "center",
+    alignItems: "center"
   },
   buyNowButton: {
     flex: 1,
     backgroundColor: '#fea128',
-    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    height: ScreenWidth / 9,
+    justifyContent: "center"
   },
   buyNowButtonText: {
     color: 'white',
@@ -771,7 +801,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalImage: {
     width: width,
