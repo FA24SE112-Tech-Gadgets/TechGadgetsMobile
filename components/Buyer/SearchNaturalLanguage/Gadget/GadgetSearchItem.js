@@ -159,7 +159,7 @@ const GadgetSearchItem = ({
                             fontWeight: '500',
                             textAlign: 'center',
                             padding: 4,
-                        }}>Ngừng kinh doanh</Text>
+                        }}>Ngừng bán</Text>
                     </View>
                 )}
 

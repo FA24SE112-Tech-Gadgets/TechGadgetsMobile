@@ -103,7 +103,7 @@ const FavoriteList = () => {
                 </View>
                 {(!item.gadget.isForSale && item.gadget.status === "Active") && (
                     <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                        <Text style={styles.watermarkText}>Ngừng bán</Text>
                     </View>
                 )}
                 {(item.gadget.status !== "Active") && (

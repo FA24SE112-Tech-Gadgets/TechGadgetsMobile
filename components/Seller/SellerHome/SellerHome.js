@@ -101,7 +101,7 @@ export default function SellerHome() {
                 />
                 {(!item.isForSale && item.gadgetStatus === "Active") && (
                     <View style={styles.watermarkContainer}>
-                        <Text style={styles.watermarkText}>Ngừng kinh doanh</Text>
+                        <Text style={styles.watermarkText}>Ngừng bán</Text>
                     </View>
                 )}
                 {item.discountPercentage > 0 && (
