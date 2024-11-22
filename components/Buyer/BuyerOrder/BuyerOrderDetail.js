@@ -7,6 +7,7 @@ import {
     FlatList,
     Pressable,
     Linking,
+    TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -22,14 +23,24 @@ import ErrModal from '../../CustomComponents/ErrModal';
 
 export default function BuyerOrderDetail({ route, navigate }) {
     const [buyerOrder, setBuyerOrder] = useState(null);
+
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+
     const [isFetching, setIsFetching] = useState(false);
+
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const [gadgets, setGadgets] = useState([]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreData, setHasMoreData] = useState(true);
+
     const navigation = useNavigation();
+
+    const [newReason, setNewReason] = useState("");
+
+    const [showBottomBar, setShowBottomBar] = useState(true);
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
@@ -69,6 +80,30 @@ export default function BuyerOrderDetail({ route, navigate }) {
         }
 
         return `${countryCode} ${formattedNumber}`;
+    }
+
+    const handleSellerOrderDeny = async () => {
+        try {
+            setIsFetching(true);
+            await api.put(`/seller-order/${sellerOrderId}/cancel`, {
+                reason: newReason
+            });
+            await fetchBuyerOrderDetail();
+            setCurrentPage(1);
+            setIsFetching(false);
+            setSnackbarMessage("Từ chối thành công");
+            setSnackbarVisible(true);
+        } catch (error) {
+            console.log('Error fetching sellerOrder details:', error);
+            setStringErr(
+                error.response?.data?.reasons[0]?.message ?
+                    error.response.data.reasons[0].message
+                    :
+                    "Lỗi mạng vui lòng thử lại sau"
+            );
+            setIsError(true);
+            setIsFetching(false);
+        }
     }
 
     useFocusEffect(
@@ -149,7 +184,9 @@ export default function BuyerOrderDetail({ route, navigate }) {
 
     const renderFooter = () => {
         return (
-            <>
+            <View style={{
+                marginBottom: buyerOrder.status == "Pending" ? (ScreenHeight / 5) : 0
+            }}>
                 <View style={styles.needHelpContainer}>
                     <Text style={styles.needHelpTxt}>Bạn cần hỗ trợ?</Text>
 
@@ -218,7 +255,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
                         </Text>
                     </View>
                 )}
-            </>
+            </View>
         );
     };
 
@@ -362,8 +399,80 @@ export default function BuyerOrderDetail({ route, navigate }) {
                             </View>
                         </>
                     )}
+                    onScroll={() => setShowBottomBar(false)}
+                    onMomentumScrollEnd={() => {
+                        setShowBottomBar(true);
+                    }}
                     ListHeaderComponentStyle={styles.listHeaderStyle}
                 />
+                {/* Customer cancel order reason form */}
+                {
+                    (buyerOrder.status == "Pending" && showBottomBar) &&
+                    <View style={{
+                        position: "absolute",
+                        bottom: 20,
+                        height: ScreenHeight / 6,
+                        width: ScreenWidth / 1.05,
+                        alignSelf: "center",
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        borderColor: 'rgb(254, 169, 40)',
+                        backgroundColor: 'rgba(254, 169, 40, 0.8)',
+                        justifyContent: "center",
+                        paddingHorizontal: 10,
+                        paddingVertical: 15,
+                        gap: 5
+                    }}>
+                        <TextInput
+                            style={{
+                                borderColor: "rgba(0, 0, 0, 0.5)",
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                paddingVertical: 5,
+                                paddingHorizontal: 10,
+                                textAlignVertical: "top",
+                                fontSize: 16,
+                                backgroundColor: "#f9f9f9"
+                            }}
+                            placeholder={"Nhập lý do"}
+                            value={newReason}
+                            onChangeText={(value) => {
+                                setNewReason(value)
+                            }}
+                            multiline={true} // Allow multiple lines
+                            numberOfLines={3} // Set initial number of lines
+                        />
+                        <View style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                        }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: "rgb(210, 65, 82)",
+                                    borderColor: "rgb(210, 65, 82)",
+                                    paddingHorizontal: 16,
+                                    height: 50,
+                                    borderRadius: 8,
+                                    borderWidth: 1,
+                                    alignItems: 'center',
+                                    justifyContent: "center",
+                                    flex: 1
+                                }}
+                                disabled={isFetching}
+                                onPress={() => {
+                                    handleSellerOrderDeny();
+                                }}
+                            >
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '500',
+                                    color: 'white',
+                                }}>Từ chối đơn hàng</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                }
             </View>
 
             <Snackbar

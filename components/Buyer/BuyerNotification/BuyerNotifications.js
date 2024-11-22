@@ -181,7 +181,7 @@ export default function BuyerNotifications() {
                                     textAlign: "center",
                                 }}
                             >
-                                {isFetching ? "Đang tải dữ liệu đơn hàng" : "Không có thông báo nào"}
+                                {isFetching ? "Đang tải thông báo" : "Không có thông báo nào"}
                             </Text>
                         </View>
                     </View>

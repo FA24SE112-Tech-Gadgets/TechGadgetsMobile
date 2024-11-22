@@ -213,7 +213,9 @@ export default function GadgetDetail({ route, navigation }) {
           style={styles.buyNowModalImage}
           resizeMode="contain"
         />
-        <Text style={styles.buyNowModalProductName}>{gadget.name}</Text>
+        <Text
+          style={styles.buyNowModalProductName}
+        >{gadget.name}</Text>
         <Text style={styles.buyNowModalQuantity}>Số lượng: {quantity}</Text>
         <Text style={styles.buyNowModalPrice}>
           Tổng tiền: {((gadget.discountPrice || gadget.price) * quantity).toLocaleString('vi-VN')} ₫
@@ -856,9 +858,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '45%',
     alignItems: 'center',
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+    borderWidth: 0.5
   },
   buyNowModalCancelButton: {
-    backgroundColor: '#ddd',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   buyNowModalConfirmButton: {
     backgroundColor: '#fea128',

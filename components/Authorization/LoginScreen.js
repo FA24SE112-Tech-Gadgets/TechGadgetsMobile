@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "bold",
-    marginTop: 30,
+    marginTop: ScreenHeight / 10,
     marginBottom: 40,
     width: "100%",
     textAlign: "center",

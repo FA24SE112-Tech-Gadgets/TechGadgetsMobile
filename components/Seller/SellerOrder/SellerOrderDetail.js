@@ -37,6 +37,8 @@ export default function SellerOrderDetail({ route, navigation }) {
 
     const [newReason, setNewReason] = useState("");
 
+    const [showBottomBar, setShowBottomBar] = useState(true);
+
     const formatVietnamDate = (time) => {
         const date = new Date(time);
         const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
@@ -219,7 +221,9 @@ export default function SellerOrderDetail({ route, navigation }) {
 
     const renderFooter = () => {
         return (
-            <>
+            <View style={{
+                marginBottom: sellerOrder.status == "Pending" ? (ScreenHeight / 5) : 0
+            }}>
                 {/* Bạn cần hỗ trợ? */}
                 <View style={styles.needHelpContainer}>
                     <Text style={styles.needHelpTxt}>Bạn cần hỗ trợ?</Text>
@@ -343,7 +347,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                         </Text>
                     </View>
                 }
-            </>
+            </View>
         );
     };
 
@@ -509,7 +513,7 @@ export default function SellerOrderDetail({ route, navigation }) {
         },
         sellerOrderFooterContainer: {
             width: ScreenWidth / 1.05,
-            height: ScreenHeight / 4,
+            height: ScreenHeight / 5,
             alignSelf: "center",
             marginTop: 10,
             borderRadius: 10,
@@ -609,156 +613,155 @@ export default function SellerOrderDetail({ route, navigation }) {
                 </View>
             ) : (
                 <>
-                    <View style={{
-                        height: sellerOrder.status == "Pending" ? (ScreenHeight - ScreenHeight / 5) : ScreenHeight,
-                    }}>
-                        <FlatList
-                            data={gadgets}
-                            keyExtractor={item => item.gadgetId}
-                            renderItem={({ item, index }) => (
-                                <Pressable
-                                    onPress={() =>
-                                        navigation.navigate('GadgetSellerDetail', { gadgetId: item.gadgetId })
-                                    }
-                                >
-                                    <SellerOrderGadgetItem
-                                        {...item}
-                                        index={index}
-                                        totalGadgets={gadgets.length}
-                                        totalAmount={sellerOrder.totalAmount}
-                                    />
-                                </Pressable>
-                            )}
-                            onEndReached={handleScroll}
-                            onEndReachedThreshold={0.5}
-                            ListFooterComponent={renderFooter}
-                            initialNumToRender={10}
-                            showsVerticalScrollIndicator={false}
-                            overScrollMode="never"
-                            nestedScrollEnabled
-                            ListHeaderComponent={() => (
-                                <>
-                                    {/* Header */}
-                                    <View style={styles.header}>
-                                        {/* Back Button */}
-                                        <TouchableOpacity
-                                            onPress={() => navigation.goBack()}
-                                            style={styles.backButton}
-                                        >
-                                            <AntDesign name="arrowleft" size={24} color="black" />
-                                        </TouchableOpacity>
+                    <FlatList
+                        data={gadgets}
+                        keyExtractor={item => item.gadgetId}
+                        renderItem={({ item, index }) => (
+                            <Pressable
+                                onPress={() =>
+                                    navigation.navigate('GadgetSellerDetail', { gadgetId: item.gadgetId })
+                                }
+                            >
+                                <SellerOrderGadgetItem
+                                    {...item}
+                                    index={index}
+                                    totalGadgets={gadgets.length}
+                                    totalAmount={sellerOrder.totalAmount}
+                                />
+                            </Pressable>
+                        )}
+                        onEndReached={handleScroll}
+                        onEndReachedThreshold={0.5}
+                        ListFooterComponent={renderFooter}
+                        initialNumToRender={10}
+                        showsVerticalScrollIndicator={false}
+                        overScrollMode="never"
+                        nestedScrollEnabled
+                        ListHeaderComponent={() => (
+                            <>
+                                {/* Header */}
+                                <View style={styles.header}>
+                                    {/* Back Button */}
+                                    <TouchableOpacity
+                                        onPress={() => navigation.goBack()}
+                                        style={styles.backButton}
+                                    >
+                                        <AntDesign name="arrowleft" size={24} color="black" />
+                                    </TouchableOpacity>
 
-                                        <Text style={styles.headerTxt}>Thông tin đơn hàng</Text>
+                                    <Text style={styles.headerTxt}>Thông tin đơn hàng</Text>
+                                </View>
+                                {/* Seller order status container */}
+                                <View style={styles.sellerOrderStatusContainer}>
+                                    {/* Seller order status */}
+                                    <View
+                                        style={styles.sellerOrderStatusHeader}
+                                    >
+                                        <Text style={styles.sellerOrderStatusHeaderTxt}>
+                                            {sellerOrder.status === "Success" ? "Đơn hàng đã hoàn thành" : sellerOrder.status === "Pending" ? "Đơn hàng đang xử lý" : "Đơn hàng đã hủy"}
+                                        </Text>
                                     </View>
-                                    {/* Seller order status container */}
-                                    <View style={styles.sellerOrderStatusContainer}>
-                                        {/* Seller order status */}
-                                        <View
-                                            style={styles.sellerOrderStatusHeader}
-                                        >
-                                            <Text style={styles.sellerOrderStatusHeaderTxt}>
-                                                {sellerOrder.status === "Success" ? "Đơn hàng đã hoàn thành" : sellerOrder.status === "Pending" ? "Đơn hàng đang xử lý" : "Đơn hàng đã hủy"}
-                                            </Text>
-                                        </View>
 
-                                        <View style={styles.sellerOrderStatusContent}>
-                                            <MaterialCommunityIcons
-                                                name="truck-outline"
-                                                size={35}
+                                    <View style={styles.sellerOrderStatusContent}>
+                                        <MaterialCommunityIcons
+                                            name="truck-outline"
+                                            size={35}
+                                            color="rgba(0, 0, 0, 0.6)"
+                                        />
+                                        <View>
+                                            <Text style={styles.sellerOrderStatusContentTxt}>
+                                                {sellerOrder.status === "Success" ? "Giao hàng thành công" : sellerOrder.status === "Pending" ? "Đang chờ xử lý" : "Đơn hàng đã bị hủy"}
+                                            </Text>
+                                            {
+                                                (sellerOrder.status === "Success" || sellerOrder.status === "Cancelled") &&
+                                                <Text style={{
+                                                    color: "rgba(0, 0, 0, 0.6)"
+                                                }}>
+                                                    {formatVietnamDate(sellerOrder.sellerOrderUpdatedAt)}
+                                                </Text>
+                                            }
+                                        </View>
+                                    </View>
+                                </View>
+
+                                {/* Customer address */}
+                                <View style={styles.sellerOrderAddressContainer}>
+                                    {/* Địa chỉ nhận hàng */}
+                                    <>
+                                        <Text style={styles.sellerOrderAddressHeaderTxt}>
+                                            Địa chỉ nhận hàng
+                                        </Text>
+                                        <View style={styles.sellerOrderAddressItem}>
+                                            <Ionicons
+                                                name="location-outline"
+                                                size={30}
                                                 color="rgba(0, 0, 0, 0.6)"
                                             />
                                             <View>
-                                                <Text style={styles.sellerOrderStatusContentTxt}>
-                                                    {sellerOrder.status === "Success" ? "Giao hàng thành công" : sellerOrder.status === "Pending" ? "Đang chờ xử lý" : "Đơn hàng đã bị hủy"}
-                                                </Text>
-                                                {
-                                                    (sellerOrder.status === "Success" || sellerOrder.status === "Cancelled") &&
-                                                    <Text style={{
-                                                        color: "rgba(0, 0, 0, 0.6)"
-                                                    }}>
-                                                        {formatVietnamDate(sellerOrder.sellerOrderUpdatedAt)}
+                                                <View style={styles.sellerOrderAddressItem}>
+                                                    <Text
+                                                        style={styles.sellerOrderAddressItemName}
+                                                        numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
+                                                        ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
+                                                    >
+                                                        {sellerOrder.customerInfo.fullName}
                                                     </Text>
-                                                }
+                                                    <Text style={styles.sellerOrderAddressItemPhoneNumber}>
+                                                        {formatPhoneNumber(sellerOrder.customerInfo.phoneNumber)}
+                                                    </Text>
+                                                </View>
+                                                <Text style={styles.sellerOrderAddressItemAddress}>
+                                                    {sellerOrder.customerInfo.address}
+                                                </Text>
                                             </View>
                                         </View>
-                                    </View>
+                                    </>
 
-                                    {/* Customer address */}
-                                    <View style={styles.sellerOrderAddressContainer}>
-                                        {/* Địa chỉ nhận hàng */}
-                                        <>
-                                            <Text style={styles.sellerOrderAddressHeaderTxt}>
-                                                Địa chỉ nhận hàng
-                                            </Text>
-                                            <View style={styles.sellerOrderAddressItem}>
-                                                <Ionicons
-                                                    name="location-outline"
-                                                    size={30}
-                                                    color="rgba(0, 0, 0, 0.6)"
-                                                />
-                                                <View>
-                                                    <View style={styles.sellerOrderAddressItem}>
-                                                        <Text
-                                                            style={styles.sellerOrderAddressItemName}
-                                                            numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
-                                                            ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
-                                                        >
-                                                            {sellerOrder.customerInfo.fullName}
-                                                        </Text>
-                                                        <Text style={styles.sellerOrderAddressItemPhoneNumber}>
-                                                            {formatPhoneNumber(sellerOrder.customerInfo.phoneNumber)}
-                                                        </Text>
-                                                    </View>
-                                                    <Text style={styles.sellerOrderAddressItemAddress}>
-                                                        {sellerOrder.customerInfo.address}
+                                    {/* Địa chỉ lấy hàng */}
+                                    <>
+                                        <Text style={styles.sellerOrderAddressHeaderTxt}>
+                                            Địa chỉ lấy hàng
+                                        </Text>
+                                        <View style={styles.sellerOrderAddressItem}>
+                                            <Ionicons
+                                                name="location-outline"
+                                                size={30}
+                                                color="rgba(0, 0, 0, 0.6)"
+                                            />
+                                            <View>
+                                                <View style={styles.sellerOrderAddressItem}>
+                                                    <Text
+                                                        style={styles.sellerOrderAddressItemName}
+                                                        numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
+                                                        ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
+                                                    >
+                                                        {sellerOrder.sellerInfo.shopName}
+                                                    </Text>
+                                                    <Text style={styles.sellerOrderAddressItemPhoneNumber}>
+                                                        {formatPhoneNumber(sellerOrder.sellerInfo.phoneNumber)}
                                                     </Text>
                                                 </View>
+                                                <Text style={styles.sellerOrderAddressItemAddress}>
+                                                    {sellerOrder.sellerInfo.shopAddress}
+                                                </Text>
                                             </View>
-                                        </>
-
-                                        {/* Địa chỉ lấy hàng */}
-                                        <>
-                                            <Text style={styles.sellerOrderAddressHeaderTxt}>
-                                                Địa chỉ lấy hàng
-                                            </Text>
-                                            <View style={styles.sellerOrderAddressItem}>
-                                                <Ionicons
-                                                    name="location-outline"
-                                                    size={30}
-                                                    color="rgba(0, 0, 0, 0.6)"
-                                                />
-                                                <View>
-                                                    <View style={styles.sellerOrderAddressItem}>
-                                                        <Text
-                                                            style={styles.sellerOrderAddressItemName}
-                                                            numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
-                                                            ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
-                                                        >
-                                                            {sellerOrder.sellerInfo.shopName}
-                                                        </Text>
-                                                        <Text style={styles.sellerOrderAddressItemPhoneNumber}>
-                                                            {formatPhoneNumber(sellerOrder.sellerInfo.phoneNumber)}
-                                                        </Text>
-                                                    </View>
-                                                    <Text style={styles.sellerOrderAddressItemAddress}>
-                                                        {sellerOrder.sellerInfo.shopAddress}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </>
-                                    </View>
-                                </>
-                            )}
-                            ListHeaderComponentStyle={{
-                                marginBottom: 10
-                            }}
-                        />
-
-                    </View>
+                                        </View>
+                                    </>
+                                </View>
+                            </>
+                        )}
+                        onScroll={() => setShowBottomBar(false)}
+                        onMomentumScrollEnd={() => {
+                            setShowBottomBar(true);
+                        }}
+                        ListHeaderComponentStyle={{
+                            marginBottom: 10
+                        }}
+                    />
 
                     {/* Seller order reason form */}
                     {
-                        sellerOrder.status == "Pending" &&
+                        (sellerOrder.status == "Pending" && showBottomBar) &&
                         <View style={{
                             position: "absolute",
                             bottom: 20,
@@ -826,7 +829,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                                         handleSellerOrderDeny();
                                     }}
                                 >
-                                    <Text style={styles.sellerOrderBtnTxt}>Từ chối đơn hàng</Text>
+                                    <Text style={[styles.sellerOrderBtnTxt, { color: "white" }]}>Từ chối đơn hàng</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

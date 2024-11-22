@@ -140,7 +140,7 @@ const DepositHistory = () => {
 
         {item.status === 'Pending' && (
           <TouchableOpacity onPress={() => showCancelModal(item)} style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>Hủy</Text>
+            <Text style={styles.cancelButtonText}>Hủy giao dịch</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -246,7 +246,7 @@ const DepositHistory = () => {
             />
           </View>
 
-          {loading ? (
+          {transactions.length === 0 ? (
             <View style={styles.emptyContainer}>
               <LottieView
                 source={require("../../../assets/animations/catRole.json")}
@@ -255,18 +255,7 @@ const DepositHistory = () => {
                 loop
                 speed={0.8}
               />
-              <Text style={styles.emptyText}>Đang load dữ liệu...</Text>
-            </View>
-          ) : transactions.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <LottieView
-                source={require("../../../assets/animations/catRole.json")}
-                style={styles.lottieAnimation}
-                autoPlay
-                loop
-                speed={0.8}
-              />
-              <Text style={styles.emptyText}>Lịch sử nạp tiền trống</Text>
+              <Text style={styles.emptyText}>{loading ? "Đang tải dữ liệu giao dịch" : "Lịch sử nạp tiền trống"}</Text>
             </View>
           ) : (
             <FlatList
@@ -277,6 +266,7 @@ const DepositHistory = () => {
               onEndReachedThreshold={0.1}
               ListFooterComponent={renderFooter}
               contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
             />
           )}
         </View>
@@ -297,7 +287,12 @@ const DepositHistory = () => {
           useNativeDriver
           hideModalContentWhileAnimating
         >
-          <View style={styles.modalContent}>
+          <View style={{
+            backgroundColor: "white",
+            paddingHorizontal: 20,
+            paddingVertical: 30,
+            borderRadius: 10,
+          }}>
             <Text style={styles.modalTitle}>Xác nhận hủy giao dịch</Text>
             <Text style={styles.modalText}>Bạn có chắc chắn muốn hủy giao dịch nạp tiền này?</Text>
             <View style={styles.modalButtons}>
@@ -624,11 +619,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   cancelButton: {
-    backgroundColor: "#ff4d4f",
+    backgroundColor: "#de241b",
+    borderColor: "rgb(210, 65, 82)",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: ScreenWidth / 1.1,
+    alignItems: "center",
     marginTop: 8,
   },
   cancelButtonText: {
@@ -643,7 +641,6 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 16,
     marginBottom: 20,
-    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -653,13 +650,16 @@ const styles = StyleSheet.create({
   modalButton: {
     padding: 10,
     borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
     minWidth: 100,
     alignItems: 'center',
   },
   modalButtonText: {
     fontSize: 16,
+    color: "white",
+    fontWeight: "500"
   },
   confirmButton: {
     backgroundColor: '#ed8900',
@@ -667,6 +667,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: 'white',
+    fontWeight: "500"
   },
 });
 

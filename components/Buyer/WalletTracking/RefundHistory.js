@@ -197,7 +197,7 @@ const RefundHistory = () => {
             />
           </View>
 
-          {loading ? (
+          {transactions.length === 0 ? (
             <View style={styles.emptyContainer}>
               <LottieView
                 source={require("../../../assets/animations/catRole.json")}
@@ -206,18 +206,7 @@ const RefundHistory = () => {
                 loop
                 speed={0.8}
               />
-              <Text style={styles.emptyText}>Đang load dữ liệu...</Text>
-            </View>
-          ) : transactions.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <LottieView
-                source={require("../../../assets/animations/catRole.json")}
-                style={styles.lottieAnimation}
-                autoPlay
-                loop
-                speed={0.8}
-              />
-              <Text style={styles.emptyText}>Lịch sử hoàn tiền trống</Text>
+              <Text style={styles.emptyText}>{loading ? "Đang tải dữ liệu giao dịch" : "Lịch sử hoàn tiền trống"}</Text>
             </View>
           ) : (
             <FlatList
@@ -228,6 +217,7 @@ const RefundHistory = () => {
               onEndReachedThreshold={0.1}
               ListFooterComponent={renderFooter}
               contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
             />
           )}
         </View>
