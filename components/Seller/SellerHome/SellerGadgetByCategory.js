@@ -8,6 +8,9 @@ import {
     TextInput,
     ActivityIndicator,
     Pressable,
+    Keyboard,
+    TouchableWithoutFeedback,
+    TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,6 +22,7 @@ import Modal from "react-native-modal";
 import LottieView from 'lottie-react-native';
 import GadgetItem from '../Gadget/GadgetItem';
 import ErrModal from '../../CustomComponents/ErrModal';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SellerGadgetByCategory({ navigation, route }) {
     const { categoryId } = route.params;
@@ -40,6 +44,13 @@ export default function SellerGadgetByCategory({ navigation, route }) {
     const [hasMoreData, setHasMoreData] = useState(true);
 
     const [isSearching, setIsSearching] = useState(false);
+
+    const [isFocused, setIsFocused] = useState(false);
+    const [keywords, setKeywords] = useState([
+        "Nokia 105",
+        "Loa Bluetooth",
+        "Tai nghe chụp tai"
+    ])
 
     //Reset to default state
     useFocusEffect(
@@ -226,144 +237,225 @@ export default function SellerGadgetByCategory({ navigation, route }) {
     );
 
     return (
-        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
-            {/* Search bar */}
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: 5,
-                alignItems: "center"
-            }}>
-                <View
-                    style={{
-                        flexDirection: "row",
-                        backgroundColor: "#F9F9F9",
-                        alignItems: "center",
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        columnGap: 12,
-                        borderRadius: 6,
-                        height: ScreenWidth / 9,
-                        flex: 1
-                    }}
-                >
-                    <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
-                    <TextInput
-                        placeholder={"Tìm kiếm sản phẩm"}
-                        returnKeyType="search"
-                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
-                        value={searchQuery}
-                        onChangeText={(query) => setSearchQuery(query)}
-                    />
-                </View>
-
-                {/* Logo */}
-                <View
-                    style={{
-                        height: 43,
-                        width: 43,
-                        overflow: 'hidden',
-                        borderRadius: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <Image
-                        style={{
-                            width: 48,
-                            height: 48,
-                        }}
-                        source={logo}
-                    />
-                </View>
-            </View>
-
-            {/* Filter Sort */}
-            <View style={{ flexDirection: "row", marginTop: 10 }}>
-                <SortModal
-                    modalVisible={modalVisible}
-                    setModalVisible={setModalVisible}
-                    sortOption={sortOption}
-                    handleSortOption={handleSortOption}
-                    disabled={gadgets.length == 0}
-                />
-            </View>
-
-            <View
-                style={{
-                    height: ScreenHeight / 1.16,
-                }}
-            >
-                {gadgets.length === 0 ? (
+        <TouchableWithoutFeedback onPress={() => {
+            // Khi người dùng nhấn ra ngoài, ẩn bàn phím và đặt trạng thái thành false
+            Keyboard.dismiss();
+            setIsFocused(false);
+        }}>
+            <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1, paddingTop: 10, paddingHorizontal: 10 }}>
+                {/* Search bar */}
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginVertical: isFocused ? 0 : 10
+                }}>
                     <View
                         style={{
-                            flex: 1,
-                            height: ScreenHeight / 1.5,
+                            flexDirection: "row",
+                            backgroundColor: "#F9F9F9",
+                            alignItems: "center",
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            gap: 12,
+                            borderRadius: 6,
+                            height: ScreenWidth / 9,
+                            width: ScreenWidth / 1.2,
+                            borderBottomLeftRadius: isFocused ? 0 : 6,
+                            borderBottomRightRadius: isFocused ? 0 : 6,
                         }}
                     >
+                        <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
+                        <TextInput
+                            placeholder={"Tìm kiếm sản phẩm"}
+                            returnKeyType="search"
+                            style={{
+                                fontSize: 16,
+                                width: ScreenWidth / 1.45,
+                                height: ScreenHeight / 1.2,
+                                textAlignVertical: "center",
+                            }}
+                            value={searchQuery}
+                            onChangeText={(query) => setSearchQuery(query)}
+                            onFocus={() => setIsFocused(true)} // Khi nhận focus
+                        />
+                    </View>
+
+                    {/* Logo */}
+                    <View
+                        style={{
+                            height: 43,
+                            width: 43,
+                            overflow: 'hidden',
+                            borderRadius: 50,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Image
+                            style={{
+                                width: 48,
+                                height: 48,
+                            }}
+                            source={logo}
+                        />
+                    </View>
+                </View>
+                {
+                    (isFocused && keywords.length > 0) &&
+                    <View style={{
+                        backgroundColor: "#f9f9f9",
+                        height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 5,
+                        width: ScreenWidth / 1.2,
+                        paddingHorizontal: 10,
+                        borderBottomLeftRadius: 6,
+                        borderBottomRightRadius: 6,
+                        marginBottom: 10,
+                    }}>
+                        <FlatList
+                            data={keywords}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity style={{
+                                    height: ScreenHeight / 40,
+                                    alignItems: "center",
+                                    marginBottom: 5,
+                                    flexDirection: "row",
+                                    gap: 15
+                                }}
+                                    onLongPress={() => {
+                                        console.log("click me 2");
+                                    }}
+                                    onPress={() => {
+                                        setSearchQuery(item);
+                                    }}
+                                >
+                                    <MaterialCommunityIcons
+                                        name={"history"}
+                                        size={19}
+                                        color={"rgba(0, 0, 0, 0.5)"}
+                                    />
+                                    <Text style={{
+                                        fontSize: 13,
+                                        color: "rgba(0, 0, 0, 0.5)",
+                                        fontWeight: "500",
+                                    }}>
+                                        {item}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item, index) => index}
+                            scrollEnabled={false}
+                            ListFooterComponent={<>
+                                <TouchableOpacity
+                                    style={{
+                                        alignSelf: "center",
+                                        height: ScreenHeight / 40,
+                                        justifyContent: "center",
+                                    }}
+                                    onPress={() => {
+                                    }}
+                                >
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: "#ed8900",
+                                        fontWeight: "500"
+                                    }}>
+                                        Xóa lịch xử tìm kiếm
+                                    </Text>
+                                </TouchableOpacity>
+                            </>}
+                        />
+                    </View>
+                }
+
+                {/* Filter Sort */}
+                <View style={{ flexDirection: "row", marginTop: 10 }}>
+                    <SortModal
+                        modalVisible={modalVisible}
+                        setModalVisible={setModalVisible}
+                        sortOption={sortOption}
+                        handleSortOption={handleSortOption}
+                        disabled={gadgets.length == 0}
+                    />
+                </View>
+
+                <View
+                    style={{
+                        height: ScreenHeight / 1.16,
+                    }}
+                >
+                    {gadgets.length === 0 ? (
                         <View
                             style={{
                                 flex: 1,
-                                alignItems: "center",
-                                justifyContent: "center",
+                                height: ScreenHeight / 1.5,
                             }}
                         >
-                            <LottieView
-                                source={require("../../../assets/animations/catRole.json")}
-                                style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                                autoPlay
-                                loop
-                                speed={0.8}
-                            />
-                            <Text
+                            <View
                                 style={{
-                                    fontSize: 18,
-                                    width: ScreenWidth / 1.5,
-                                    textAlign: "center",
+                                    flex: 1,
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                 }}
                             >
-                                {isFetching ? "Đang tìm sản phẩm" : isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
-                            </Text>
-                        </View>
-                    </View>
-                ) : (
-                    <View style={{ marginBottom: 20, marginTop: 16 }}>
-                        <FlatList
-                            data={gadgets}
-                            keyExtractor={item => item.id}
-                            renderItem={({ item, index }) => (
-                                <Pressable
-                                    onPress={() =>
-                                        navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
-                                    }
+                                <LottieView
+                                    source={require("../../../assets/animations/catRole.json")}
+                                    style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                                    autoPlay
+                                    loop
+                                    speed={0.8}
+                                />
+                                <Text
+                                    style={{
+                                        fontSize: 18,
+                                        width: ScreenWidth / 1.5,
+                                        textAlign: "center",
+                                    }}
                                 >
-                                    <GadgetItem
-                                        {...item}
-                                    />
-                                    {index < gadgets.length - 1 && (
-                                        <Divider style={{ marginVertical: 14 }} />
-                                    )}
-                                </Pressable>
-                            )}
-                            onScroll={handleScroll}
-                            scrollEventThrottle={16}
-                            ListFooterComponent={renderFooter}
-                            initialNumToRender={10}
-                            showsVerticalScrollIndicator={false}
-                            overScrollMode="never"
-                            refreshing={refreshing}
-                            onRefresh={handleRefresh}
-                        />
-                    </View>
-                )}
-            </View>
+                                    {isFetching ? "Đang tìm sản phẩm" : isSearching ? "Không tìm thấy sản phẩm" : "Không có sản phẩm nào"}
+                                </Text>
+                            </View>
+                        </View>
+                    ) : (
+                        <View style={{ marginBottom: 20, marginTop: 16 }}>
+                            <FlatList
+                                data={gadgets}
+                                keyExtractor={item => item.id}
+                                renderItem={({ item, index }) => (
+                                    <Pressable
+                                        onPress={() =>
+                                            navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                        }
+                                    >
+                                        <GadgetItem
+                                            {...item}
+                                        />
+                                        {index < gadgets.length - 1 && (
+                                            <Divider style={{ marginVertical: 14 }} />
+                                        )}
+                                    </Pressable>
+                                )}
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
+                                ListFooterComponent={renderFooter}
+                                initialNumToRender={10}
+                                showsVerticalScrollIndicator={false}
+                                overScrollMode="never"
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
+                            />
+                        </View>
+                    )}
+                </View>
 
-            <ErrModal
-                stringErr={stringErr}
-                isError={isError}
-                setIsError={setIsError}
-            />
-        </LinearGradient>
+                <ErrModal
+                    stringErr={stringErr}
+                    isError={isError}
+                    setIsError={setIsError}
+                />
+            </LinearGradient>
+        </TouchableWithoutFeedback>
     )
 }
 

@@ -35,6 +35,8 @@ import { BuyerReviewSellerOrdersScreen } from "../components/Buyer/SellerOrderRe
 import GadgetHistory from "../components/Buyer/BuyerHistory/GadgetHistory";
 import SellerDetailScreen from "../components/Buyer/SearchNaturalLanguage/Seller/SellerDetailScreen";
 import GadgetsByCategory from "../components/Buyer/SearchNaturalLanguage/Seller/GadgetsByCategory";
+import ForgotPassword from "../components/Authorization/ForgotPassword";
+import ChangePasswordScreen from "../components/Authorization/ChangePasswordScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -130,6 +132,8 @@ const RootNavigator = () => {
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
       <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ headerShown: false }} />
+      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} options={{ headerShown: false }} />
       <Stack.Screen name="StackBuyerHome" component={BuyerNavigator} options={{ statusBarColor: "black", }} />
       <Stack.Screen
         name="RegisterSeller"

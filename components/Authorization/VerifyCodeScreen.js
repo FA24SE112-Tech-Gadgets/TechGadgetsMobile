@@ -70,11 +70,6 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         const userInfo = JSON.parse(decodedToken.UserInfo);
         console.log(userInfo);
 
-        // if (userInfo.Role != "Customer") {
-        //   setStringErr("Vui lòng sử dụng tài khoản khách hàng");
-        //   setIsError(true);
-        //   return;
-        // }
         await AsyncStorage.setItem("refreshToken", refreshToken);
         await AsyncStorage.setItem("token", token);
 

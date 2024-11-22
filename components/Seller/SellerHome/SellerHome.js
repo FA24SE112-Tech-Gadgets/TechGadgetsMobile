@@ -8,6 +8,8 @@ import {
     TextInput,
     TouchableOpacity,
     Dimensions,
+    Keyboard,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +20,7 @@ import { useDebounce } from 'use-debounce';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -33,6 +36,13 @@ export default function SellerHome() {
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
     const [isEmpty, setIsEmpty] = useState(true);
+
+    const [isFocused, setIsFocused] = useState(false);
+    const [keywords, setKeywords] = useState([
+        "Nokia 105",
+        "Loa Bluetooth",
+        "Tai nghe chụp tai"
+    ])
 
     const navigation = useNavigation();
 
@@ -181,108 +191,189 @@ export default function SellerHome() {
     );
 
     return (
-        <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
-            {/* Search bar */}
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: 5,
-                alignItems: "center",
-                paddingHorizontal: 10,
-                marginVertical: 10
-            }}>
-                <View
-                    style={{
-                        flexDirection: "row",
-                        backgroundColor: "#F9F9F9",
-                        alignItems: "center",
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        columnGap: 12,
-                        borderRadius: 6,
-                        height: ScreenWidth / 9,
-                        flex: 1
-                    }}
-                >
-                    <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
-                    <TextInput
-                        placeholder={"Tìm kiếm sản phẩm"}
-                        returnKeyType="search"
-                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
-                        value={searchQuery}
-                        onChangeText={(query) => setSearchQuery(query)}
-                    />
-                </View>
-
-                {/* Logo */}
-                <View
-                    style={{
-                        height: 43,
-                        width: 43,
-                        overflow: 'hidden',
-                        borderRadius: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <Image
+        <TouchableWithoutFeedback onPress={() => {
+            // Khi người dùng nhấn ra ngoài, ẩn bàn phím và đặt trạng thái thành false
+            Keyboard.dismiss();
+            setIsFocused(false);
+        }}>
+            <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
+                {/* Search bar */}
+                <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingHorizontal: 10,
+                    marginVertical: isFocused ? 0 : 10
+                }}>
+                    <View
                         style={{
-                            width: 48,
-                            height: 48,
+                            flexDirection: "row",
+                            backgroundColor: "#F9F9F9",
+                            alignItems: "center",
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            gap: 12,
+                            borderRadius: 6,
+                            height: ScreenWidth / 9,
+                            width: ScreenWidth / 1.2,
+                            borderBottomLeftRadius: isFocused ? 0 : 6,
+                            borderBottomRightRadius: isFocused ? 0 : 6,
                         }}
-                        source={logo}
-                    />
-                </View>
-            </View>
+                    >
+                        <Icon type="font-awesome" name="search" size={23} color={"#ed8900"} />
+                        <TextInput
+                            placeholder={"Tìm kiếm sản phẩm"}
+                            returnKeyType="search"
+                            style={{
+                                fontSize: 16,
+                                width: ScreenWidth / 1.45,
+                                height: ScreenHeight / 1.2,
+                                textAlignVertical: "center",
+                            }}
+                            value={searchQuery}
+                            onChangeText={(query) => setSearchQuery(query)}
+                            onFocus={() => setIsFocused(true)} // Khi nhận focus
+                        />
+                    </View>
 
-            {(categories.length === 0 || (isEmpty && !isFetching) || isFetching) ? (
-                <View
-                    style={{
-                        flex: 1,
-                        height: ScreenHeight / 1.5,
-                    }}
-                >
+                    {/* Logo */}
+                    <View
+                        style={{
+                            height: 43,
+                            width: 43,
+                            overflow: 'hidden',
+                            borderRadius: 50,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Image
+                            style={{
+                                width: 48,
+                                height: 48,
+                            }}
+                            source={logo}
+                        />
+                    </View>
+                </View>
+                {
+                    (isFocused && keywords.length > 0) &&
+                    <View style={{
+                        backgroundColor: "#f9f9f9",
+                        height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 5,
+                        marginHorizontal: 10,
+                        width: ScreenWidth / 1.2,
+                        paddingHorizontal: 10,
+                        borderBottomLeftRadius: 6,
+                        borderBottomRightRadius: 6,
+                        marginBottom: 10,
+                    }}>
+                        <FlatList
+                            data={keywords}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity style={{
+                                    height: ScreenHeight / 40,
+                                    alignItems: "center",
+                                    marginBottom: 5,
+                                    flexDirection: "row",
+                                    gap: 15
+                                }}
+                                    onLongPress={() => {
+                                        console.log("click me 2");
+                                    }}
+                                    onPress={() => {
+                                        setSearchQuery(item);
+                                    }}
+                                >
+                                    <MaterialCommunityIcons
+                                        name={"history"}
+                                        size={19}
+                                        color={"rgba(0, 0, 0, 0.5)"}
+                                    />
+                                    <Text style={{
+                                        fontSize: 13,
+                                        color: "rgba(0, 0, 0, 0.5)",
+                                        fontWeight: "500",
+                                    }}>
+                                        {item}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item, index) => index}
+                            scrollEnabled={false}
+                            ListFooterComponent={<>
+                                <TouchableOpacity
+                                    style={{
+                                        alignSelf: "center",
+                                        height: ScreenHeight / 40,
+                                        justifyContent: "center",
+                                    }}
+                                    onPress={() => {
+                                    }}
+                                >
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: "#ed8900",
+                                        fontWeight: "500"
+                                    }}>
+                                        Xóa lịch xử tìm kiếm
+                                    </Text>
+                                </TouchableOpacity>
+                            </>}
+                        />
+                    </View>
+                }
+
+                {(categories.length === 0 || (isEmpty && !isFetching) || isFetching) ? (
                     <View
                         style={{
                             flex: 1,
-                            alignItems: "center",
-                            justifyContent: "center",
+                            height: ScreenHeight / 1.5,
                         }}
                     >
-                        <LottieView
-                            source={require("../../../assets/animations/catRole.json")}
-                            style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                            autoPlay
-                            loop
-                            speed={0.8}
-                        />
-                        <Text
+                        <View
                             style={{
-                                fontSize: 18,
-                                width: ScreenWidth / 1.5,
-                                textAlign: "center",
+                                flex: 1,
+                                alignItems: "center",
+                                justifyContent: "center",
                             }}
                         >
-                            {isFetching ? "Đang load dữ liệu" : isEmpty && "Không tìm thấy sản phẩm nào"}
-                        </Text>
+                            <LottieView
+                                source={require("../../../assets/animations/catRole.json")}
+                                style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                                autoPlay
+                                loop
+                                speed={0.8}
+                            />
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    width: ScreenWidth / 1.5,
+                                    textAlign: "center",
+                                }}
+                            >
+                                {isFetching ? "Đang load dữ liệu" : isEmpty && "Không tìm thấy sản phẩm nào"}
+                            </Text>
+                        </View>
                     </View>
-                </View>
-            ) : (
-                <FlatList
-                    data={categories}
-                    renderItem={renderCategory}
-                    keyExtractor={(item) => item.id}
-                    style={styles.categoryList}
-                    showsVerticalScrollIndicator={false}
-                />
-            )}
+                ) : (
+                    <FlatList
+                        data={categories}
+                        renderItem={renderCategory}
+                        keyExtractor={(item) => item.id}
+                        style={styles.categoryList}
+                        showsVerticalScrollIndicator={false}
+                    />
+                )}
 
-            <ErrModal
-                stringErr={stringErr}
-                isError={isError}
-                setIsError={setIsError}
-            />
-        </LinearGradient>
+                <ErrModal
+                    stringErr={stringErr}
+                    isError={isError}
+                    setIsError={setIsError}
+                />
+            </LinearGradient>
+        </TouchableWithoutFeedback>
     )
 }
 

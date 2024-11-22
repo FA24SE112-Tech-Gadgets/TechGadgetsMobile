@@ -211,7 +211,6 @@ export default function CategoryGadgets({ route, navigation }) {
     </TouchableOpacity>
   );
 
-
   const renderBrandItem = ({ item, index }) => (
     <TouchableOpacity
       key={item.id}
@@ -273,7 +272,7 @@ export default function CategoryGadgets({ route, navigation }) {
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.modalTitle}>Lọc sản phẩm</Text>
 
             <Text style={styles.filterSectionTitle}>Thương hiệu</Text>
@@ -407,7 +406,7 @@ export default function CategoryGadgets({ route, navigation }) {
           onEndReached={() => fetchGadgets(currentFilters)}
           onEndReachedThreshold={0.1}
           ListFooterComponent={() => (
-            hasMore && <ActivityIndicator size="large" color="#0000ff" />
+            hasMore && <ActivityIndicator size={24} color="#ed8900" />
           )}
         />
       )}
