@@ -46,6 +46,7 @@ const BuyerNavigator = () => {
 				},
 			})}
 		>
+			{/* Home */}
 			<Tab.Screen
 				name='BuyerHome'
 				options={{
@@ -64,6 +65,8 @@ const BuyerNavigator = () => {
 					</AuthRoute>
 				)}
 			</Tab.Screen>
+
+			{/* SearchNaturalLanguage */}
 			<Tab.Screen
 				name='SearchNaturalLanguage'
 				options={{
@@ -79,11 +82,13 @@ const BuyerNavigator = () => {
 					</AuthRoute>
 				)}
 			</Tab.Screen>
+
+			{/* BuyerOrder */}
 			<Tab.Screen
 				name='BuyerOrder'
 				options={{
 					tabBarIcon: ({ color, size }) => (
-						<FontAwesome5 name="history" size={+size} color={color} />
+						<FontAwesome5 name="history" size={size - 2} color={color} />
 					),
 					tabBarLabel: "Lịch sử mua hàng",
 				}}
@@ -94,11 +99,13 @@ const BuyerNavigator = () => {
 					</AuthRoute>
 				)}
 			</Tab.Screen>
+
+			{/* BuyerNotification */}
 			<Tab.Screen
 				name='BuyerNotification'
 				options={{
 					tabBarIcon: ({ color, size }) => (
-						<Ionicons name="notifications" size={+size} color={color} />
+						<Ionicons name="notifications" size={size} color={color} />
 					),
 					tabBarLabel: "Thông báo",
 					tabBarBadge: unreadNotifications > 0 ? unreadNotifications : null,
@@ -122,6 +129,8 @@ const BuyerNavigator = () => {
 					</AuthRoute>
 				)}
 			</Tab.Screen>
+
+			{/* BuyerProfile */}
 			<Tab.Screen
 				name='BuyerProfile'
 				options={{

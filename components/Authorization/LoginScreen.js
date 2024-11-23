@@ -20,7 +20,7 @@ import { jwtDecode } from "jwt-decode";
 import "core-js/stable/atob"; //For jwt decode
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScreenWidth } from "@rneui/base";
+import { ScreenHeight, ScreenWidth } from "@rneui/base";
 import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import * as Location from "expo-location"
 import { useTranslation } from "react-i18next";
@@ -310,14 +310,17 @@ const LoginScreen = () => {
       />
 
       <View View style={styles.container} >
-        <Text style={styles.title}>{t('login-title')}</Text>
+        <Text style={styles.title}>ĐĂNG NHẬP</Text>
         <View style={styles.inputContainer}>
+          {/* Email */}
           <TextInput
             style={styles.textInput}
-            placeholder={t('email-input')}
+            placeholder={"Email của bạn"}
             value={userEmail}
             onChangeText={(text) => setUserEmail(text)}
           />
+
+          {/* Password */}
           <View style={{ position: "relative" }}>
             <TextInput
               style={styles.textInput}
@@ -339,6 +342,27 @@ const LoginScreen = () => {
               </Pressable>
             )}
           </View>
+
+          {/* Forgot password */}
+          <TouchableOpacity
+            style={{
+              marginRight: 10,
+              marginTop: -20
+            }}
+            onPress={() => {
+              navigation.navigate("ForgotPassword");
+            }}
+          >
+            <Text style={{
+              alignSelf: "flex-end",
+              fontSize: 15,
+              fontWeight: 500,
+              opacity: 0.5,
+              letterSpacing: 1,
+            }}>
+              Quên mật khẩu?
+            </Text>
+          </TouchableOpacity>
         </View>
         <Pressable
           style={[
@@ -386,8 +410,6 @@ const LoginScreen = () => {
         <Pressable
           style={styles.registerButton}
           onPress={() => navigation.push("Register")}
-        // onPress={() => navigation.push("RegisterSeller")}
-
         >
           <Text
             style={{
@@ -449,14 +471,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "bold",
-    marginTop: 30,
+    marginTop: ScreenHeight / 10,
     marginBottom: 40,
     width: "100%",
     textAlign: "center",
   },
   inputContainer: {
     width: "100%",
-    height: 120,
+    height: ScreenHeight / 7,
     display: "flex",
     justifyContent: "space-between",
   },

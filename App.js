@@ -26,6 +26,8 @@ export default function App() {
         Login: "Login",
         Register: "Register",
         VerifyCode: "VerifyCode",
+        ForgotPassword: "ForgotPassword",
+        ChangePasswordScreen: "ChangePasswordScreen",
         StackBuyerHome: {
           screens: {
             BuyerHome: "BuyerHome",

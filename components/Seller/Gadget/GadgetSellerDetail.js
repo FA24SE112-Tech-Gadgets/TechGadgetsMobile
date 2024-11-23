@@ -333,8 +333,12 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     height: ScreenHeight / 2.5,
                 }}>
                     {/* Gadget Images */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        {gadget.gadgetImages.map((image, index) => (
+                    <FlatList
+                        data={gadget.gadgetImages}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({ item, index }) => (
                             <TouchableOpacity
                                 key={index}
                                 onPress={() => {
@@ -345,7 +349,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             >
                                 <View style={styles.gadgetImageItem}>
                                     <Image
-                                        source={{ uri: image.imageUrl }}
+                                        source={{ uri: item.imageUrl }}
                                         style={styles.gadgetImage}
                                         resizeMode="contain"
                                     />
@@ -356,8 +360,9 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                     )}
                                 </View>
                             </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                        )}
+                        keyExtractor={(item, index) => index}
+                    />
 
                     {/* Back Button */}
                     <View style={styles.header}>

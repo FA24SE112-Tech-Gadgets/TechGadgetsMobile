@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,8 +17,6 @@ import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
 import ReviewSummary from '../BuyerReview/ReviewSummary';
-
-const { width } = Dimensions.get('window');
 
 export default function GadgetDetail({ route, navigation }) {
   const [gadget, setGadget] = useState(null);
@@ -191,7 +188,7 @@ export default function GadgetDetail({ route, navigation }) {
           )}
           keyExtractor={(item, index) => index.toString()}
           getItemLayout={(data, index) => (
-            { length: width, offset: width * index, index }
+            { length: ScreenWidth, offset: ScreenWidth * index, index }
           )}
         />
       </View>
@@ -213,7 +210,9 @@ export default function GadgetDetail({ route, navigation }) {
           style={styles.buyNowModalImage}
           resizeMode="contain"
         />
-        <Text style={styles.buyNowModalProductName}>{gadget.name}</Text>
+        <Text
+          style={styles.buyNowModalProductName}
+        >{gadget.name}</Text>
         <Text style={styles.buyNowModalQuantity}>Số lượng: {quantity}</Text>
         <Text style={styles.buyNowModalPrice}>
           Tổng tiền: {((gadget.discountPrice || gadget.price) * quantity).toLocaleString('vi-VN')} ₫
@@ -533,8 +532,8 @@ const styles = StyleSheet.create({
   },
   mainImageContainer: {
     position: 'relative',
-    width: width,
-    height: width,
+    width: ScreenWidth,
+    height: ScreenWidth,
   },
   mainImage: {
     width: '100%',
@@ -804,7 +803,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalImage: {
-    width: width,
+    width: ScreenWidth,
     height: '100%',
   },
   closeButton: {
@@ -856,9 +855,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '45%',
     alignItems: 'center',
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+    borderWidth: 0.5
   },
   buyNowModalCancelButton: {
-    backgroundColor: '#ddd',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   buyNowModalConfirmButton: {
     backgroundColor: '#fea128',

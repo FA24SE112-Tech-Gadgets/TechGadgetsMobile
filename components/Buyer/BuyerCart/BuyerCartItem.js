@@ -320,7 +320,7 @@ const BuyerCartItem = () => {
             setSelectedItems({});
             setModalVisible(false);
             await refreshCart();
-            setSnackbarMessage('Đơn hàng đã được tạo');
+            setSnackbarMessage('Đặt hàng thành công');
             setSnackbarVisible(true);
         } catch (error) {
             console.log('Error creating order:', error);
@@ -392,14 +392,14 @@ const BuyerCartItem = () => {
                                 }
                             }
                         >
-                            <AntDesign name="minuscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#fea128"} />
+                            <AntDesign name="minuscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
                         </TouchableOpacity>
                         <Text style={styles.quantityText}>{item.quantity}</Text>
                         <TouchableOpacity
                             disabled={!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching}
                             onPress={() => updateGadgetQuantity(item.gadget.id, item.quantity + 1)}
                         >
-                            <AntDesign name="pluscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#fea128"} />
+                            <AntDesign name="pluscircleo" size={24} color={(!item.gadget.isForSale || item.gadget.status !== "Active" || isFetching) ? "rgba(0, 0, 0, 0.5)" : "#ed8900"} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -575,14 +575,19 @@ const BuyerCartItem = () => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             disabled={isFetching}
-                            style={[styles.modalButton, styles.confirmButton]}
+                            style={[styles.modalButton, styles.confirmButton, isFetching && styles.disabledButton]}
                             onPress={confirmCheckout}
                         >
                             <Text style={styles.modalButtonText}>Xác nhận</Text>
+                            {
+                                isFetching &&
+                                <ActivityIndicator color={"white"} />
+                            }
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
+
             <Modal isVisible={confirmModalVisible} onBackdropPress={() => setConfirmModalVisible(false)}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Xác nhận</Text>
@@ -608,6 +613,7 @@ const BuyerCartItem = () => {
                     </View>
                 </View>
             </Modal>
+
             <Snackbar
                 visible={snackbarVisible}
                 onDismiss={() => setSnackbarVisible(false)}
@@ -686,7 +692,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     editButtonText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontWeight: '600',
     },
     shopContainer: {
@@ -874,11 +880,11 @@ const styles = StyleSheet.create({
     totalPriceText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fea128',
+        color: '#ed8900',
         marginTop: 5,
     },
     checkoutButton: {
-        backgroundColor: '#fea128',
+        backgroundColor: '#ed8900',
         padding: 15,
         borderRadius: 5,
         alignItems: 'center',
@@ -904,7 +910,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     disabledButton: {
-        backgroundColor: '#cccccc',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         flexDirection: "row",
         gap: 10
     },
@@ -912,7 +918,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         padding: 22,
         justifyContent: 'center',
-        alignItems: 'center',
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
     },
@@ -920,16 +925,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 15,
+        alignSelf: "center"
     },
     modalText: {
         fontSize: 16,
         marginBottom: 15,
-        textAlign: 'center',
     },
     modalTotalPrice: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fea128',
+        color: '#ed8900',
         marginBottom: 15,
     },
     modalButtons: {
@@ -940,15 +945,15 @@ const styles = StyleSheet.create({
     modalButton: {
         padding: 10,
         borderRadius: 5,
-        backgroundColor: '#dddddd',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         minWidth: 100,
         alignItems: 'center',
     },
     confirmButton: {
-        backgroundColor: '#fea128',
+        backgroundColor: '#ed8900',
     },
     modalButtonText: {
-        color: 'black',
+        color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
     },
