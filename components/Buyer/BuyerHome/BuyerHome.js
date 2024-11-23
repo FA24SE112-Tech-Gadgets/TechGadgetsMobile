@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Dimensions,
+  Pressable,
   Keyboard,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,13 +17,11 @@ import { Icon } from "@rneui/base";
 import api from "../../Authorization/api";
 import logo from "../../../assets/adaptive-icon.png";
 import { useNavigation } from '@react-navigation/native';
-import { useDebounce } from 'use-debounce';
 import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
 import Snowfall from '../../CustomComponents/Snowfall';
-
-const { width: screenWidth } = Dimensions.get('window');
+import Modal from "react-native-modal";
 
 export default function BuyerHome() {
   const [categories, setCategories] = useState([]);
@@ -32,9 +29,8 @@ export default function BuyerHome() {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [searching, setSearching] = useState(true);
+  const [isSearching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 1000);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,11 +66,10 @@ export default function BuyerHome() {
   const navigation = useNavigation();
 
   const [isFocused, setIsFocused] = useState(false);
-  const [keywords, setKeywords] = useState([
-    "Nokia 105",
-    "Loa Bluetooth",
-    "Tai nghe chụp tai"
-  ])
+  const [keywords, setKeywords] = useState([]);
+  const [keyWordIdSelected, setKeywordIdSelected] = useState("");
+
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
 
   const fetchHotGadgets = async (categoryId) => {
     try {
@@ -90,6 +85,62 @@ export default function BuyerHome() {
       }
     } catch (error) {
       console.error("Error fetching gadgets:", error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+    }
+  };
+
+  const fetchKeywordHistories = async () => {
+    try {
+      const response = await api.get(`/keyword-histories`);
+      const keywords = response.data;
+      if (keywords) {
+        setKeywords(keywords);
+      } else {
+        setKeywords([]);
+      }
+    } catch (error) {
+      console.error("Error fetching keyword histories:", error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+    }
+  };
+
+  const handleDeleteAllKeyword = async () => {
+    try {
+      await api.delete(`/keyword-histories/all`);
+      setKeywords([]);
+    } catch (error) {
+      console.error("Error delete all keyword histories:", error);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+    }
+  };
+
+  const handleDeleteKeywordById = async () => {
+    try {
+      if (keyWordIdSelected) {
+        await api.delete(`/keyword-histories/${keyWordIdSelected}`);
+        setKeywordIdSelected("");
+      }
+      await fetchKeywordHistories();
+    } catch (error) {
+      console.error("Error delete keyword by id:", error);
       setStringErr(
         error.response?.data?.reasons[0]?.message ?
           error.response.data.reasons[0].message
@@ -142,17 +193,15 @@ export default function BuyerHome() {
     }
   };
 
-  const searchGadgets = useCallback(async () => {
-    if (!debouncedSearchQuery) {
+  const searchGadgets = async (searchKeyword) => {
+    if (!searchKeyword) {
       setSearchResults([]);
       return;
     }
     setLoading(true);
     try {
-      setSearching(true);
-      const response = await api.get(`/gadgets?Name=${debouncedSearchQuery}&Page=${currentPage}&PageSize=100`);
-      setSearching(false);
-
+      const response = await api.get(`/gadgets?Name=${searchKeyword}&Page=${currentPage}&PageSize=100`);
+      await fetchKeywordHistories();
       setSearchResults(response.data.items.map(item => ({
         ...item,
         isFavorite: item.isFavorite || false // Ensure isFavorite is always present
@@ -167,10 +216,10 @@ export default function BuyerHome() {
       );
     } finally {
       setLoading(false);
-      setSearching(false);
     }
-  }, [debouncedSearchQuery, currentPage]);
+  };
 
+  //Reset default state
   useFocusEffect(
     useCallback(() => {
       setCategories([]);
@@ -182,16 +231,23 @@ export default function BuyerHome() {
     }, [])
   );
 
+  //Reset search results if searchQuery change
   useFocusEffect(
     useCallback(() => {
-      if (debouncedSearchQuery) {
-        searchGadgets();
-      } else {
+      if (searchQuery === "") {
         setSearchResults([]);
       }
-    }, [debouncedSearchQuery])
+    }, [searchQuery])
   );
 
+  //Fetch Keyword Histories
+  useFocusEffect(
+    useCallback(() => {
+      fetchKeywordHistories();
+    }, [])
+  );
+
+  //Load banners
   useFocusEffect(
     useCallback(() => {
       const fetchBanners = async () => {
@@ -333,6 +389,10 @@ export default function BuyerHome() {
     />
   );
 
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   const goToNextPage = () => {
     if (flatListRef.current) {
       const nextSlide = currentSlide >= bannerArr.length - 1 ? 0 : currentSlide + 1;
@@ -341,6 +401,7 @@ export default function BuyerHome() {
     }
   };
 
+  //Banner slider
   useFocusEffect(
     useCallback(() => {
       const timerId = setInterval(() => {
@@ -353,7 +414,7 @@ export default function BuyerHome() {
     }, [currentSlide, bannerArr])
   );
 
-  const renderLoading = () => (
+  const renderLoading = (loadingString) => (
     <LinearGradient colors={['#fea92866', '#FFFFFF']}
       style={{
         flex: 1,
@@ -381,211 +442,434 @@ export default function BuyerHome() {
             textAlign: "center",
           }}
         >
-          Đang tải dữ liệu sản phẩm
+          {loadingString}
         </Text>
       </View>
     </LinearGradient>
   )
 
+  useEffect(() => {
+    // Lắng nghe sự kiện khi bàn phím ẩn
+    const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      if (!keyWordIdSelected) {
+        setIsFocused(false);
+      }
+    });
+
+    // Dọn dẹp listener khi component unmount
+    return () => {
+      keyboardHideListener.remove();
+    };
+  }, []);
+
   return (
-    <TouchableWithoutFeedback onPress={() => {
-      // Khi người dùng nhấn ra ngoài, ẩn bàn phím và đặt trạng thái thành false
-      Keyboard.dismiss();
-      setIsFocused(false);
-    }}>
-      <LinearGradient
-        colors={['#fea92866', '#FFFFFF']}
-        style={styles.container}
+    <LinearGradient
+      colors={['#fea92866', '#FFFFFF']}
+      style={styles.container}
+    >
+      {/* Header + search */}
+      <View
+        style={[styles.header, {
+          paddingBottom: isFocused ? 0 : 15
+        }]}
       >
-        {/* Header + search */}
-        <View
-          style={[styles.header, {
-            paddingBottom: isFocused ? 0 : 15
+        {/* Logo */}
+        <TouchableOpacity
+          style={[styles.logo, {
+            borderWidth: isFocused ? 1 : 0,
           }]}
+          onPress={() => {
+            setIsFocused(false);
+            setSearching(false);
+            Keyboard.dismiss();
+            setSearchQuery("");
+          }}
         >
-          <View style={[styles.searchContainer, {
-            borderBottomLeftRadius: isFocused ? 0 : 6,
-            borderBottomRightRadius: isFocused ? 0 : 6,
-          }]}>
+          {
+            isSearching ?
+              <AntDesign name="arrowleft" size={24} color="white" /> :
+              <Image source={logo} style={styles.logoImage} />
+          }
+        </TouchableOpacity>
+
+        {/* Search bar */}
+        <View style={[styles.searchContainer, {
+          borderColor: isFocused ? "#ed8900" : undefined,
+          borderWidth: isFocused ? 2 : 0
+        }]}>
+          {
+            !isFocused &&
             <Icon type="font-awesome" name="search" size={23} color="#ed8900" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Tìm kiếm sản phẩm"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onFocus={() => setIsFocused(true)} // Khi nhận focus
-            />
-          </View>
-          <View style={styles.logo}>
-            <Image source={logo} style={styles.logoImage} />
-          </View>
+          }
+          <TextInput
+            style={[styles.searchInput, {
+              marginLeft: !isFocused ? 10 : 0
+            }]}
+            placeholder="Tìm kiếm sản phẩm"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onPressIn={() => {
+              setIsFocused(true);
+              setSearching(true);
+            }}
+            onBlur={() => setIsFocused(false)}
+            onSubmitEditing={(event) => {
+              const value = event.nativeEvent.text;
+              if (value.trim()) {
+                fetchKeywordHistories();
+                searchGadgets(value);
+              }
+            }}
+            caretHidden={!isFocused}
+          />
+          {
+            isFocused &&
+            <TouchableOpacity
+              style={{
+                height: ScreenWidth / 9,
+                width: ScreenWidth / 9,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#ed8900",
+                borderRadius: 6,
+              }}
+              onPress={() => {
+                if (searchQuery.trim()) {
+                  fetchKeywordHistories();
+                  searchGadgets(searchQuery);
+                }
+              }}
+            >
+              <Icon type="font-awesome" name="search" size={23} color="white" />
+            </TouchableOpacity>
+          }
         </View>
-        {
-          (isFocused && keywords.length > 0) &&
-          <View style={{
-            backgroundColor: "#f9f9f9",
-            height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 5,
-            marginHorizontal: 15,
-            width: ScreenWidth / 1.25,
-            paddingHorizontal: 10,
-            borderBottomLeftRadius: 6,
-            borderBottomRightRadius: 6,
-            marginBottom: 10,
-          }}>
-            <FlatList
-              data={keywords}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={{
-                  height: ScreenHeight / 40,
-                  alignItems: "center",
-                  marginBottom: 5,
-                  flexDirection: "row",
-                  gap: 13
+      </View>
+
+      {
+        (isFocused && keywords.length > 0) &&
+        <View style={{
+          backgroundColor: "#f9f9f9",
+          height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15,
+          marginHorizontal: 15,
+          width: ScreenWidth / 1.25,
+          paddingHorizontal: 10,
+          borderBottomLeftRadius: 6,
+          borderBottomRightRadius: 6,
+          paddingVertical: 5,
+          marginLeft: 43 + ScreenWidth / 14
+        }}>
+          <FlatList
+            data={keywords}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={{
+                height: ScreenHeight / 40,
+                alignItems: "center",
+                marginBottom: 5,
+                flexDirection: "row",
+                gap: 13
+              }}
+                onLongPress={async () => {
+                  setKeywordIdSelected(item.id);
+                  setOpenConfirmDelete(true);
+                  await delay(200);
+                  setIsFocused(true);
                 }}
-                  onLongPress={() => {
-                    console.log("click me 2");
-                  }}
-                  onPress={() => {
-                    setSearchQuery(item);
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name={"history"}
-                    size={19}
-                    color={"rgba(0, 0, 0, 0.5)"}
-                  />
-                  <Text style={{
-                    fontSize: 13,
-                    color: "rgba(0, 0, 0, 0.5)",
-                    fontWeight: "500",
-                  }}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) => index}
-              scrollEnabled={false}
-              ListFooterComponent={<>
-                <TouchableOpacity
+                onPress={() => {
+                  setSearchQuery(item.keyword);
+                  fetchKeywordHistories();
+                  searchGadgets(item.keyword);
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={"history"}
+                  size={19}
+                  color={"rgba(0, 0, 0, 0.5)"}
+                />
+                <Text style={{
+                  fontSize: 13,
+                  color: "rgba(0, 0, 0, 0.5)",
+                  fontWeight: "500",
+                }}>
+                  {item.keyword}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyboardShouldPersistTaps={"handled"}
+            keyExtractor={(item, index) => index}
+            scrollEnabled={false}
+            ListFooterComponent={<>
+              <TouchableOpacity
+                style={{
+                  alignSelf: "center",
+                  height: ScreenHeight / 40,
+                  justifyContent: "center",
+                }}
+                onPress={() => {
+                  handleDeleteAllKeyword();
+                }}
+              >
+                <Text style={{
+                  fontSize: 14,
+                  color: "#ed8900",
+                  fontWeight: "500"
+                }}>
+                  Xóa lịch xử tìm kiếm
+                </Text>
+              </TouchableOpacity>
+            </>}
+          />
+        </View>
+      }
+
+      {
+        isSearching ? (
+          // Đang tìm kiếm sản phẩm
+          (loading && searchResults.length <= 0) ? (
+            renderLoading("Đang tìm sản phẩm")
+          ) : searchResults.length > 0 ? (
+            // Danh sách sản phẩm tìm kiếm
+            renderSearchResults()
+          ) : (
+            // Không tìm thấy sản phẩm
+            renderLoading("Không tìm thấy từ khóa của bạn")
+          )
+        ) : (
+          (loading && categories.length <= 0) ? (
+            // Đang tải dữ liệu sản phẩm
+            renderLoading("Đang tải dữ liệu sản phẩm")
+          ) : categories.length > 0 ? (
+            // Danh sách sản phẩm
+            <FlatList
+              data={categories}
+              renderItem={renderCategory}
+              ListHeaderComponent={
+                (bannerArr.length > 0 && bannerArr[0]?.categoryId) &&
+                <Snowfall style={{
+                  backgroundColor: "#112A46",
+                  marginBottom: 15,
+                  marginTop: 10
+                }}>
+                  <View style={styles.bannerContainer}>
+                    <FlatList
+                      data={bannerArr}
+                      ref={flatListRef}
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity onPress={() => {
+                          navigation.navigate('CategoryGadgets', { categoryId: item.categoryId, categoryName: item.categoryName })
+                        }}
+                          style={styles.imageBtn}
+                        >
+                          <Image
+                            source={{ uri: item.thumbnailUrl }}
+                            style={styles.gadgetImageItem}
+                            resizeMode="contain"
+                          />
+                        </TouchableOpacity>
+                      )}
+                      keyExtractor={(item, index) => index}
+                      onLayout={() => {
+                        if (flatListRef.current) {
+                          flatListRef.current.scrollToIndex({ index: 0, animated: false });
+                        }
+                      }}
+                      getItemLayout={(data, index) => ({
+                        length: ScreenWidth,
+                        offset: ScreenWidth * index,
+                        index,
+                      })}
+                    />
+                  </View>
+                </Snowfall>
+              }
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              style={styles.categoryList}
+            />
+          ) : (
+            // Không có sản phẩm nào
+            renderLoading("Shop không có sản phẩm nào")
+          )
+        )
+      }
+
+      {/* {
+        loading ? (
+          renderLoading("Đang tải dữ liệu sản phẩm")
+        )
+          :
+          <>
+            {searchQuery ? (
+              searchResults.length > 0 ? (
+                renderSearchResults()
+              ) : (
+                <View
                   style={{
-                    alignSelf: "center",
-                    height: ScreenHeight / 40,
+                    flex: 1,
+                    alignItems: "center",
                     justifyContent: "center",
                   }}
-                  onPress={() => {
-                  }}
                 >
-                  <Text style={{
-                    fontSize: 14,
-                    color: "#ed8900",
-                    fontWeight: "500"
-                  }}>
-                    Xóa lịch xử tìm kiếm
-                  </Text>
-                </TouchableOpacity>
-              </>}
-            />
-          </View>
-        }
-
-        {
-          loading ? (
-            renderLoading()
-          )
-            :
-            <>
-              {searchQuery ? (
-                searchResults.length > 0 ? (
-                  renderSearchResults()
-                ) : (
-                  <View
+                  <LottieView
+                    source={require("../../../assets/animations/catRole.json")}
+                    style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                    autoPlay
+                    loop
+                    speed={0.8}
+                  />
+                  <Text
                     style={{
-                      flex: 1,
-                      alignItems: "center",
-                      justifyContent: "center",
+                      fontSize: 18,
+                      width: ScreenWidth / 1.5,
+                      textAlign: "center",
                     }}
                   >
-                    <LottieView
-                      source={require("../../../assets/animations/catRole.json")}
-                      style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                      autoPlay
-                      loop
-                      speed={0.8}
-                    />
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        width: ScreenWidth / 1.5,
-                        textAlign: "center",
-                      }}
-                    >
-                      {searching ? "Đang tìm sản phẩm" : "Không tìm thấy từ khóa của bạn"}
-                    </Text>
-                  </View>
-                )
-              ) : (
-                <>
-                  <FlatList
-                    data={categories}
-                    renderItem={renderCategory}
-                    ListHeaderComponent={
-                      (bannerArr.length > 0 && bannerArr[0]?.categoryId) &&
-                      <Snowfall style={{
-                        backgroundColor: "#112A46",
-                        marginBottom: 15
-                      }}>
-                        <View style={styles.bannerContainer}>
-                          <FlatList
-                            data={bannerArr}
-                            ref={flatListRef}
-                            horizontal
-                            pagingEnabled
-                            showsHorizontalScrollIndicator={false}
-                            renderItem={({ item }) => (
-                              <TouchableOpacity onPress={() => {
-                                navigation.navigate('CategoryGadgets', { categoryId: item.categoryId, categoryName: item.categoryName })
-                              }}
-                                style={styles.imageBtn}
-                              >
-                                <Image
-                                  source={{ uri: item.thumbnailUrl }}
-                                  style={styles.gadgetImageItem}
-                                  resizeMode="contain"
-                                />
-                              </TouchableOpacity>
-                            )}
-                            keyExtractor={(item, index) => index}
-                            onLayout={() => {
-                              if (flatListRef.current) {
-                                flatListRef.current.scrollToIndex({ index: 0, animated: false });
-                              }
+                    {isSearching ? "Đang tìm sản phẩm" : !isFocused ? "Không tìm thấy từ khóa của bạn" : "Nhập nội dung tìm kiếm"}
+                  </Text>
+                </View>
+              )
+            ) : (
+              <>
+                <FlatList
+                  data={categories}
+                  renderItem={renderCategory}
+                  ListHeaderComponent={
+                    (bannerArr.length > 0 && bannerArr[0]?.categoryId) &&
+                    <Snowfall style={{
+                      backgroundColor: "#112A46",
+                      marginBottom: 15,
+                      marginTop: 10
+                    }}>
+                      <View style={styles.bannerContainer}>
+                        <FlatList
+                          data={bannerArr}
+                          ref={flatListRef}
+                          horizontal
+                          pagingEnabled
+                          showsHorizontalScrollIndicator={false}
+                          renderItem={({ item }) => (
+                            <TouchableOpacity onPress={() => {
+                              navigation.navigate('CategoryGadgets', { categoryId: item.categoryId, categoryName: item.categoryName })
                             }}
-                            getItemLayout={(data, index) => ({
-                              length: screenWidth,
-                              offset: screenWidth * index,
-                              index,
-                            })}
-                          />
-                        </View>
-                      </Snowfall>
-                    }
-                    showsVerticalScrollIndicator={false}
-                    keyExtractor={(item) => item.id}
-                    style={styles.categoryList}
-                  />
-                </>
-              )}
-            </>
-        }
+                              style={styles.imageBtn}
+                            >
+                              <Image
+                                source={{ uri: item.thumbnailUrl }}
+                                style={styles.gadgetImageItem}
+                                resizeMode="contain"
+                              />
+                            </TouchableOpacity>
+                          )}
+                          keyExtractor={(item, index) => index}
+                          onLayout={() => {
+                            if (flatListRef.current) {
+                              flatListRef.current.scrollToIndex({ index: 0, animated: false });
+                            }
+                          }}
+                          getItemLayout={(data, index) => ({
+                            length: ScreenWidth,
+                            offset: ScreenWidth * index,
+                            index,
+                          })}
+                        />
+                      </View>
+                    </Snowfall>
+                  }
+                  showsVerticalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  style={styles.categoryList}
+                />
+              </>
+            )}
+          </>
+      } */}
 
-        <ErrModal
-          stringErr={stringErr}
-          isError={isError}
-          setIsError={setIsError}
-        />
-      </LinearGradient>
-    </TouchableWithoutFeedback>
+      <ErrModal
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
+
+      {/* Confirmation delete keyword */}
+      <Modal
+        isVisible={openConfirmDelete}
+        onBackdropPress={() => {
+          setKeywordIdSelected("");
+          setOpenConfirmDelete(false);
+        }}
+        style={{
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            rowGap: 1,
+            width: ScreenWidth * 0.8,
+            padding: 20,
+            borderRadius: 10,
+            backgroundColor: "white",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 15,
+              width: ScreenWidth / 1.5,
+            }}
+          >
+            Xóa lịch sử tìm kiếm này?
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              columnGap: 12,
+            }}
+          >
+            <Pressable
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                paddingHorizontal: 15,
+                paddingVertical: 5,
+                borderRadius: 10,
+                width: 60,
+                height: ScreenHeight / 25,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onPress={() => {
+                setKeywordIdSelected("");
+                setOpenConfirmDelete(false);
+              }}
+            >
+              <Text style={{ fontWeight: "bold", color: "white" }}>HỦY</Text>
+            </Pressable>
+
+            <Pressable
+              style={{
+                backgroundColor: "#ed8900",
+                paddingHorizontal: 15,
+                paddingVertical: 5,
+                borderRadius: 10,
+                width: 60,
+                height: ScreenHeight / 25,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onPress={() => {
+                setOpenConfirmDelete(false)
+                handleDeleteKeywordById();
+              }}
+            >
+              <Text style={{ fontWeight: "bold", color: "white" }}>OK</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </LinearGradient>
   );
 }
 
@@ -606,12 +890,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     borderRadius: 6,
     paddingHorizontal: 10,
-    height: screenWidth / 9,
+    height: ScreenWidth / 9,
     width: ScreenWidth / 1.25,
+    marginLeft: 10,
   },
   searchInput: {
     fontSize: 16,
-    marginLeft: 10,
     width: ScreenWidth / 1.5,
     height: ScreenHeight / 1.2,
     textAlignVertical: "center"
@@ -623,7 +907,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10,
+    backgroundColor: "#ed8900",
+    borderColor: "#ed8900",
   },
   logoImage: {
     width: 48,
@@ -730,7 +1015,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   gadgetCard: {
-    width: (screenWidth - 40) / 3,
+    width: (ScreenWidth - 40) / 3,
     marginHorizontal: 5,
     borderRadius: 10,
     padding: 10,
@@ -774,9 +1059,10 @@ const styles = StyleSheet.create({
   },
   searchResultsList: {
     paddingHorizontal: 5,
+    marginVertical: 10
   },
   searchResultCard: {
-    width: (screenWidth - 30) / 2,
+    width: (ScreenWidth - 30) / 2,
     marginHorizontal: 5,
     marginBottom: 10,
   },

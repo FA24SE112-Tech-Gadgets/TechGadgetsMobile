@@ -434,7 +434,7 @@ export default function BuyerOrderDetail({ route, navigate }) {
                                 fontSize: 16,
                                 backgroundColor: "#f9f9f9"
                             }}
-                            placeholder={"Nhập lý do"}
+                            placeholder={"Nhập lý do (Không bắt buộc)"}
                             value={newReason}
                             onChangeText={(value) => {
                                 setNewReason(value)
