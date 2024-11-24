@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     Pressable,
     Keyboard,
+    BackHandler,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
@@ -378,7 +379,6 @@ export default function SellerHome() {
             keyboardHideListener.remove();
         };
     }, []);
-
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
             {/* Header + search */}
@@ -397,13 +397,13 @@ export default function SellerHome() {
                     style={{
                         width: 43,
                         height: 43,
-                        borderRadius: 21.5,
+                        borderRadius: 30,
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: "#ed8900",
+                        backgroundColor: isFocused ? "#ed8900" : undefined,
                         borderWidth: isFocused ? 1 : 0,
-                        borderColor: "#ed8900",
+                        borderColor: isFocused ? "#ed8900" : undefined,
                     }}
                     onPress={() => {
                         setIsFocused(false);

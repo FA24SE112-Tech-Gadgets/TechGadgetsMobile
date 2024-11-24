@@ -85,7 +85,9 @@ const CertificateDetail = ({
   return (
     <View style={styles.overlay}>
       <ScrollView
-        style={styles.modalContainer}
+        style={[styles.modalContainer, {
+          maxHeight: application.businessRegistrationCertificateUrl ? ScreenHeight / 1.3 : ScreenHeight / 1.7
+        }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.modalHeader}>
@@ -319,7 +321,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '90%', // You can adjust this width as needed
-    maxHeight: '80%', // To avoid overflow
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,

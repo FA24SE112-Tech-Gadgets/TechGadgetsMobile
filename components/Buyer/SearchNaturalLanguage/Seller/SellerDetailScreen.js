@@ -124,7 +124,7 @@ export default function SellerDetailScreen({ route, navigation }) {
     const renderGadget = ({ item }) => (
         <TouchableOpacity
             style={[styles.gadgetCard, { backgroundColor: '#FFFFFF' }]}
-            onPress={() => navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })}
+            onPress={() => navigation.navigate('GadgetDetail', { gadgetId: item.id })}
         >
             <View style={styles.imageContainer}>
                 <Image
@@ -223,6 +223,7 @@ export default function SellerDetailScreen({ route, navigation }) {
 
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
+            {/* Header + search + seller info */}
             <View style={{
                 backgroundColor: "rgba(254, 169, 40, 0.8)",
                 paddingHorizontal: 10,
@@ -239,8 +240,18 @@ export default function SellerDetailScreen({ route, navigation }) {
                     {/* Back Button */}
                     <TouchableOpacity
                         onPress={() => navigation.goBack()}
+                        style={{
+                            width: 43,
+                            height: 43,
+                            borderRadius: 30,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: "#ed8900",
+                            borderWidth: 1,
+                            borderColor: "#ed8900",
+                        }}
                     >
-                        <AntDesign name="arrowleft" size={35} color="#ed8900" />
+                        <AntDesign name="arrowleft" size={25} color="white" />
                     </TouchableOpacity>
                     <View
                         style={{

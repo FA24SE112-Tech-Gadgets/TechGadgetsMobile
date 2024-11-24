@@ -377,12 +377,12 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         height: 43,
                         width: 43,
                         overflow: 'hidden',
-                        borderRadius: 50,
+                        borderRadius: 30,
                         justifyContent: "center",
                         alignItems: "center",
-                        backgroundColor: "#ed8900",
+                        backgroundColor: isFocused ? "#ed8900" : undefined,
                         borderWidth: isFocused ? 1 : 0,
-                        borderColor: "#ed8900",
+                        borderColor: isFocused ? "#ed8900" : undefined,
                     }}
                     onPress={() => {
                         setIsFocused(false);

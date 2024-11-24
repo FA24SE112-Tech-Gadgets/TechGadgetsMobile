@@ -347,7 +347,7 @@ const LoginScreen = () => {
           <TouchableOpacity
             style={{
               marginRight: 10,
-              marginTop: -20
+              marginTop: -10
             }}
             onPress={() => {
               navigation.navigate("ForgotPassword");
@@ -481,6 +481,7 @@ const styles = StyleSheet.create({
     height: ScreenHeight / 7,
     display: "flex",
     justifyContent: "space-between",
+    gap: 15
   },
   textInput: {
     backgroundColor: "white",

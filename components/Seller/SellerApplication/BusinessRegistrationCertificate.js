@@ -239,7 +239,7 @@ export default function BusinessRegistrationCertificate() {
         autoPlay
         loop={false}
       />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 70, marginTop: 50 }}>
         <Text style={styles.title}>Đơn Đăng Ký</Text>
 
         <Text style={styles.label}>Tên Shop</Text>

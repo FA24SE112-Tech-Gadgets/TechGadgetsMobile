@@ -1,4 +1,4 @@
-import { View, Text, TextInput, FlatList, Pressable, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ScreenHeight, ScreenWidth } from '@rneui/base'
@@ -130,9 +130,9 @@ export default function SearchNaturalLanguage() {
                         data={gadgets}
                         keyExtractor={item => item.id}
                         renderItem={({ item, index }) => (
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={() =>
-                                    navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                    navigation.navigate('GadgetDetail', { gadgetId: item.id })
                                 }
                                 style={{
                                     marginBottom: 10, // Tạo khoảng cách dưới mỗi item
@@ -143,7 +143,7 @@ export default function SearchNaturalLanguage() {
                                     {...item}
                                     setGadgets={setGadgets}
                                 />
-                            </Pressable>
+                            </TouchableOpacity>
                         )}
                         onScroll={() => setOpenSearchBtn(false)}
                         onMomentumScrollEnd={() => {
@@ -170,7 +170,7 @@ export default function SearchNaturalLanguage() {
                         data={sellers}
                         keyExtractor={item => item.id}
                         renderItem={({ item, index }) => (
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={
                                     () => {
                                         navigation.navigate('SellerDetailScreen', { sellerId: item.id })
@@ -184,7 +184,7 @@ export default function SearchNaturalLanguage() {
                                     setOpenBigMap={setOpenBigMap}
                                     setSelectedLocation={setSelectedLocation}
                                 />
-                            </Pressable>
+                            </TouchableOpacity>
                         )}
                         scrollEventThrottle={16}
                         initialNumToRender={5}

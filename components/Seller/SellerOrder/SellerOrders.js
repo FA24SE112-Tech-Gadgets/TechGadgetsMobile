@@ -8,6 +8,7 @@ import {
     TextInput,
     ActivityIndicator,
     Pressable,
+    TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -335,7 +336,7 @@ export default function SellerOrders() {
                             data={sellerOrders}
                             keyExtractor={item => item.id}
                             renderItem={({ item, index }) => (
-                                <Pressable
+                                <TouchableOpacity
                                     onPress={() =>
                                         navigation.navigate('SellerOrderDetail', { sellerOrderId: item.id })
                                     }
@@ -348,7 +349,7 @@ export default function SellerOrders() {
                                     {index < sellerOrders.length - 1 && (
                                         <Divider style={{ marginVertical: 14 }} />
                                     )}
-                                </Pressable>
+                                </TouchableOpacity>
                             )}
                             onScroll={handleScroll}
                             scrollEventThrottle={16}

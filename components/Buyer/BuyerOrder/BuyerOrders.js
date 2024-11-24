@@ -213,7 +213,7 @@ export default function BuyerOrders() {
                         data={buyerOrders}
                         keyExtractor={item => item.id}
                         renderItem={({ item, index }) => (
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={() => navigation.navigate('BuyerOrderDetail', { sellerOrderId: item.id })}
                             >
                                 <BuyerOrderItem
@@ -224,7 +224,7 @@ export default function BuyerOrders() {
                                 {index < buyerOrders.length - 1 && (
                                     <Divider style={{ marginVertical: 14 }} />
                                 )}
-                            </Pressable>
+                            </TouchableOpacity>
                         )}
                         onScroll={handleScroll}
                         scrollEventThrottle={16}
