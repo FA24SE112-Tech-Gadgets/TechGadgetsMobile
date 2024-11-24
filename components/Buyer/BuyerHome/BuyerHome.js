@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
   Keyboard,
+  BackHandler,
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -448,6 +449,7 @@ export default function BuyerHome() {
     </LinearGradient>
   )
 
+  // Ẩn lịch sử tìm kiếm khi keyboard hide
   useEffect(() => {
     // Lắng nghe sự kiện khi bàn phím ẩn
     const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
@@ -461,7 +463,6 @@ export default function BuyerHome() {
       keyboardHideListener.remove();
     };
   }, []);
-
   return (
     <LinearGradient
       colors={['#fea92866', '#FFFFFF']}
@@ -476,7 +477,9 @@ export default function BuyerHome() {
         {/* Logo */}
         <TouchableOpacity
           style={[styles.logo, {
+            backgroundColor: isFocused ? "#ed8900" : undefined,
             borderWidth: isFocused ? 1 : 0,
+            borderColor: isFocused ? "#ed8900" : undefined,
           }]}
           onPress={() => {
             setIsFocused(false);
@@ -557,7 +560,8 @@ export default function BuyerHome() {
           borderBottomLeftRadius: 6,
           borderBottomRightRadius: 6,
           paddingVertical: 5,
-          marginLeft: 43 + ScreenWidth / 14
+          marginLeft: 43 + ScreenWidth / 15,
+          marginBottom: 10
         }}>
           <FlatList
             data={keywords}
@@ -903,12 +907,10 @@ const styles = StyleSheet.create({
   logo: {
     width: 43,
     height: 43,
-    borderRadius: 21.5,
+    borderRadius: 30,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: "#ed8900",
-    borderColor: "#ed8900",
   },
   logoImage: {
     width: 48,

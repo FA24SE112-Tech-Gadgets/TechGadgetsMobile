@@ -222,7 +222,7 @@ export default function SellerOrderDetail({ route, navigation }) {
     const renderFooter = () => {
         return (
             <View style={{
-                marginBottom: sellerOrder.status == "Pending" ? (ScreenHeight / 5) : 0
+                marginBottom: sellerOrder.status == "Pending" ? (ScreenHeight / 5) : 10
             }}>
                 {/* Bạn cần hỗ trợ? */}
                 <View style={styles.needHelpContainer}>
@@ -513,7 +513,7 @@ export default function SellerOrderDetail({ route, navigation }) {
         },
         sellerOrderFooterContainer: {
             width: ScreenWidth / 1.05,
-            height: ScreenHeight / 5,
+            height: ScreenHeight / 4.35,
             alignSelf: "center",
             marginTop: 10,
             borderRadius: 10,

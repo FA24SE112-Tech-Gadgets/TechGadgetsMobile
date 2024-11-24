@@ -203,7 +203,9 @@ export default function BuyerOrderDetail({ route, navigate }) {
                     </Pressable>
                 </View>
 
-                <View style={styles.buyerOrderFooterContainer}>
+                <View style={[styles.buyerOrderFooterContainer, {
+                    marginBottom: buyerOrder.status === "Cancelled" ? 5 : buyerOrder.status === "Pending" ? 5 : 20,
+                }]}>
                     <View style={styles.buyerOrderFooterRow}>
                         <Text style={styles.buyerOrderId} numberOfLines={1} ellipsizeMode="tail">
                             Mã đơn hàng: {sellerOrderId}
@@ -716,7 +718,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 10,
         paddingVertical: 10,
-        marginBottom: 5,
         backgroundColor: "#f9f9f9",
         gap: 10
     },
@@ -757,7 +758,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 10,
         paddingVertical: 10,
-        marginBottom: 10,
+        marginBottom: 20,
         backgroundColor: "#f9f9f9",
         gap: 10
     },
