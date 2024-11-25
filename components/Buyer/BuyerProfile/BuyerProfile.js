@@ -14,7 +14,6 @@ import Modal from "react-native-modal";
 import { useTranslation } from "react-i18next";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import api from "../../Authorization/api";
 import { FontAwesome6, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 
