@@ -51,17 +51,23 @@ const NotificationProvider = ({ children }) => {
 
     const handleDeleteDeviceToken = async () => {
         try {
-            await api.delete(`/device-tokens`, {
-                data: { token: deviceToken }
-            });
+            if (deviceToken) {
+                await api.delete(`/device-tokens`, {
+                    data: { token: deviceToken }
+                });
+            }
 
         } catch (error) {
-            setIsError(true);
-            setStringErr(
-                error.response?.data?.reasons[0]?.message
-                    ? error.response.data.reasons[0].message
-                    : "Lỗi mạng vui lòng thử lại sau"
-            );
+            console.log(error.response?.data?.reasons[0]?.message
+                ? error.response.data.reasons[0].message
+                : "Lỗi mạng vui lòng thử lại sau");
+
+            // setIsError(true);
+            // setStringErr(
+            //     error.response?.data?.reasons[0]?.message
+            //         ? error.response.data.reasons[0].message
+            //         : "Lỗi mạng vui lòng thử lại sau"
+            // );
         }
     }
 

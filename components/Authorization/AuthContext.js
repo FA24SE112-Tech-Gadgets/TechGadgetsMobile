@@ -8,8 +8,6 @@ import messaging from '@react-native-firebase/messaging';
 const AuthContext = createContext({
   isLoggedIn: false,
   user: {},
-  isTimerRunning: false,
-  setIsTimerRunning: () => { },
   setIsLoggedIn: () => { },
   setRole: () => { },
   login: async () => { },
@@ -25,7 +23,6 @@ const AuthContext = createContext({
 const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPackage, setCurrentPackage] = useState(null);
   const [isBackgroundNoti, setIsBackgroundNoti] = useState(false);
@@ -51,9 +48,10 @@ const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     setIsLoggedIn(false);
+    if (user?.loginMethod !== "Default") {
+      await GoogleSignin.signOut();
+    }
     setUser(null);
-    setIsTimerRunning(false);
-    await GoogleSignin.signOut();
     await AsyncStorage.removeItem("refreshToken");
     await AsyncStorage.removeItem("token");
     await messaging().unregisterDeviceForRemoteMessages(); //Stop receive FCM
@@ -74,8 +72,6 @@ const AuthProvider = ({ children }) => {
         logout,
         isLoading,
         setUser,
-        isTimerRunning,
-        setIsTimerRunning,
         isBackgroundNoti,
         setIsBackgroundNoti,
         currentPackage,
