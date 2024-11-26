@@ -292,7 +292,7 @@ export default function RegisterScreen({ navigation }) {
                   status={account.role === "Customer" ? 'checked' : 'unchecked'}
                   color="black"
                 />
-                <Text>customer</Text>
+                <Text>Khách hàng</Text>
               </Pressable>
               <Pressable
                 style={styles.checkboxContainer}
@@ -302,7 +302,7 @@ export default function RegisterScreen({ navigation }) {
                   status={account.role === "Seller" ? 'checked' : 'unchecked'}
                   color="black"
                 />
-                <Text>seller</Text>
+                <Text>Người bán</Text>
               </Pressable>
             </View>
           </View>

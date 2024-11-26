@@ -4,7 +4,7 @@ import api from '../../Authorization/api';
 import CertificateDetail from './CertificateDetail';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect } from '@react-navigation/native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import useAuth from "../../../utils/useAuth";
 import { useNavigation } from "@react-navigation/native";
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   actionButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: "#000",
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
