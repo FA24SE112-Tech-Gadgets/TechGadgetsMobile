@@ -227,7 +227,7 @@ export default function ReviewItem({
                                 }}>
                                     <View style={{
                                         flexDirection: "row",
-                                        gap: 10,
+                                        gap: review?.sellerReply.status === "Active" ? 10 : 5,
                                         alignItems: "center"
                                     }}>
                                         {/* seller name */}
@@ -242,6 +242,20 @@ export default function ReviewItem({
                                             fontSize: 12,
                                             color: "rgba(0, 0, 0, 0.8)"
                                         }}>{review?.sellerReply.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
+                                        {
+                                            review?.sellerReply.status !== "Active" &&
+                                            <View style={{
+                                                backgroundColor: "rgb(210, 65, 82)",
+                                                paddingHorizontal: 10,
+                                                paddingVertical: 5,
+                                                borderRadius: 10
+                                            }}>
+                                                <Text style={{
+                                                    fontSize: 12,
+                                                    color: "white",
+                                                }}>Khóa</Text>
+                                            </View>
+                                        }
                                     </View>
 
                                     {/* seller reply content */}

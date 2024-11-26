@@ -92,7 +92,31 @@ const ReviewList = ({ route }) => {
     const renderReviewItem = ({ item }) => (
         <View style={styles.reviewItem}>
             <View style={styles.reviewHeader}>
-                <Image source={{ uri: item.customer.avatarUrl }} style={styles.avatar} />
+                {/* Customer avatar */}
+                {item?.customer?.avatarUrl ? (
+                    <Image
+                        source={{
+                            uri: item?.customer.avatarUrl,
+                        }}
+                        style={styles.avatar}
+                    />
+                ) : (
+                    <View
+                        style={{
+                            height: 40,
+                            width: 40,
+                            borderRadius: 30,
+                            backgroundColor: "#ed8900",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
+                            {item?.customer !== null ? item?.customer.fullName?.charAt(0) : "G"}
+                        </Text>
+                    </View>
+                )}
+
                 <View style={styles.reviewHeaderText}>
                     <Text style={styles.customerName}>{item.customer.fullName}</Text>
                     <View style={styles.ratingContainer}>
@@ -108,11 +132,14 @@ const ReviewList = ({ route }) => {
                 </View>
                 <Text style={styles.reviewDate}>{formatDate(item.createdAt)}</Text>
             </View>
-            <View style={styles.reviewContentContainer}>
-                <Text style={styles.reviewContent}>{item.content}</Text>
-                {item.isUpdated && <Text style={styles.updatedText}>Đã chỉnh sửa</Text>}
-            </View>
-            {item.sellerReply && (
+            {
+                item.status === "Active" &&
+                <View style={styles.reviewContentContainer}>
+                    <Text style={styles.reviewContent}>{item.content}</Text>
+                    {item.isUpdated && <Text style={styles.updatedText}>Đã chỉnh sửa</Text>}
+                </View>
+            }
+            {(item.sellerReply && item.status === "Active" && item.sellerReply.status === "Active") && (
                 <View style={styles.sellerReply}>
                     <Text style={styles.sellerReplyHeader}>Người bán đã phản hồi:</Text>
                     <View style={styles.sellerReplyContentContainer}>
@@ -139,6 +166,7 @@ const ReviewList = ({ route }) => {
 
     const handleRefresh = async () => {
         setRefreshing(true);
+        setReviews([]);
         await fetchReviews(1); // Fetch new data (page 1)
         setRefreshing(false);
     };

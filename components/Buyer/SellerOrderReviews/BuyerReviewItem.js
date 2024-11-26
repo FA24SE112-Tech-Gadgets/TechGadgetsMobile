@@ -282,6 +282,21 @@ export default function BuyerReviewItem({
                                             color: "rgba(0, 0, 0, 0.5)",
                                             marginLeft: 10
                                         }}>{review?.isUpdated ? "Đã chỉnh sửa" : ""}</Text>
+                                        {
+                                            review?.status !== "Active" &&
+                                            <View style={{
+                                                backgroundColor: "rgb(210, 65, 82)",
+                                                paddingHorizontal: 10,
+                                                paddingVertical: 5,
+                                                marginLeft: 10,
+                                                borderRadius: 10
+                                            }}>
+                                                <Text style={{
+                                                    fontSize: 12,
+                                                    color: "white",
+                                                }}>Khóa</Text>
+                                            </View>
+                                        }
                                     </View>
                                 </View>
 
@@ -374,7 +389,7 @@ export default function BuyerReviewItem({
 
                             {/* Seller reply */}
                             {
-                                review.sellerReply &&
+                                (review.sellerReply && review.sellerReply.status === "Active") &&
                                 <>
                                     <Text style={{
                                         color: "rgba(0, 0, 0, 0.5)"
