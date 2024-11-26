@@ -101,6 +101,7 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
 
     const handleRefresh = async () => {
         setRefreshing(true);
+        setReviews([]);
         await fetchReviews(1); // Fetch new data (page 1)
         setRefreshing(false);
     };

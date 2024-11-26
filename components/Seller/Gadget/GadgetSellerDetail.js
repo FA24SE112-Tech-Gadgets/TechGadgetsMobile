@@ -23,6 +23,7 @@ import ErrModal from '../../CustomComponents/ErrModal';
 import LottieView from 'lottie-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Snackbar } from 'react-native-paper';
+import ReviewSummary from '../../Buyer/BuyerReview/ReviewSummary';
 
 export default function GadgetSellerDetail({ route, navigation }) {
     const [gadget, setGadget] = useState(null);
@@ -550,6 +551,13 @@ export default function GadgetSellerDetail({ route, navigation }) {
                         </View>
                     )}
                 </View>
+
+                <ReviewSummary
+                    gadgetId={route.params.gadgetId}
+                    navigation={navigation}
+                    setIsError={setIsError}
+                    setStringErr={setStringErr}
+                />
             </ScrollView >
 
             {/* Bottom Bar */}
@@ -596,7 +604,6 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                 );
                                 setIsError(true);
                             } else {
-                                //TODO: handle call api patch
                                 handleUpdateGadget();
                             }
                         }}
