@@ -101,6 +101,7 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
 
     const handleRefresh = async () => {
         setRefreshing(true);
+        setReviews([]);
         await fetchReviews(1); // Fetch new data (page 1)
         setRefreshing(false);
     };
@@ -260,17 +261,20 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                             keyExtractor={item => item.review.id}
                             renderItem={({ item, index }) => (
                                 <>
-                                    <ReviewItem
-                                        {...item}
-                                        sortOption={sortOption}
-                                        setIsError={setIsError}
-                                        setStringErr={setStringErr}
-                                        refreshing={refreshing}
-                                        setRefreshing={setRefreshing}
-                                        setSnackbarMessage={setSnackbarMessage}
-                                        setSnackbarVisible={setSnackbarVisible}
-                                    />
-                                    {index < reviews.length - 1 && (
+                                    {
+                                        item?.status === "Active" &&
+                                        <ReviewItem
+                                            {...item}
+                                            sortOption={sortOption}
+                                            setIsError={setIsError}
+                                            setStringErr={setStringErr}
+                                            refreshing={refreshing}
+                                            setRefreshing={setRefreshing}
+                                            setSnackbarMessage={setSnackbarMessage}
+                                            setSnackbarVisible={setSnackbarVisible}
+                                        />
+                                    }
+                                    {(index < reviews.length - 1 && item?.status === "Active") && (
                                         <Divider style={{ marginVertical: 14 }} />
                                     )}
                                 </>
