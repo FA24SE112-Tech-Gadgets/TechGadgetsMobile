@@ -53,19 +53,12 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
                         {name}
                     </Text>
 
-                    <Text style={[styles.name, {
-                        fontSize: 16,
-                        fontWeight: "500"
-                    }]} numberOfLines={1}>
-                        Kho: {quantity}
-                    </Text>
-
                     <View style={{
                         flexDirection: "row",
                         gap: 5
                     }}>
                         <Text style={[styles.name, {
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: "500"
                         }]}>
                             Tình trạng:
@@ -73,26 +66,20 @@ const GadgetItem = ({ thumbnailUrl, name, price, quantity, discountPrice, isForS
 
                         <Text style={[styles.name, {
                             color: quantity > 0 ? "#50C346" : "#C40C0C",
-                            fontSize: 16
+                            fontSize: 14
                         }]} numberOfLines={1} ellipsizeMode="tail">
                             {quantity > 0 ? "Còn hàng" : "Hết hàng"}
                         </Text>
                     </View>
 
-                    <View style={{
-                        flexDirection: "row",
-                        gap: 5
-                    }}>
-                        {/* <Text style={styles.price}>{formatCurrency(price)}</Text> */}
-                        {discountPercentage > 0 ? (
-                            <>
-                                <Text style={styles.originalPrice}>{formatCurrency(price)}</Text>
-                                <Text style={styles.discountPrice}>{formatCurrency(discountPrice)}</Text>
-                            </>
-                        ) : (
-                            <Text style={styles.discountPrice}>{formatCurrency(price)}</Text>
-                        )}
-                    </View>
+                    {discountPercentage > 0 ? (
+                        <>
+                            <Text style={styles.originalPrice}>{formatCurrency(price)}</Text>
+                            <Text style={styles.discountPrice}>{formatCurrency(discountPrice)}</Text>
+                        </>
+                    ) : (
+                        <Text style={styles.discountPrice}>{formatCurrency(price)}</Text>
+                    )}
                 </View>
             </View>
         </>
@@ -165,24 +152,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     name: {
-        fontSize: 19,
+        fontSize: 16,
         fontWeight: "700",
         marginBottom: 5,
-    },
-    ratingsContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-        marginBottom: 5,
-    },
-    rating: {
-        fontSize: 14,
-        fontWeight: "500",
-        marginRight: 5,
-    },
-    numRating: {
-        fontSize: 14,
-        fontWeight: "500",
     },
     price: {
         fontSize: 16,

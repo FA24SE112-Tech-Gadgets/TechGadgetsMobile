@@ -45,7 +45,13 @@ export default function BuyerProfile() {
     user,
   } = useAuth();
 
-  const { setNotifications, setNewNotifications, setCurrentPage, handleDeleteDeviceToken } = useNotification();
+  const {
+    setNotifications,
+    setNewNotifications,
+    setCurrentPage,
+    handleDeleteDeviceToken,
+    setUnreadNotifications
+  } = useNotification();
 
   const getRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -115,7 +121,7 @@ export default function BuyerProfile() {
             </Text>
           </View>
         )}
-        <Text style={{ fontSize: 24, fontWeight: "500", color: "white" }}>
+        <Text style={{ fontSize: 20, color: "white" }}>
           {user.customer.fullName}
         </Text>
       </View>
@@ -450,6 +456,7 @@ export default function BuyerProfile() {
           setCurrentPage(1);
           setNotifications([]);
           setNewNotifications([]);
+          setUnreadNotifications(0);
           navigation.dispatch(
             CommonActions.reset({
               index: 0,  // Starts at the first screen in the stack

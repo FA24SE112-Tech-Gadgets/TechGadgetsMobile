@@ -285,7 +285,7 @@ export default function ChangeProfile() {
     <LinearGradient
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 0.8 }}
-      colors={['#FFFFFF', '#ed8900']}
+      colors={['#FFFFFF', '#fea92866']}
       style={[styles.container]}
     >
       <View style={styles.viewContainer}>

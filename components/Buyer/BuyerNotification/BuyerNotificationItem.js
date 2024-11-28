@@ -122,7 +122,7 @@ export default function BuyerNotificationItem({
                         fontWeight: "500"
                     }}>Hệ thống - {formatVietnamDate(createdAt)}</Text>
                     <Text style={{
-                        width: ScreenWidth / 1.2,
+                        width: ScreenWidth / 1.25,
                     }}>{content}</Text>
                     <Text style={{ color: "rgba(0, 0, 0, 0.5)", fontSize: 15 }}>
                         {

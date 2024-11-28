@@ -263,7 +263,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             style={{
                                 width: ScreenWidth / 7,
                                 height: ScreenHeight / 80,
-                                backgroundColor: "#fea128",
+                                backgroundColor: "#ed8900",
                                 borderRadius: 30,
                             }}
                         />
@@ -279,12 +279,12 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     >
                         <Text style={styles.modalOptionText}>Đang kinh doanh</Text>
                         {newIsForSale ? (
-                            <MaterialCommunityIcons name="check-circle" size={24} color="#fea128" />
+                            <MaterialCommunityIcons name="check-circle" size={24} color="#ed8900" />
                         ) : (
                             <MaterialCommunityIcons
                                 name="checkbox-blank-circle-outline"
                                 size={24}
-                                color="#fea128"
+                                color="#ed8900"
                             />
                         )}
                     </Pressable>
@@ -299,12 +299,12 @@ export default function GadgetSellerDetail({ route, navigation }) {
                     >
                         <Text style={styles.modalOptionText}>Ngừng bán</Text>
                         {!newIsForSale ? (
-                            <MaterialCommunityIcons name="check-circle" size={24} color="#fea128" />
+                            <MaterialCommunityIcons name="check-circle" size={24} color="#ed8900" />
                         ) : (
                             <MaterialCommunityIcons
                                 name="checkbox-blank-circle-outline"
                                 size={24}
-                                color="#fea128"
+                                color="#ed8900"
                             />
                         )}
                     </Pressable>
@@ -501,7 +501,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                     <AntDesign
                                         name={isContentExpanded ? "up" : "down"}
                                         size={16}
-                                        color="#fea128"
+                                        color="#ed8900"
                                         style={styles.expandIcon}
                                     />
                                 </TouchableOpacity>
@@ -543,7 +543,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                                     <AntDesign
                                         name={isContentExpanded ? "up" : "down"}
                                         size={16}
-                                        color="#fea128"
+                                        color="#ed8900"
                                         style={styles.expandIcon}
                                     />
                                 </TouchableOpacity>
@@ -593,7 +593,7 @@ export default function GadgetSellerDetail({ route, navigation }) {
                             setIsForSaleModalVisible(true)
                         }}
                     >
-                        <Text style={styles.gadgetStatusTxt}>{newIsForSale ? "Đang kinh doanh" : "Ngừng bán"}</Text>
+                        <Text style={styles.gadgetStatusTxt}>{newIsForSale ? "Kinh doanh" : "Ngừng bán"}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         disabled={(newIsForSale == gadget.isForSale && newQuantity == gadget.quantity) || isFetching}
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     discountPrice: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fea128',
+        color: '#ed8900',
     },
     discountExpiry: {
         fontSize: 14,
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     },
     gadgetPrice: {
         fontSize: 20,
-        color: '#fea128',
+        color: '#ed8900',
         fontWeight: 'bold',
         marginBottom: 8,
     },
@@ -798,14 +798,14 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#fea128',
+        borderBottomColor: '#ed8900',
     },
     tabText: {
         fontSize: 16,
         color: '#666',
     },
     activeTabText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontWeight: 'bold',
     },
     tabContent: {
@@ -838,13 +838,13 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     specKey: {
-        fontSize: 16,
+        fontSize: 14,
         color: 'black',
         flexWrap: 'wrap',
         fontWeight: 'bold',
     },
     specValue: {
-        fontSize: 15,
+        fontSize: 14,
         color: '#333',
         flexWrap: 'wrap',
     },
@@ -863,7 +863,7 @@ const styles = StyleSheet.create({
         borderTopColor: '#eee',
     },
     expandButtonText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontSize: 14,
         fontWeight: '500',
         marginRight: 4,
@@ -880,7 +880,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     descriptionText: {
-        fontSize: 16,
+        fontSize: 14,
         lineHeight: 24,
     },
     boldText: {
@@ -918,7 +918,7 @@ const styles = StyleSheet.create({
     },
     quantityText: {
         paddingHorizontal: 5,
-        fontSize: 18,
+        fontSize: 14,
     },
     gadgetStatusBtn: {
         paddingHorizontal: 16,
@@ -930,7 +930,7 @@ const styles = StyleSheet.create({
         flex: 1
     },
     gadgetStatusTxt: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '500',
         color: '#000000',
     },
@@ -962,6 +962,6 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     modalOptionText: {
-        fontSize: 16,
+        fontSize: 14,
     },
 });

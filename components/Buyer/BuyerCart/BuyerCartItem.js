@@ -47,13 +47,15 @@ const BuyerCartItem = () => {
             return response.data.items;
         } catch (error) {
             console.log('Error fetching sellers:', error);
-            setStringErr(
-                error.response?.data?.reasons[0]?.message ?
-                    error.response.data.reasons[0].message
-                    :
-                    "Lỗi mạng vui lòng thử lại sau"
-            );
-            setIsError(true);
+            if (error.respone?.data && error.respone?.data?.code !== "WEB_00") {
+                setStringErr(
+                    error.response?.data?.reasons[0]?.message ?
+                        error.response.data.reasons[0].message
+                        :
+                        "Lỗi mạng vui lòng thử lại sau"
+                );
+                setIsError(true);
+            }
             return [];
         }
     };
@@ -368,13 +370,19 @@ const BuyerCartItem = () => {
                     <Text style={styles.gadgetName} numberOfLines={2}>{item.gadget.name}</Text>
                     <View style={styles.priceContainer}>
                         {item.gadget.discountPercentage > 0 ? (
-                            <>
-                                <Text style={styles.originalPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
-                                <Text style={styles.discountPrice}>{item.gadget.discountPrice.toLocaleString('vi-VN')} ₫</Text>
-                                <View style={styles.discountBadge}>
-                                    <Text style={styles.discountText}>-{item.gadget.discountPercentage}%</Text>
+                            <View style={{
+                                flexDirection: "column"
+                            }}>
+                                <View style={{
+                                    flexDirection: "row"
+                                }}>
+                                    <Text style={styles.originalPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
+                                    <View style={styles.discountBadge}>
+                                        <Text style={styles.discountText}>-{item.gadget.discountPercentage}%</Text>
+                                    </View>
                                 </View>
-                            </>
+                                <Text style={styles.discountPrice}>{item.gadget.discountPrice.toLocaleString('vi-VN')} ₫</Text>
+                            </View>
                         ) : (
                             <Text style={styles.gadgetPrice}>{item.gadget.price.toLocaleString('vi-VN')} ₫</Text>
                         )}
@@ -408,7 +416,7 @@ const BuyerCartItem = () => {
                         style={styles.removeButton}
                         onPress={() => showConfirmModal(() => removeGadget(item.gadget.id), 'Bạn có chắc chắn muốn xóa sản phẩm này?')}
                     >
-                        <AntDesign name="delete" size={24} color="red" />
+                        <AntDesign name="delete" size={24} color="rgb(210, 65, 82)" />
                     </TouchableOpacity>
                 )}
             </TouchableOpacity>
@@ -716,12 +724,12 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     shopName: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 14,
+        fontWeight: '600',
         flex: 1,
     },
     removeShopText: {
-        color: 'red',
+        color: 'rgb(210, 65, 82)',
     },
     gadgetItem: {
         flexDirection: 'row',
@@ -775,7 +783,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15
     },
     statusText: {
-        color: 'red',
+        color: 'rgb(210, 65, 82)',
         fontSize: 14,
         fontWeight: '500',
         textTransform: 'uppercase',
@@ -785,12 +793,10 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     gadgetName: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '500',
     },
     priceContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginTop: 5,
     },
     originalPrice: {
@@ -885,28 +891,32 @@ const styles = StyleSheet.create({
     },
     checkoutButton: {
         backgroundColor: '#ed8900',
-        padding: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
         borderRadius: 5,
         alignItems: 'center',
         minWidth: 120,
+        justifyContent: "center"
     },
     checkoutButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
     },
     removeAllButton: {
-        backgroundColor: 'red',
-        padding: 15,
+        backgroundColor: 'rgb(210, 65, 82)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
         borderRadius: 5,
         alignItems: 'center',
         minWidth: 120,
         flexDirection: "row",
-        gap: 10
+        gap: 10,
+        justifyContent: "center"
     },
     removeAllButtonText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
     },
     disabledButton: {

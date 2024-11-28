@@ -471,15 +471,15 @@ export default function BuyerHome() {
       {/* Header + search */}
       <View
         style={[styles.header, {
-          paddingBottom: isFocused ? 0 : 15
+          paddingBottom: isFocused ? 0 : isSearching ? 15 : 5
         }]}
       >
         {/* Logo */}
         <TouchableOpacity
           style={[styles.logo, {
-            backgroundColor: isFocused ? "#ed8900" : undefined,
-            borderWidth: isFocused ? 1 : 0,
-            borderColor: isFocused ? "#ed8900" : undefined,
+            backgroundColor: isSearching ? "#ed8900" : undefined,
+            borderWidth: isSearching ? 1 : 0,
+            borderColor: isSearching ? "#ed8900" : undefined,
           }]}
           onPress={() => {
             setIsFocused(false);
@@ -487,6 +487,7 @@ export default function BuyerHome() {
             Keyboard.dismiss();
             setSearchQuery("");
           }}
+          disabled={!isSearching}
         >
           {
             isSearching ?
@@ -498,7 +499,8 @@ export default function BuyerHome() {
         {/* Search bar */}
         <View style={[styles.searchContainer, {
           borderColor: isFocused ? "#ed8900" : undefined,
-          borderWidth: isFocused ? 2 : 0
+          borderWidth: isFocused ? 2 : 0,
+          justifyContent: isFocused ? "space-between" : undefined
         }]}>
           {
             !isFocused &&
@@ -506,7 +508,7 @@ export default function BuyerHome() {
           }
           <TextInput
             style={[styles.searchInput, {
-              marginLeft: !isFocused ? 10 : 0
+              marginLeft: isFocused ? 0 : 10,
             }]}
             placeholder="Tìm kiếm sản phẩm"
             value={searchQuery}
@@ -534,7 +536,8 @@ export default function BuyerHome() {
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: "#ed8900",
-                borderRadius: 6,
+                marginRight: -0.05,
+                borderRadius: 6
               }}
               onPress={() => {
                 if (searchQuery.trim()) {
@@ -555,12 +558,12 @@ export default function BuyerHome() {
           backgroundColor: "#f9f9f9",
           height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15,
           marginHorizontal: 15,
-          width: ScreenWidth / 1.25,
+          width: ScreenWidth / 1.35,
           paddingHorizontal: 10,
           borderBottomLeftRadius: 6,
           borderBottomRightRadius: 6,
           paddingVertical: 5,
-          marginLeft: 43 + ScreenWidth / 15,
+          marginLeft: 40 + ScreenWidth / 10,
           marginBottom: 10
         }}>
           <FlatList
@@ -701,97 +704,6 @@ export default function BuyerHome() {
         )
       }
 
-      {/* {
-        loading ? (
-          renderLoading("Đang tải dữ liệu sản phẩm")
-        )
-          :
-          <>
-            {searchQuery ? (
-              searchResults.length > 0 ? (
-                renderSearchResults()
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <LottieView
-                    source={require("../../../assets/animations/catRole.json")}
-                    style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
-                    autoPlay
-                    loop
-                    speed={0.8}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      width: ScreenWidth / 1.5,
-                      textAlign: "center",
-                    }}
-                  >
-                    {isSearching ? "Đang tìm sản phẩm" : !isFocused ? "Không tìm thấy từ khóa của bạn" : "Nhập nội dung tìm kiếm"}
-                  </Text>
-                </View>
-              )
-            ) : (
-              <>
-                <FlatList
-                  data={categories}
-                  renderItem={renderCategory}
-                  ListHeaderComponent={
-                    (bannerArr.length > 0 && bannerArr[0]?.categoryId) &&
-                    <Snowfall style={{
-                      backgroundColor: "#112A46",
-                      marginBottom: 15,
-                      marginTop: 10
-                    }}>
-                      <View style={styles.bannerContainer}>
-                        <FlatList
-                          data={bannerArr}
-                          ref={flatListRef}
-                          horizontal
-                          pagingEnabled
-                          showsHorizontalScrollIndicator={false}
-                          renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => {
-                              navigation.navigate('CategoryGadgets', { categoryId: item.categoryId, categoryName: item.categoryName })
-                            }}
-                              style={styles.imageBtn}
-                            >
-                              <Image
-                                source={{ uri: item.thumbnailUrl }}
-                                style={styles.gadgetImageItem}
-                                resizeMode="contain"
-                              />
-                            </TouchableOpacity>
-                          )}
-                          keyExtractor={(item, index) => index}
-                          onLayout={() => {
-                            if (flatListRef.current) {
-                              flatListRef.current.scrollToIndex({ index: 0, animated: false });
-                            }
-                          }}
-                          getItemLayout={(data, index) => ({
-                            length: ScreenWidth,
-                            offset: ScreenWidth * index,
-                            index,
-                          })}
-                        />
-                      </View>
-                    </Snowfall>
-                  }
-                  showsVerticalScrollIndicator={false}
-                  keyExtractor={(item) => item.id}
-                  style={styles.categoryList}
-                />
-              </>
-            )}
-          </>
-      } */}
-
       <ErrModal
         stringErr={stringErr}
         isError={isError}
@@ -893,16 +805,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F9F9F9',
     borderRadius: 6,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
+    width: ScreenWidth / 1.35,
     height: ScreenWidth / 9,
-    width: ScreenWidth / 1.25,
-    marginLeft: 10,
   },
   searchInput: {
     fontSize: 16,
-    width: ScreenWidth / 1.5,
+    width: ScreenWidth / 1.83,
     height: ScreenHeight / 1.2,
-    textAlignVertical: "center"
+    textAlignVertical: "center",
   },
   logo: {
     width: 43,
@@ -999,13 +910,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   categoryName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
   },
   viewAllText: {
-    color: '#fea128',
-    fontSize: 16,
+    color: '#ed8900',
+    fontSize: 15,
   },
   categoryUnderline: {
     height: 2,
@@ -1017,7 +928,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   gadgetCard: {
-    width: (ScreenWidth - 40) / 3,
+    width: (ScreenWidth - 40) / 2,
     marginHorizontal: 5,
     borderRadius: 10,
     padding: 10,

@@ -380,9 +380,9 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         borderRadius: 30,
                         justifyContent: "center",
                         alignItems: "center",
-                        backgroundColor: isFocused ? "#ed8900" : undefined,
-                        borderWidth: isFocused ? 1 : 0,
-                        borderColor: isFocused ? "#ed8900" : undefined,
+                        backgroundColor: isSearching ? "#ed8900" : undefined,
+                        borderWidth: isSearching ? 1 : 0,
+                        borderColor: isSearching ? "#ed8900" : undefined,
                     }}
                     onPress={() => {
                         setIsFocused(false);
@@ -390,6 +390,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         Keyboard.dismiss();
                         setSearchQuery("");
                     }}
+                    disabled={!isSearching}
                 >
                     {
                         isSearching ?
@@ -414,7 +415,7 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         borderRadius: 6,
                         paddingHorizontal: 10,
                         height: ScreenWidth / 9,
-                        width: ScreenWidth / 1.25,
+                        width: ScreenWidth / 1.3,
                         borderColor: isFocused ? "#ed8900" : undefined,
                         borderWidth: isFocused ? 2 : 0
                     }}
@@ -428,10 +429,10 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                         returnKeyType="search"
                         style={{
                             fontSize: 16,
-                            width: ScreenWidth / 1.5,
+                            width: ScreenWidth / 1.615,
                             height: ScreenHeight / 1.2,
                             textAlignVertical: "center",
-                            marginLeft: !isFocused ? 10 : 0,
+                            marginLeft: !isFocused ? 10 : 0
                         }}
                         value={searchQuery}
                         onChangeText={(query) => setSearchQuery(query)}
@@ -480,13 +481,13 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                 <View style={{
                     backgroundColor: "#f9f9f9",
                     height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15,
-                    width: ScreenWidth / 1.25,
+                    width: ScreenWidth / 1.3,
                     paddingHorizontal: 10,
                     borderBottomLeftRadius: 6,
                     borderBottomRightRadius: 6,
                     paddingVertical: 5,
                     marginBottom: 10,
-                    marginLeft: 43 + ScreenWidth / 25
+                    marginLeft: 43 + ScreenWidth / 45
                 }}>
                     <FlatList
                         data={keywords}
@@ -560,13 +561,13 @@ export default function SellerGadgetByCategory({ navigation, route }) {
                     setModalVisible={setModalVisible}
                     sortOption={sortOption}
                     handleSortOption={handleSortOption}
-                    disabled={gadgets.length == 0}
+                    disabled={gadgets.length == 0 && searchGadgets.length == 0}
                 />
             </View>
 
             <View
                 style={{
-                    height: (isFocused && keywords.length > 0) ? ((ScreenHeight / 1.265) - ((ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15)) : (ScreenHeight / 1.265),
+                    height: (isFocused && keywords.length > 0) ? ((ScreenHeight / 1.18) - ((ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15)) : (ScreenHeight / 1.18),
                 }}
             >
                 {
@@ -832,7 +833,7 @@ const SortModal = ({
 
                         {/* Lọc theo */}
                         <View style={[styles.modalOption]}>
-                            <Text style={{ fontWeight: "bold", fontSize: 18 }}>Lọc theo</Text>
+                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>Lọc theo</Text>
                         </View>
 
                         {/* Giá thấp nhất */}
@@ -901,7 +902,7 @@ const styles = StyleSheet.create({
     },
     sortButtonText: {
         fontWeight: "bold",
-        fontSize: 18,
+        fontSize: 16,
         color: "white",
     },
     modalOverlay: {

@@ -11,8 +11,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from '@react-navigation/native';
 import api from "../../../Authorization/api";
-import logo from "../../../../assets/adaptive-icon.png";
-import { useNavigation } from '@react-navigation/native';
 import { useDebounce } from 'use-debounce';
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import ErrModal from '../../../CustomComponents/ErrModal';
@@ -282,12 +280,13 @@ export default function SellerDetailScreen({ route, navigation }) {
                     flexDirection: "row",
                     gap: 10,
                     alignSelf: "center",
+                    paddingHorizontal: 10
                 }}>
                     {/* Shop avatar */}
                     <View
                         style={{
-                            height: 50,
-                            width: 50,
+                            height: 45,
+                            width: 45,
                             borderRadius: 30,
                             backgroundColor: "#ed8900",
                             alignItems: "center",
@@ -310,7 +309,6 @@ export default function SellerDetailScreen({ route, navigation }) {
                     }}>
                         {/* ShopName */}
                         <Text style={{
-                            fontSize: 16,
                             fontWeight: "500",
                             marginBottom: 3,
                             overflow: "hidden",
@@ -331,7 +329,7 @@ export default function SellerDetailScreen({ route, navigation }) {
                                 style={{
                                     color: "white",
                                     fontWeight: "500",
-                                    width: ScreenWidth / 1.7
+                                    width: ScreenWidth / 1.9,
                                 }}
                                 numberOfLines={2}
                                 ellipsizeMode="tail"
@@ -470,7 +468,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 40,
         height: 40,
-        backgroundColor: '#fea128',
+        backgroundColor: '#ed8900',
         borderRadius: 20,
     },
     imageContainer: {
@@ -581,7 +579,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     viewAllText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontSize: 16,
     },
     categoryUnderline: {
@@ -594,7 +592,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     gadgetCard: {
-        width: (ScreenWidth - 40) / 3,
+        width: (ScreenWidth - 40) / 2,
         marginHorizontal: 5,
         borderRadius: 10,
         padding: 10,

@@ -19,6 +19,20 @@ export default function SellerApplicationItem({
         setSnackbarVisible(true);
     };
 
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    };
+
     return (
         <TouchableOpacity
             style={{
@@ -42,10 +56,10 @@ export default function SellerApplicationItem({
                 alignItems: "center"
             }}>
                 <Text style={{
-                    fontSize: 19,
+                    fontSize: 16,
                     fontWeight: "700",
                     marginBottom: 5,
-                    width: ScreenWidth / 1.4
+                    width: ScreenWidth / 1.6
                 }} numberOfLines={1} ellipsizeMode="tail">
                     Mã đơn: {id}
                 </Text>
@@ -53,13 +67,13 @@ export default function SellerApplicationItem({
                     disabled={id != null ? false : true}
                     onPress={() => copyToClipboard(id)}
                 >
-                    <Text style={{ color: "#ed8900", fontSize: 16, fontWeight: "500" }}>Sao chép</Text>
+                    <Text style={{ color: "#ed8900", fontSize: 14, fontWeight: "500" }}>Sao chép</Text>
                 </TouchableOpacity>
             </View>
 
             {/* shopName */}
             <Text style={{
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: "500",
             }}>
                 Tên cửa hàng:
@@ -68,7 +82,7 @@ export default function SellerApplicationItem({
 
             {/* businessModel */}
             <Text style={{
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: "500",
             }}>
                 Mô Hình Kinh Doanh:
@@ -85,7 +99,7 @@ export default function SellerApplicationItem({
                 gap: 10
             }}>
                 <Text style={{
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: "500",
                 }}>Trạng thái:</Text>
                 <View style={{
@@ -97,7 +111,7 @@ export default function SellerApplicationItem({
                     borderRadius: 10
                 }}>
                     <Text style={{
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: "bold",
                         color: status == "Pending" ? "rgb(255, 193, 0)" : status === 'Approved' ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
                     }}>{status === 'Pending' ? 'Đang Chờ' : status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}</Text>
@@ -106,8 +120,8 @@ export default function SellerApplicationItem({
 
             <Text style={{
                 textAlign: 'center',
-                fontSize: 14,
-            }}>{new Date(createdAt).toLocaleString()}</Text>
+                fontSize: 15,
+            }}>{formatDateTime(createdAt)}</Text>
         </TouchableOpacity>
     )
 }

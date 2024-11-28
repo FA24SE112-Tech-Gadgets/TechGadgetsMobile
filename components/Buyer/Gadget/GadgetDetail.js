@@ -9,7 +9,7 @@ import {
   FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, EvilIcons } from '@expo/vector-icons';
 import { Snackbar } from 'react-native-paper';
 import Modal from 'react-native-modal';
 import api from '../../Authorization/api';
@@ -20,6 +20,10 @@ import ReviewSummary from '../BuyerReview/ReviewSummary';
 
 export default function GadgetDetail({ route, navigation }) {
   const [gadget, setGadget] = useState(null);
+  const { gadgetId } = route.params;
+
+  const [isChangeGadget, setIsChangeGadget] = useState(false);
+
   const [activeTab, setActiveTab] = useState('specs');
   const [quantity, setQuantity] = useState(1);
   const [imageModalVisible, setImageModalVisible] = useState(false);
@@ -49,11 +53,20 @@ export default function GadgetDetail({ route, navigation }) {
 
   useEffect(() => {
     fetchGadgetDetail();
-  }, []);
+  }, [gadgetId]);
 
   useEffect(() => {
     setIsContentExpanded(false);
   }, [activeTab]);
+
+  //Check coi có change gadget khác khi vô gadget detail xong vô shop r lại vô gadget detail
+  useEffect(() => {
+    if (gadget != null) {
+      setIsChangeGadget(true);
+    } else {
+      setIsChangeGadget(false);
+    }
+  }, [gadgetId]); // Theo dõi gadgetId
 
   {/* Group Specification*/ }
   const groupSpecifications = (specs) => {
@@ -70,8 +83,9 @@ export default function GadgetDetail({ route, navigation }) {
   const fetchGadgetDetail = async () => {
     try {
       setIsFetching(true);
-      const response = await api.get(`/gadgets/${route.params.gadgetId}`);
+      const response = await api.get(`/gadgets/${gadgetId}`);
       setIsFetching(false);
+      setIsChangeGadget(false);
 
       setGadget(response.data);
     } catch (error) {
@@ -84,6 +98,7 @@ export default function GadgetDetail({ route, navigation }) {
       );
       setIsError(true);
       setIsFetching(false);
+      setIsChangeGadget(false);
     }
   };
 
@@ -119,7 +134,7 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
-  if (gadget === null || gadget?.status === "Inactive") {
+  if (gadget === null || gadget?.status === "Inactive" || isChangeGadget) {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{
@@ -329,6 +344,96 @@ export default function GadgetDetail({ route, navigation }) {
           <Text style={styles.condition}>Tình trạng: {gadget.condition}</Text>
         </View>
 
+        {/* Seller info */}
+        <View style={{
+          alignSelf: "center",
+          backgroundColor: "white",
+          padding: 10,
+          width: ScreenWidth / 1.1,
+          borderRadius: 10 + 10,
+          gap: 10
+        }}>
+          <View style={{
+            flexDirection: "row",
+            gap: 10,
+          }}>
+            {/* Shop avatar */}
+            <View
+              style={{
+                height: 45,
+                width: 45,
+                borderRadius: 30,
+                backgroundColor: "#ed8900",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: "white"
+              }}
+            >
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
+                {gadget.seller !== null ? gadget.seller.shopName?.charAt(0) : "G"}
+              </Text>
+            </View>
+
+            <View style={{
+              width: ScreenWidth / 1.5,
+            }}>
+              {/* ShopName */}
+              <Text style={{
+                fontSize: 14,
+                marginBottom: 3,
+                overflow: "hidden",
+              }} numberOfLines={1} ellipsizeMode="tail">
+                {gadget.seller !== null ? gadget.seller.shopName : "Người dùng hệ thống"}{gadget.seller?.companyName ? ` - ${gadget.seller.companyName}` : ""}
+              </Text>
+
+              {/* Shop address */}
+              <View style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 5,
+                gap: 5,
+              }}>
+                <EvilIcons name="location" size={23} />
+                <Text
+                  style={{
+                    fontSize: 12,
+                    overflow: "hidden",
+                    width: ScreenWidth / 1.7
+                  }}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >{gadget.seller !== null ? gadget.seller.shopAddress : "Người bán chưa cập nhật địa chỉ"}</Text>
+              </View>
+            </View>
+
+          </View>
+
+          {/* Xem Shop */}
+          <TouchableOpacity
+            onPress={
+              () => {
+                navigation.navigate('SellerDetailScreen', { sellerId: gadget.seller.id })
+              }
+            }
+            style={{
+              width: ScreenWidth / 1.1 - 20,
+              height: ScreenHeight / 20,
+              backgroundColor: "#ed8900",
+              alignItems: "center",
+              padding: 10,
+              borderRadius: 10,
+              alignSelf: "center"
+            }}
+          >
+            <Text style={{
+              color: "white",
+              fontSize: 14
+            }}>Xem shop</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Tabs */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
@@ -385,7 +490,7 @@ export default function GadgetDetail({ route, navigation }) {
                   <AntDesign
                     name={isContentExpanded ? "up" : "down"}
                     size={16}
-                    color="#fea128"
+                    color="#ed8900"
                     style={styles.expandIcon}
                   />
                 </TouchableOpacity>
@@ -431,7 +536,7 @@ export default function GadgetDetail({ route, navigation }) {
                   <AntDesign
                     name={isContentExpanded ? "up" : "down"}
                     size={16}
-                    color="#fea128"
+                    color="#ed8900"
                     style={styles.expandIcon}
                   />
                 </TouchableOpacity>
@@ -440,7 +545,7 @@ export default function GadgetDetail({ route, navigation }) {
           )}
         </View>
         <ReviewSummary
-          gadgetId={route.params.gadgetId}
+          gadgetId={gadgetId}
           navigation={navigation}
           setIsError={setIsError}
           setStringErr={setStringErr}
@@ -470,7 +575,7 @@ export default function GadgetDetail({ route, navigation }) {
             style={styles.cartButton}
             onPress={addToCart}
           >
-            <Feather name="shopping-cart" size={20} color="#fea128" />
+            <Feather name="shopping-cart" size={20} color="#ed8900" />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -586,9 +691,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   discountPrice: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#ff4444',
+    color: '#ed8900',
   },
   discountExpiry: {
     fontSize: 14,
@@ -625,13 +730,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   productName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   productPrice: {
-    fontSize: 20,
-    color: '#fea128',
+    fontSize: 22,
+    color: '#ed8900',
     fontWeight: 'bold',
     marginBottom: 8,
   },
@@ -651,14 +756,14 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#fea128',
+    borderBottomColor: '#ed8900',
   },
   tabText: {
     fontSize: 16,
     color: '#666',
   },
   activeTabText: {
-    color: '#fea128',
+    color: '#ed8900',
     fontWeight: 'bold',
   },
   tabContent: {
@@ -691,13 +796,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   specKey: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'black',
     flexWrap: 'wrap',
     fontWeight: 'bold',
   },
   specValue: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#333',
     flexWrap: 'wrap',
   },
@@ -716,7 +821,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#eee',
   },
   expandButtonText: {
-    color: '#fea128',
+    color: '#ed8900',
     fontSize: 14,
     fontWeight: '500',
     marginRight: 4,
@@ -733,7 +838,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 24,
   },
   boldText: {
@@ -778,7 +883,7 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     borderWidth: 1,
-    borderColor: '#fea128',
+    borderColor: '#ed8900',
     borderRadius: 8,
     width: ScreenWidth / 9,
     height: ScreenWidth / 9,
@@ -787,7 +892,7 @@ const styles = StyleSheet.create({
   },
   buyNowButton: {
     flex: 1,
-    backgroundColor: '#fea128',
+    backgroundColor: '#ed8900',
     borderRadius: 8,
     alignItems: 'center',
     height: ScreenWidth / 9,
@@ -842,7 +947,7 @@ const styles = StyleSheet.create({
   buyNowModalPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fea128',
+    color: '#ed8900',
     marginBottom: 15,
   },
   buyNowModalButtons: {
@@ -862,7 +967,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   buyNowModalConfirmButton: {
-    backgroundColor: '#fea128',
+    backgroundColor: '#ed8900',
   },
   buyNowModalButtonText: {
     color: 'white',
