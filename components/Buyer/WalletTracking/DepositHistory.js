@@ -138,6 +138,13 @@ const DepositHistory = () => {
           </View>
         </View>
 
+        {
+          (item.status !== 'Pending' && item?.balanceBeforeChange) &&
+          <Text style={{
+            color: "rgba(0, 0, 0, 0.5)"
+          }}>SD: {formatAmount(item.balanceBeforeChange + (item.status === 'Success' ? item.amount : 0))} ₫</Text>
+        }
+
         {item.status === 'Pending' && (
           <TouchableOpacity onPress={() => showCancelModal(item)} style={styles.cancelButton}>
             <Text style={styles.cancelButtonText}>Hủy giao dịch</Text>
@@ -535,13 +542,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   idText: {
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: "700",
-    width: ScreenWidth / 1.4,
+    width: ScreenWidth / 1.45,
   },
   copyText: {
     color: "#ed8900",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "500",
   },
   paymentMethod: {

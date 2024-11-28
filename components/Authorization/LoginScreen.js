@@ -154,7 +154,15 @@ const LoginScreen = () => {
 
       navigation.replace('StackBuyerHome');
     } catch (error) {
-      console.log('API call error:', error);
+      console.log('API call error:', error?.response?.data);
+      setStringErr(
+        error.response?.data?.reasons[0]?.message ?
+          error.response.data.reasons[0].message
+          :
+          "Lỗi mạng vui lòng thử lại sau"
+      );
+      setIsError(true);
+      setIsRecentPushed(false);
     }
   };
 

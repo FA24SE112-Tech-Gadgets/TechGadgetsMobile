@@ -43,7 +43,13 @@ export default function SellerProfile() {
     user,
   } = useAuth();
 
-  const { setNotifications, setNewNotifications, setCurrentPage, handleDeleteDeviceToken } = useNotification();
+  const {
+    setNotifications,
+    setNewNotifications,
+    setCurrentPage,
+    handleDeleteDeviceToken,
+    setUnreadNotifications
+  } = useNotification();
 
   useFocusEffect(
     useCallback(() => {
@@ -103,7 +109,7 @@ export default function SellerProfile() {
           </View>
         )}
         <Text
-          style={{ fontSize: 24, fontWeight: "500", color: "white", overflow: "hidden", width: ScreenWidth / 1.3 }}
+          style={{ fontSize: 20, color: "white", overflow: "hidden", width: ScreenWidth / 1.3 }}
           numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
           ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
         >
@@ -449,6 +455,7 @@ export default function SellerProfile() {
           setCurrentPage(1);
           setNotifications([]);
           setNewNotifications([]);
+          setUnreadNotifications(0);
           navigation.dispatch(
             CommonActions.reset({
               index: 0,  // Starts at the first screen in the stack

@@ -365,7 +365,7 @@ export default function CategoryGadgets({ route, navigation }) {
         </TouchableOpacity>
         <Text style={styles.headerTxt}>{categoryName}</Text>
         <TouchableOpacity onPress={openFilterModal}>
-          <AntDesign name="filter" size={24} color={activeFilters ? "#fea128" : "black"} />
+          <AntDesign name="filter" size={24} color={activeFilters ? "#ed8900" : "black"} />
         </TouchableOpacity>
       </View>
       {loading && page === 1 ? (
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   applyButton: {
-    backgroundColor: '#fea128',
+    backgroundColor: '#ed8900',
     padding: 10,
     borderRadius: 5,
     flex: 1,

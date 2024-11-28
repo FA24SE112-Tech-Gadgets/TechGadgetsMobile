@@ -4,7 +4,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { ScreenWidth } from '@rneui/base';
 import { useNavigation } from '@react-navigation/native';
 
-export default function WalletTrackingItem({ id, amount, type, status, sellerOrderId, createdAt, setSnackbarMessage, setSnackbarVisible }) {
+export default function WalletTrackingItem({ id, amount, balanceBeforeChange, type, status, sellerOrderId, createdAt, setSnackbarMessage, setSnackbarVisible }) {
     const copyToClipboard = (text) => {
         Clipboard.setString(text);
         setSnackbarMessage("Sao chép thành công");
@@ -22,6 +22,8 @@ export default function WalletTrackingItem({ id, amount, type, status, sellerOrd
             let formattedString = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
 
             return formattedString;
+        } else {
+            return "0 ₫";
         }
     }
 
@@ -116,6 +118,14 @@ export default function WalletTrackingItem({ id, amount, type, status, sellerOrd
                 >{status == "Success" ? "+ " : ""}{formatCurrency(amount)}</Text>
                 <Text style={{ fontWeight: "400" }}>{formatVietnamDate(createdAt)}</Text>
             </View >
+
+            {
+                balanceBeforeChange &&
+                <Text style={{
+                    color: "rgba(0, 0, 0, 0.5)"
+                }}>SD: {formatCurrency(balanceBeforeChange + amount)}</Text>
+            }
+
         </TouchableOpacity>
     )
 }

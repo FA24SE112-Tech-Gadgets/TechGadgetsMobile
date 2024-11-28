@@ -9,6 +9,8 @@ const BuyerOrderItem = ({ id, amount, status, createdAt, sellerInfo, gadgets, se
   const formatCurrency = (number) => {
     if (number) {
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
+    } else if (number == 0) {
+      return "0 ₫";
     }
     return "";
   };

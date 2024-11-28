@@ -45,6 +45,8 @@ export default function BuyerOrderDetail({ route, navigate }) {
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
 
+    const [isOpenPriceDetail, setOpenPriceDetail] = useState(false);
+
     const sellerOrderId = route.params.sellerOrderId;
 
     const formatVietnamDate = (time) => {
@@ -308,6 +310,10 @@ export default function BuyerOrderDetail({ route, navigate }) {
                                 index={index}
                                 totalGadgets={gadgets.length}
                                 totalAmount={buyerOrder.totalAmount}
+                                isOpenPriceDetail={isOpenPriceDetail}
+                                setOpenPriceDetail={setOpenPriceDetail}
+                                discountAmount={buyerOrder.discountAmount}
+                                beforeAppliedDiscountAmount={buyerOrder.beforeAppliedDiscountAmount}
                             />
                         </Pressable>
                     )}
@@ -551,7 +557,7 @@ const getStatusTextColor = (status) => {
         case 'Success':
             return 'green';
         case 'Pending':
-            return '#fea128';
+            return '#ed8900';
         case 'Cancelled':
             return 'rgb(210, 65, 82)';
         default:
@@ -673,11 +679,11 @@ const styles = StyleSheet.create({
         width: ScreenWidth / 2.5
     },
     buyerOrderAddressItemPhoneNumber: {
-        fontSize: 16,
+        fontSize: 14,
         color: "rgba(0, 0, 0, 0.5)"
     },
     buyerOrderAddressItemAddress: {
-        fontSize: 16,
+        fontSize: 14,
         color: "rgba(0, 0, 0, 0.5)",
         width: ScreenWidth / 1.3
     },
@@ -693,7 +699,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-evenly"
     },
     needHelpTxt: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '500',
         color: '#000000',
     },
@@ -706,7 +712,7 @@ const styles = StyleSheet.create({
         borderColor: "rgba(0, 0, 0, 0.5)"
     },
     buyerOrderId: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "500",
         marginBottom: 5,
         width: ScreenWidth / 1.4
@@ -727,24 +733,24 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     buyerOrderFooterItemTxt: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "500",
         width: ScreenWidth / 1.1,
         color: "rgba(0, 0, 0, 0.5)"
     },
     buyerOrderFooterItemTxt2: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "500",
-        width: ScreenWidth / 1.8,
+        width: ScreenWidth / 1.9,
         color: "rgba(0, 0, 0, 0.5)",
         textAlign: "left"
     },
     buyerOrderFooterItemTxt3: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "500",
-        width: ScreenWidth / 3,
+        width: ScreenWidth / 2.8,
         color: "rgba(0, 0, 0, 0.5)",
-        textAlign: "right"
+        textAlign: "right",
     },
     buyerOrderFooterDivider: {
         borderTopWidth: 0.5,
@@ -763,7 +769,7 @@ const styles = StyleSheet.create({
         gap: 10
     },
     buyerOrderReasonHeader: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: "500",
         marginBottom: 5,
         width: ScreenWidth / 1.4
@@ -794,8 +800,7 @@ const styles = StyleSheet.create({
     },
     copyText: {
         color: "#ed8900",
-        fontSize: 16,
-        fontWeight: "500"
+        fontSize: 14
     },
     modal: {
         justifyContent: 'center',

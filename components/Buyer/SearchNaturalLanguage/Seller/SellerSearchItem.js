@@ -133,7 +133,7 @@ export default function SellerSearchItem({
         }}>
             <Text style={{
                 fontSize: 16,
-                fontWeight: "500",
+                fontWeight: "600",
                 marginBottom: 5,
                 overflow: "hidden",
                 color: "#112A46"
@@ -162,32 +162,43 @@ export default function SellerSearchItem({
                             style={{
                                 color: "white",
                                 fontWeight: "500",
-                                width: ScreenWidth / 2.5
+                                width: ScreenWidth / 1.85,
                             }}
                             numberOfLines={2}
                             ellipsizeMode="tail"
                         >{shopAddress}</Text>
-                        <TouchableOpacity
-                            disabled={shopAddress != null ? false : true}
-                            onPress={() => copyToClipboard(shopAddress)}
-                        >
-                            <Text style={{ color: "#ed8900", fontSize: 15, fontWeight: "500" }}>Sao chép</Text>
-                        </TouchableOpacity>
                     </View>
                     <Text style={{
                         color: "white",
                         fontWeight: "500"
                     }}>Số điện thoại: {phoneNumber ? phoneNumber : "Chưa cung cấp"}</Text>
-                    {
-                        travelTime && distance &&
-                        <Text
-                            style={{ color: "#ed8900", fontWeight: "500", width: ScreenWidth / 2 }}
+
+                    <View style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "flex-end",
+                        paddingVertical: 5,
+                        gap: 5,
+                        width: ScreenWidth / 1.21,
+                    }}>
+                        {
+                            travelTime && distance &&
+                            <Text
+                                style={{ color: "#ed8900", fontWeight: "500" }}
+                            >
+                                {formatTime(travelTime)} - {distance.toFixed(2)} km
+                            </Text>
+                        }
+                        <TouchableOpacity
+                            disabled={shopAddress != null ? false : true}
+                            onPress={() => copyToClipboard(shopAddress)}
                         >
-                            {formatTime(travelTime)} - {distance.toFixed(2)} km
-                        </Text>
-                    }
+                            <Text style={{ color: "#ed8900", fontWeight: "500" }}>Sao chép địa chỉ</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
+                {/* Map */}
                 <TouchableOpacity onPress={() => {
                     setSelectedLocation(location);
                     setOpenBigMap(true);

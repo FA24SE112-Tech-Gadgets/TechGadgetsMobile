@@ -19,8 +19,12 @@ export default function ReviewItem({
     setIsError,
     refreshing,
     setRefreshing,
+    updateReplyByReviewId,
     setSnackbarVisible,
-    setSnackbarMessage
+    setSnackbarMessage,
+    setReviews,
+    scrollToIndex,
+    index
 }) {
     const { user } = useAuth();
 
@@ -46,7 +50,14 @@ export default function ReviewItem({
             setIsReplying(false);
             setSnackbarMessage(sortOption === "NotReply" ? "Phản hồi thành công" : "Sửa thành công");
             setSnackbarVisible(true);
-            setRefreshing(!refreshing);
+
+            if (sortOption === "NotReply") {
+                setReviews([]);
+                setRefreshing(!refreshing);
+            } else {
+                updateReplyByReviewId(review.id, newSellerReply);
+                setOpenEditField(false);
+            }
         } catch (error) {
             setIsReplying(false);
             setIsError(true);
@@ -223,7 +234,8 @@ export default function ReviewItem({
                                     backgroundColor: "rgba(0, 0, 0, 0.1)",
                                     paddingHorizontal: 10,
                                     paddingVertical: 5,
-                                    borderRadius: 10
+                                    borderRadius: 10,
+                                    width: review?.sellerReply.isUpdated ? ScreenWidth / 1.5 : ScreenWidth / 1.8
                                 }}>
                                     <View style={{
                                         flexDirection: "row",
@@ -232,7 +244,7 @@ export default function ReviewItem({
                                     }}>
                                         {/* seller name */}
                                         <Text
-                                            style={{ fontWeight: "500", color: "black", overflow: "hidden", width: review?.sellerReply.isUpdated ? (ScreenWidth / 3) : (ScreenWidth / 1.9) }}
+                                            style={{ color: "black", overflow: "hidden", width: review?.sellerReply.isUpdated ? (ScreenWidth / 3) : (ScreenWidth / 1.9) }}
                                             numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
                                             ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
                                         >
@@ -301,6 +313,9 @@ export default function ReviewItem({
                                 style={{ width: ScreenWidth / 1.7, textAlign: "left" }}
                                 value={newSellerReply}
                                 onChangeText={(value) => setNewSellerReply(value)}
+                                onPressIn={() => {
+                                    scrollToIndex(index);
+                                }}
                             />
                             {
                                 isReplying ?

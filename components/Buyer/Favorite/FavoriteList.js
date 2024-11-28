@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     editButtonText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontWeight: '600',
     },
     listContainer: {

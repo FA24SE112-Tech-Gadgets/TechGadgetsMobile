@@ -240,7 +240,7 @@ export default function Component() {
                         <Pressable onPress={async () => {
                             await toggleBalanceVisibility();
                         }} style={styles.eyeIconContainer}>
-                            <Ionicons name={isBalanceVisible ? "eye-off" : "eye"} size={24} color="#ed8900" />
+                            <Ionicons name={isBalanceVisible ? "eye-off" : "eye"} size={23} color="rgba(0, 0, 0, 0.5)" />
                         </Pressable>
                     </View>
 

@@ -205,7 +205,7 @@ export default function PasswordAndSecure() {
         >
           {/* Bottom Modal Screen */}
           <LinearGradient
-            colors={["#FFFFFF", "#ed8900"]}
+            colors={["#FFFFFF", "#fce5cd"]}
             style={{
               width: ScreenWidth,
               height: ScreenHeight / 3,

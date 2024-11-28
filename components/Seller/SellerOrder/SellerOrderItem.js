@@ -88,7 +88,7 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt, setSnackbarV
                         disabled={customer.phoneNumber != null ? false : true}
                         onPress={() => copyToClipboard(customer.phoneNumber)}
                     >
-                        <Text style={{ color: "#ed8900", fontSize: 16, fontWeight: "500" }}>Sao chép</Text>
+                        <Text style={{ color: "#ed8900", fontSize: 14, fontWeight: "500" }}>Sao chép</Text>
                     </TouchableOpacity>
                 </View>
                 <Text style={styles.sellerOrderTxt} numberOfLines={1}>
@@ -107,7 +107,7 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt, setSnackbarV
 
                     <Text style={[{
                         color: status === "Success" ? "#50C346" : status === "Pending" ? "#FFC100" : "#C40C0C",
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: "500",
                         backgroundColor: "#f9f9f9",
                         paddingHorizontal: 10,
@@ -126,7 +126,7 @@ const SellerOrderItem = ({ id, customer, amount, status, createdAt, setSnackbarV
 
 const styles = StyleSheet.create({
     sellerOrderTxt: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "500",
     },
     sellerOrderDetail: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
         gap: 5
     },
     sellerOrderId: {
-        fontSize: 19,
+        fontSize: 16,
         fontWeight: "700",
         marginBottom: 5,
         width: ScreenWidth / 1.4

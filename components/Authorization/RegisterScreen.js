@@ -20,7 +20,6 @@ import { useTranslation } from "react-i18next";
 import ErrModal from "../CustomComponents/ErrModal";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
-import { Checkbox } from 'react-native-paper';
 import useNotification from "../../utils/useNotification"
 
 export default function RegisterScreen({ navigation }) {
@@ -36,6 +35,8 @@ export default function RegisterScreen({ navigation }) {
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
   const [isFetching, setIsFetching] = useState(false);
+
+  const [roleModalVisible, setRoleModalVisible] = useState(false);
 
   const { deviceToken } = useNotification();
 
@@ -74,7 +75,7 @@ export default function RegisterScreen({ navigation }) {
     // }
 
     //fullName
-    if (account.fullName === "") {
+    if (account.fullName === "" && account.role === "Customer") {
       return { isError: true, stringErr: t("empty-name") };
     }
 
@@ -147,7 +148,7 @@ export default function RegisterScreen({ navigation }) {
 
     try {
       const response = await axios.post(`${url}/auth/signup`, {
-        fullName,
+        fullName: role === "Customer" ? fullName : "Người bán",
         email,
         password,
         role,
@@ -165,6 +166,129 @@ export default function RegisterScreen({ navigation }) {
       );
     }
   }
+
+  const RoleModal = () => {
+    return (
+      <View>
+        <Pressable
+          style={{
+            backgroundColor: "white",
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            fontSize: 15,
+            marginVertical: 7,
+            flexDirection: "row",
+            justifyContent: "space-between"
+          }}
+          onPress={() => setRoleModalVisible(true)}
+          disabled={isFetching}
+        >
+          <Text style={styles.sortButtonText}>
+            {account.role == "Customer" ? "Khách hàng" : "Người bán"}
+          </Text>
+          <Icon
+            type="material-community"
+            name={roleModalVisible ? "chevron-up" : "chevron-down"}
+            size={24}
+            color="rgba(0,0,0,0.5)"
+          />
+        </Pressable>
+
+        {/* choose Customer/Seller */}
+        <Modal
+          isVisible={roleModalVisible}
+          onBackdropPress={() => setRoleModalVisible(false)}
+          onSwipeComplete={() => setRoleModalVisible(false)}
+          useNativeDriverForBackdrop
+          swipeDirection={"down"}
+          propagateSwipe={true}
+          style={{
+            justifyContent: 'flex-end',
+            margin: 0,
+          }}
+        >
+          <View>
+            <View style={styles.modalContent}>
+              {/* Thanh hồng trên cùng */}
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingBottom: 12,
+                }}
+              >
+                <View
+                  style={{
+                    width: ScreenWidth / 7,
+                    height: ScreenHeight / 100,
+                    backgroundColor: "#ed8900",
+                    borderRadius: 30,
+                  }}
+                />
+              </View>
+
+              {/* Loại tài khoản */}
+              <View style={[styles.modalOption]}>
+                <Text style={{ fontWeight: "bold", fontSize: 16 }}>Loại tài khoản</Text>
+              </View>
+
+              {/* Customer */}
+              <Pressable
+                style={styles.modalOption}
+                onPress={() => {
+                  handleChangeData("role", "Customer");
+                  setRoleModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>Khách hàng</Text>
+                {account.role === "Customer" ? (
+                  <Icon
+                    type="material-community"
+                    name="check-circle"
+                    size={24}
+                    color="#ed8900"
+                  />
+                ) : (
+                  <Icon
+                    type="material-community"
+                    name="checkbox-blank-circle-outline"
+                    size={24}
+                    color="#ed8900"
+                  />
+                )}
+              </Pressable>
+
+              {/* Seller */}
+              <Pressable
+                style={styles.modalOption}
+                onPress={() => {
+                  handleChangeData("role", "Seller");
+                  setRoleModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>Người bán</Text>
+                {account.role === "Seller" ? (
+                  <Icon
+                    type="material-community"
+                    name="check-circle"
+                    size={24}
+                    color="#ed8900"
+                  />
+                ) : (
+                  <Icon
+                    type="material-community"
+                    name="checkbox-blank-circle-outline"
+                    size={24}
+                    color="#ed8900"
+                  />
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  };
 
   //Check keyboard open
   useFocusEffect(
@@ -201,7 +325,7 @@ export default function RegisterScreen({ navigation }) {
         <ScrollView
           overScrollMode="never"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={account.role !== "Quán ăn" && {
+          contentContainerStyle={{
             height: ScreenHeight / 1.2,
             justifyContent: "center"
           }}
@@ -209,14 +333,17 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.title}>{t('register-title')}</Text>
 
           {/* fullName */}
-          <View>
-            <TextInput
-              style={[account.role == "Quán ăn" ? styles.textInput2 : styles.textInput]}
-              placeholder={t('register-name')}
-              value={account.fullName}
-              onChangeText={(value) => handleChangeData("fullName", value)}
-            />
-          </View>
+          {
+            account.role === "Customer" &&
+            <View>
+              <TextInput
+                style={styles.textInput}
+                placeholder={"Tên"}
+                value={account.fullName}
+                onChangeText={(value) => handleChangeData("fullName", value)}
+              />
+            </View>
+          }
 
           {/* email */}
           <TextInput
@@ -254,7 +381,7 @@ export default function RegisterScreen({ navigation }) {
           <View>
             <TextInput
               style={[styles.textInput]}
-              placeholder={t('password-retype')}
+              placeholder={"Nhập lại mật khẩu"}
               secureTextEntry={secureConfirmPassword}
               value={account.passwordConfirm}
               onChangeText={(text) => handleChangeData("passwordConfirm", text)}
@@ -276,36 +403,7 @@ export default function RegisterScreen({ navigation }) {
             )}
           </View>
 
-          {/* role */}
-          <View style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 15
-          }}>
-            <Text style={styles.roleText}>Bạn là: </Text>
-            <View style={styles.roleSelectionContainer}>
-              <Pressable
-                style={styles.checkboxContainer}
-                onPress={() => handleChangeData("role", "Customer")}
-              >
-                <Checkbox
-                  status={account.role === "Customer" ? 'checked' : 'unchecked'}
-                  color="black"
-                />
-                <Text>Khách hàng</Text>
-              </Pressable>
-              <Pressable
-                style={styles.checkboxContainer}
-                onPress={() => handleChangeData("role", "Seller")}
-              >
-                <Checkbox
-                  status={account.role === "Seller" ? 'checked' : 'unchecked'}
-                  color="black"
-                />
-                <Text>Người bán</Text>
-              </Pressable>
-            </View>
-          </View>
+          <RoleModal />
 
           {/* ĐĂNG KÝ */}
           <Pressable
@@ -635,7 +733,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: "center",
-    flex: 0.7
+    flex: 0.7,
+    gap: 10
   },
   checkboxContainer: {
     flexDirection: 'row',

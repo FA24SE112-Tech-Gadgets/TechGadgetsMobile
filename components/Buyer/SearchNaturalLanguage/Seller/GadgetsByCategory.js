@@ -315,12 +315,13 @@ export default function GadgetsByCategory({ navigation, route }) {
                     flexDirection: "row",
                     gap: 10,
                     alignSelf: "center",
+                    paddingHorizontal: 10
                 }}>
                     {/* Shop avatar */}
                     <View
                         style={{
-                            height: 50,
-                            width: 50,
+                            height: 45,
+                            width: 45,
                             borderRadius: 30,
                             backgroundColor: "#ed8900",
                             alignItems: "center",
@@ -343,7 +344,6 @@ export default function GadgetsByCategory({ navigation, route }) {
                     }}>
                         {/* ShopName */}
                         <Text style={{
-                            fontSize: 16,
                             fontWeight: "500",
                             marginBottom: 3,
                             overflow: "hidden",
@@ -364,7 +364,7 @@ export default function GadgetsByCategory({ navigation, route }) {
                                 style={{
                                     color: "white",
                                     fontWeight: "500",
-                                    width: ScreenWidth / 1.7
+                                    width: ScreenWidth / 1.9,
                                 }}
                                 numberOfLines={2}
                                 ellipsizeMode="tail"

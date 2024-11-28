@@ -66,7 +66,7 @@ const ReviewSummary = ({ gadgetId, navigation, setStringErr, setIsError }) => {
 
     const renderBar = (starCount, label) => {
         const barWidth = getBarWidth(starCount);
-        const barColor = starCount > 0 ? '#fea128' : '#e0e0e0';
+        const barColor = starCount > 0 ? '#ed8900' : '#e0e0e0';
         return (
             <View style={styles.barRow}>
                 <View style={{
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     viewAllText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontWeight: '500',
     },
     ratingContainer: {

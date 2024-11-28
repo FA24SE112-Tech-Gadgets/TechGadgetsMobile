@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     FlatList,
 } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import api from "../../Authorization/api";
 import ErrModal from "../../CustomComponents/ErrModal";
@@ -34,6 +34,8 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
+
+    const flatListRef = useRef(null); // Tạo reference cho FlatList
 
     //Reset to default state
     useFocusEffect(
@@ -144,6 +146,26 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
         }
     };
 
+    const updateReplyByReviewId = (reviewId, newContent) => {
+        setReviews((prevReviews) =>
+            prevReviews.map((item) =>
+                item.review.id === reviewId
+                    ? {
+                        ...item,
+                        review: {
+                            ...item.review,
+                            sellerReply: {
+                                ...item.review.sellerReply,
+                                content: newContent,
+                                isUpdated: true
+                            }
+                        }
+                    }
+                    : item
+            )
+        );
+    };
+
     const handleScroll = () => {
         if (isFetching) return; // Ngăn không gọi nếu đang fetch
 
@@ -155,6 +177,14 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
             setIsFetching(true);
             fetchReviews(currentPage); // Gọi fetchReviews nhưng không tăng currentPage
         }
+    };
+
+    //Dùng hàm này để scroll đến vị trí của item khi mở keyboard
+    const scrollToIndex = (index) => {
+        flatListRef.current?.scrollToIndex({
+            index,
+            animated: true, // Cuộn mượt
+        });
     };
 
     const renderFooter = () => {
@@ -270,8 +300,12 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                                             setStringErr={setStringErr}
                                             refreshing={refreshing}
                                             setRefreshing={setRefreshing}
+                                            updateReplyByReviewId={updateReplyByReviewId}
                                             setSnackbarMessage={setSnackbarMessage}
                                             setSnackbarVisible={setSnackbarVisible}
+                                            setReviews={setReviews}
+                                            scrollToIndex={scrollToIndex}
+                                            index={index}
                                         />
                                     }
                                     {(index < reviews.length - 1 && item?.status === "Active") && (
@@ -287,6 +321,8 @@ export function SellerOrderReviewsScreen({ route, navigation }) {
                             overScrollMode="never"
                             refreshing={refreshing}
                             onRefresh={handleRefresh}
+                            keyboardShouldPersistTaps="handled"
+                            ref={flatListRef}
                         />
                     </View>
                 )}
@@ -338,7 +374,7 @@ const SortModal = ({
             >
                 <Text style={{
                     fontWeight: "bold",
-                    fontSize: 18,
+                    fontSize: 16,
                     color: "white",
                 }}>
                     {sortOption == "NotReply" ? "Chưa phản hồi" : "Đã phản hồi"}

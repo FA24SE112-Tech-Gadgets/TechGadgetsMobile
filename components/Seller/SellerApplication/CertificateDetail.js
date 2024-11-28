@@ -73,6 +73,20 @@ const CertificateDetail = ({
     }
   };
 
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (application?.businessRegistrationCertificateUrl) {
@@ -214,13 +228,13 @@ const CertificateDetail = ({
                   borderRadius: 10
                 }}>
                   <Text style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: "bold",
                     color: application.status == "Pending" ? "rgb(255, 193, 0)" : application.status === 'Approved' ? "rgb(77, 218, 98)" : "rgb(210, 65, 82)",
                   }}>{application.status === 'Pending' ? 'Đang Chờ' : application.status === 'Approved' ? 'Đã Duyệt' : 'Bị Từ Chối'}</Text>
                 </View>
               </View >
-              <Text style={styles.sectionText}>Ngày Tạo: {new Date(application.createdAt).toLocaleString()}</Text>
+              <Text style={styles.sectionText}>Ngày Tạo: {formatDateTime(application.createdAt)}</Text>
               {application.rejectReason &&
                 <Text
                   style={styles.sectionText}
@@ -235,14 +249,14 @@ const CertificateDetail = ({
 
           {application.businessRegistrationCertificateUrl && (
             <View style={styles.sectionContainer}>
-              <View style={{
+              <View style={styles.sectionHeader}>
+                <FontAwesome6 name="newspaper" size={24} color="black" />
+                <Text style={styles.sectionTitle}>Giấy Đăng Ký Kinh Doanh</Text>
+              </View>
+              {/* <View style={{
                 flexDirection: "row",
                 gap: 10
               }}>
-                <View style={styles.sectionHeader}>
-                  <FontAwesome6 name="newspaper" size={24} color="black" />
-                  <Text style={styles.sectionTitle}>Giấy Đăng Ký Kinh Doanh</Text>
-                </View>
                 <TouchableOpacity
                   style={[styles.sectionHeader, {
                     backgroundColor: "#f9f9f9",
@@ -260,7 +274,7 @@ const CertificateDetail = ({
                   <Entypo name="download" size={18} color="black" />
                   <Text style={[styles.sectionTitle, { fontSize: 14 }]}>Tải xuống</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
               <View style={[styles.sectionContent, { marginBottom: 20 }]}>
                 {
                   fileType === "image" ?
@@ -299,6 +313,27 @@ const CertificateDetail = ({
                     />
                 }
               </View>
+              <TouchableOpacity
+                style={[styles.sectionHeader, {
+                  backgroundColor: "#f9f9f9",
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  borderColor: "rgba(0, 0, 0, 0.5)",
+                  alignSelf: "center",
+                  marginBottom: 20,
+                  width: ScreenWidth / 2.5,
+                  justifyContent: "center"
+                }]}
+                disabled={application?.businessRegistrationCertificateUrl == null}
+                onPress={() => {
+                  downloadFile(application.businessRegistrationCertificateUrl);
+                }}
+              >
+                <Entypo name="download" size={18} color="black" />
+                <Text style={[styles.sectionTitle, { fontSize: 16 }]}>Tải xuống</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>

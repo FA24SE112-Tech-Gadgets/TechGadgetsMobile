@@ -255,7 +255,7 @@ export default function SellerOrders() {
                     <TextInput
                         placeholder={"Nhập sđt"}
                         returnKeyType="search"
-                        style={{ fontSize: 20, width: ScreenWidth / 1.7, textAlign: "left" }}
+                        style={{ fontSize: 16, width: ScreenWidth / 1.7, textAlign: "left" }}
                         value={searchQuery}
                         onChangeText={(query) => setSearchQuery(query)}
                     />
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     },
     sortButtonText: {
         fontWeight: "bold",
-        fontSize: 18,
+        fontSize: 16,
         color: "white",
     },
     modalOverlay: {

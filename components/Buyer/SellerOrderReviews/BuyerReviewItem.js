@@ -22,11 +22,14 @@ export default function BuyerReviewItem({
     setRefreshing,
     setSnackbarVisible,
     setSnackbarMessage,
-    updateReviewById
+    updateReviewById,
+    setReviews,
+    scrollToIndex,
+    index
 }) {
     const { user } = useAuth();
 
-    const [newReview, setNewSellerReview] = useState("");
+    const [newReview, setNewReview] = useState("");
     const [ratingStars, setRatingStars] = useState(0);
     const [maxStars] = useState(5);
 
@@ -54,9 +57,11 @@ export default function BuyerReviewItem({
             setSnackbarVisible(true);
 
             if (sortOption === "NotReview") {
+                setReviews([]);
                 setRefreshing(!refreshing);
             } else {
                 updateReviewById(review.id, ratingStars, newReview);
+                setOpenEditField(false);
             }
         } catch (error) {
             setIsReplying(false);
@@ -194,7 +199,10 @@ export default function BuyerReviewItem({
                                 returnKeyType="search"
                                 style={{ width: ScreenWidth / 1.7, textAlign: "left" }}
                                 value={newReview}
-                                onChangeText={(value) => setNewSellerReview(value)}
+                                onChangeText={(value) => setNewReview(value)}
+                                onPressIn={() => {
+                                    scrollToIndex(index);
+                                }}
                             />
                             {
                                 isReplying ?
@@ -310,7 +318,7 @@ export default function BuyerReviewItem({
                                         onPress={() => {
                                             setOpenEditField(!openEditField);
                                             setRatingStars(review ? review.rating : 0);
-                                            setNewSellerReview(review ? review.content : "");
+                                            setNewReview(review ? review.content : "");
                                         }}
                                     >
                                         <Feather name="edit" size={20} color="black" />
@@ -466,7 +474,10 @@ export default function BuyerReviewItem({
                                         returnKeyType="search"
                                         style={{ width: ScreenWidth / 1.7, textAlign: "left" }}
                                         value={newReview}
-                                        onChangeText={(value) => setNewSellerReview(value)}
+                                        onChangeText={(value) => setNewReview(value)}
+                                        onPressIn={() => {
+                                            scrollToIndex(index);
+                                        }}
                                     />
                                     {
                                         isReplying ?

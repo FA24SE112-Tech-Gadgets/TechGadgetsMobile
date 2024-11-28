@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     FlatList,
 } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import api from "../../Authorization/api";
 import ErrModal from "../../CustomComponents/ErrModal";
@@ -34,6 +34,8 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
 
     const [stringErr, setStringErr] = useState("");
     const [isError, setIsError] = useState(false);
+
+    const flatListRef = useRef(null); // Tạo reference cho FlatList
 
     //Reset to default state
     useFocusEffect(
@@ -115,7 +117,8 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                         review: {
                             ...item.review,
                             rating: ratingStars,
-                            content: newContent
+                            content: newContent,
+                            isUpdated: true
                         }
                     }
                     : item
@@ -186,6 +189,14 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
         );
     };
 
+    //Dùng hàm này để scroll đến vị trí của item khi mở keyboard
+    const scrollToIndex = (index) => {
+        flatListRef.current?.scrollToIndex({
+            index,
+            animated: true, // Cuộn mượt
+        });
+    };
+
     // Initial Fetch when component mounts
     useFocusEffect(
         useCallback(() => {
@@ -209,7 +220,9 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
             }}>
                 {/* Back Button */}
                 <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={() => {
+                        navigation.goBack();
+                    }}
                     style={{
                         padding: 8,
                         borderRadius: 20,
@@ -288,6 +301,9 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                                         setSnackbarMessage={setSnackbarMessage}
                                         setSnackbarVisible={setSnackbarVisible}
                                         updateReviewById={updateReviewById}
+                                        setReviews={setReviews}
+                                        scrollToIndex={scrollToIndex}
+                                        index={index}
                                     />
                                 </>
                             )}
@@ -299,6 +315,8 @@ export function BuyerReviewSellerOrdersScreen({ route, navigation }) {
                             overScrollMode="never"
                             refreshing={refreshing}
                             onRefresh={handleRefresh}
+                            keyboardShouldPersistTaps="handled"
+                            ref={flatListRef}
                         />
                     </View>
                 )}
@@ -350,7 +368,7 @@ const SortModal = ({
             >
                 <Text style={{
                     fontWeight: "bold",
-                    fontSize: 18,
+                    fontSize: 16,
                     color: "white",
                 }}>
                     {sortOption == "NotReview" ? "Chưa đánh giá" : "Đã đánh giá"}

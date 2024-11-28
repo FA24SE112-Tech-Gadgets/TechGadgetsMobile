@@ -81,7 +81,7 @@ const PaymentHistory = () => {
         </View>
 
         <View style={[styles.idContainer, { marginBottom: 0 }]}>
-          <Text style={[styles.paymentMethod, { width: ScreenWidth / 1.4 }]} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={[styles.paymentMethod, { width: ScreenWidth / 1.45 }]} numberOfLines={1} ellipsizeMode="tail">
             Mã giao dịch: {item.id}
           </Text>
           <TouchableOpacity
@@ -114,6 +114,13 @@ const PaymentHistory = () => {
             <Text style={styles.date}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
+
+        {
+          item?.balanceBeforeChange &&
+          <Text style={{
+            color: "rgba(0, 0, 0, 0.5)"
+          }}>SD: {formatAmount(item.balanceBeforeChange - item.amount)} ₫</Text>
+        }
       </View>
 
       {index < transactions.length - 1 && <Divider style={{ marginVertical: -8 }} />}
@@ -432,13 +439,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   idText: {
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: "700",
-    width: ScreenWidth / 1.4,
+    width: ScreenWidth / 1.45,
   },
   copyText: {
     color: "#ed8900",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "500",
   },
   paymentMethod: {

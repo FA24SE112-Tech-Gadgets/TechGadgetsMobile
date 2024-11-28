@@ -401,9 +401,9 @@ export default function SellerHome() {
                         overflow: 'hidden',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: isFocused ? "#ed8900" : undefined,
-                        borderWidth: isFocused ? 1 : 0,
-                        borderColor: isFocused ? "#ed8900" : undefined,
+                        backgroundColor: isSearching ? "#ed8900" : undefined,
+                        borderWidth: isSearching ? 1 : 0,
+                        borderColor: isSearching ? "#ed8900" : undefined,
                     }}
                     onPress={() => {
                         setIsFocused(false);
@@ -411,6 +411,7 @@ export default function SellerHome() {
                         Keyboard.dismiss();
                         setSearchQuery("");
                     }}
+                    disabled={!isSearching}
                 >
                     {
                         isSearching ?
@@ -435,7 +436,7 @@ export default function SellerHome() {
                         borderRadius: 6,
                         paddingHorizontal: 10,
                         height: ScreenWidth / 9,
-                        width: ScreenWidth / 1.25,
+                        width: ScreenWidth / 1.3,
                         borderColor: isFocused ? "#ed8900" : undefined,
                         borderWidth: isFocused ? 2 : 0,
                         marginLeft: 10,
@@ -448,10 +449,10 @@ export default function SellerHome() {
                     <TextInput
                         style={{
                             fontSize: 16,
-                            width: ScreenWidth / 1.5,
+                            width: ScreenWidth / 1.62,
                             height: ScreenHeight / 1.2,
                             textAlignVertical: "center",
-                            marginLeft: !isFocused ? 10 : 0,
+                            marginLeft: !isFocused ? 10 : 0
                         }}
                         placeholder={"Tìm kiếm sản phẩm"}
                         returnKeyType="search"
@@ -502,7 +503,7 @@ export default function SellerHome() {
                     backgroundColor: "#f9f9f9",
                     height: (ScreenHeight / 40) * (keywords.length + 1) + (5 * keywords.length) + 15,
                     marginHorizontal: 15,
-                    width: ScreenWidth / 1.25,
+                    width: ScreenWidth / 1.3,
                     paddingHorizontal: 10,
                     borderBottomLeftRadius: 6,
                     borderBottomRightRadius: 6,
@@ -862,7 +863,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 40,
         height: 40,
-        backgroundColor: '#fea128',
+        backgroundColor: '#ed8900',
         borderRadius: 20,
     },
     imageContainer: {
@@ -973,7 +974,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     viewAllText: {
-        color: '#fea128',
+        color: '#ed8900',
         fontSize: 16,
     },
     categoryUnderline: {
@@ -986,7 +987,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     gadgetCard: {
-        width: (ScreenWidth - 40) / 3,
+        width: (ScreenWidth - 40) / 2,
         marginHorizontal: 5,
         borderRadius: 10,
         padding: 10,

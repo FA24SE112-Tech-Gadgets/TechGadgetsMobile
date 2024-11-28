@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import React, { useRef, useState } from "react";
+import { View, Text, StyleSheet, Pressable, Keyboard } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenHeight, ScreenWidth } from "@rneui/base";
 import { TextInput } from "react-native";
@@ -11,12 +11,12 @@ import { jwtDecode } from "jwt-decode";
 import { NODE_ENV, DEV_API, PROD_API } from "@env";
 import ErrModal from "../CustomComponents/ErrModal";
 import { ActivityIndicator } from "react-native";
-import { useTranslation } from "react-i18next";
 
 const VerifyCodeScreen = ({ navigation, route }) => {
-  const { t } = useTranslation();
   const { email } = route.params;
   const { login } = useAuth();
+
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef([]);
@@ -40,8 +40,19 @@ const VerifyCodeScreen = ({ navigation, route }) => {
   };
 
   const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === "Backspace" && index > 0 && !code[index]) {
-      inputs.current[index - 1].focus();
+    if (e.nativeEvent.key === "Backspace" && index > 0) {
+      const newCode = [...code];
+
+      if (!code[index]) {
+        // Nếu ô hiện tại trống, xóa ô trước đó
+        newCode[index - 1] = "";
+        setCode(newCode);
+        inputs.current[index - 1].focus();
+      } else {
+        // Nếu ô hiện tại có giá trị, chỉ xóa giá trị hiện tại
+        newCode[index] = "";
+        setCode(newCode);
+      }
     }
   };
 
@@ -74,6 +85,10 @@ const VerifyCodeScreen = ({ navigation, route }) => {
         await AsyncStorage.setItem("token", token);
 
         await login();
+
+        setCode(["", "", "", "", "", ""]);
+        Keyboard.dismiss();
+
         if (userInfo.Role == "Customer") {
           navigation.replace("StackBuyerHome")
           return;
@@ -96,6 +111,9 @@ const VerifyCodeScreen = ({ navigation, route }) => {
 
       setIsError(true);
       setStringErr(error.response?.data.reasons[0].message);
+      setIsFetching(false);
+      setCode(["", "", "", "", "", ""]);
+      Keyboard.dismiss();
     }
   };
 
@@ -129,110 +147,140 @@ const VerifyCodeScreen = ({ navigation, route }) => {
     }
   };
 
+  //Keyboard linstener
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
+
+    // Cleanup listeners on component unmount
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  //Auto send verify
+  useEffect(() => {
+    // Kiểm tra nếu tất cả các phần tử của mảng `code` đều khác ""
+    if (code.every((digit) => digit !== "")) {
+      handleVerify();
+    }
+  }, [code]); // Theo dõi mảng `code`
+
   return (
-    <View style={{ flex: 1 }}>
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
-        colors={["#FFFFFF", "#ed8900"]}
-        style={[styles.linearGradient, { flex: 1 }]}
-      >
-        <View style={{ marginTop: ScreenHeight * 0.16 }}>
-          <View style={{ alignItems: "center" }}>
-            <Text
-              style={{ fontWeight: "bold", fontSize: 20, color: "#F78986" }}
-            >
-              {t("verify-title")}
-            </Text>
-            <Text
-              style={{ fontWeight: "bold", fontSize: 15, color: "#888B8D" }}
-            >
-              {t("verify-content")}
-            </Text>
-          </View>
+    <LinearGradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 0.8 }}
+      colors={["#FFFFFF", "#fea92866"]}
+      style={[styles.linearGradient]}
+    >
+      <View style={{
+        marginTop: keyboardVisible ? ScreenHeight * 0.16 : ScreenHeight * 0.3,
+      }}>
+        <View style={{ alignItems: "center" }}>
+          <Text
+            style={{ fontWeight: "bold", fontSize: 20, color: "#ed8900" }}
+          >
+            XÁC NHẬN ĐỊA CHỈ EMAIL
+          </Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 15,
+              color: "rgba(0,0,0,0.5)",
+              paddingHorizontal: 15,
+              marginTop: 5
+            }}
+          >
+            Hãy nhập mã xác nhận, chúng tôi đã gửi qua email
+          </Text>
+        </View>
 
-          {/* Tạo ra 6 ô để nhập mã xác nhận */}
-          <View style={styles.codeInputContainer}>
-            {code.map((digit, index) => (
-              <TextInput
-                key={index}
-                style={styles.codeInput}
-                value={digit}
-                onChangeText={(value) => handleChange(value, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-                ref={(el) => (inputs.current[index] = el)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
-              />
-            ))}
-          </View>
+        {/* Tạo ra 6 ô để nhập mã xác nhận */}
+        <View style={styles.codeInputContainer}>
+          {code.map((digit, index) => (
+            <TextInput
+              key={index}
+              style={styles.codeInput}
+              value={digit}
+              onChangeText={(value) => handleChange(value, index)}
+              keyboardType="number-pad"
+              maxLength={1}
+              ref={(el) => (inputs.current[index] = el)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+            />
+          ))}
+        </View>
 
-          <View style={{ alignItems: "center" }}>
-            <Pressable
+        <View style={{ alignItems: "center" }}>
+          <Pressable
+            style={{
+              width: ScreenWidth * 0.86,
+              alignItems: "center",
+              backgroundColor: "black",
+              paddingVertical: 10,
+              borderRadius: 10,
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 5
+            }}
+            onPress={() => handleVerify()}
+            disabled={isFetching}
+          >
+            <Text
+              style={{ color: "white", fontWeight: "bold", fontSize: 20 }}
+            >
+              XÁC NHẬN
+            </Text>
+            {
+              isFetching &&
+              <ActivityIndicator color={"white"} />
+            }
+          </Pressable>
+
+          <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
+            <Text
               style={{
-                width: ScreenWidth * 0.86,
-                alignItems: "center",
-                backgroundColor: "white",
-                paddingVertical: 10,
-                borderRadius: 10,
-                flexDirection: "row",
-                justifyContent: "center",
-                gap: 5
+                color: "rgba(0,0,0,0.5)",
+                fontSize: 16,
               }}
-              onPress={() => handleVerify()}
+            >
+              Bạn không nhận được mã?
+            </Text>
+            <Pressable
+              onPress={() => handleSendAgain()}
               disabled={isFetching}
             >
               <Text
-                style={{ color: "#F78986", fontWeight: "bold", fontSize: 20 }}
+                style={{ color: "rgba(0,0,0,0.5)", fontSize: 16, fontWeight: "bold" }}
               >
-                {t("verify-btn")}
+                Gửi lại mã
               </Text>
-              {
-                isFetching &&
-                <ActivityIndicator color={"#F78986"} />
-              }
             </Pressable>
-
-            <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
-              <Text
-                style={{
-                  color: "white",
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              >
-                {t("donot-verify")}
-              </Text>
-              <Pressable
-                onPress={() => handleSendAgain()}
-                disabled={isFetching}
-              >
-                <Text
-                  style={{ color: "#E7EBED", fontSize: 16, fontWeight: "bold" }}
-                >
-                  {t("resend-code")}
-                </Text>
-              </Pressable>
-            </View>
           </View>
         </View>
+      </View>
 
-        <Snackbar
-          visible={snackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          duration={1500}
-          wrapperStyle={{ bottom: 0, zIndex: 1 }}
-        >
-          {snackbarMessage}
-        </Snackbar>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={1500}
+        wrapperStyle={{ bottom: 0, zIndex: 1 }}
+      >
+        {snackbarMessage}
+      </Snackbar>
 
-        <ErrModal
-          stringErr={stringErr}
-          isError={isError}
-          setIsError={setIsError}
-        />
-      </LinearGradient>
-    </View>
+      <ErrModal
+        stringErr={stringErr}
+        isError={isError}
+        setIsError={setIsError}
+      />
+    </LinearGradient>
   );
 };
 
@@ -245,12 +293,12 @@ const styles = StyleSheet.create({
     marginBottom: ScreenHeight * 0.078,
   },
   codeInput: {
-    width: 50,
-    height: 50,
-    color: "#F78986",
-    borderColor: "#F78986",
+    width: 45,
+    height: 45,
+    color: "#ed8900",
+    borderColor: "black",
     fontWeight: "bold",
-    // borderWidth: 1,
+    borderWidth: 0.3,
     borderRadius: 5,
     textAlign: "center",
     fontSize: 20,
@@ -318,10 +366,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
   },
   linearGradient: {
-    flex: 1,
-    // paddingLeft: 15,
-    // paddingRight: 15,
-    borderRadius: 5,
+    height: ScreenHeight
   },
 
   inputContainer: {

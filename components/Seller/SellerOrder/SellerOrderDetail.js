@@ -39,6 +39,8 @@ export default function SellerOrderDetail({ route, navigation }) {
 
     const [showBottomBar, setShowBottomBar] = useState(true);
 
+    const [isOpenPriceDetail, setOpenPriceDetail] = useState(false);
+
     const formatVietnamDate = (time) => {
         const date = new Date(time);
         const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
@@ -275,7 +277,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                             disabled={route.params.sellerOrderId != null ? false : true}
                             onPress={() => copyToClipboard(route.params.sellerOrderId)}
                         >
-                            <Text style={{ color: "#ed8900", fontSize: 16, fontWeight: "500" }}>Sao chép</Text>
+                            <Text style={{ color: "#ed8900", fontSize: 14 }}>Sao chép</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -440,7 +442,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             padding: 10
         },
         sellerOrderStatusContentTxt: {
-            color: sellerOrder.status === "Success" ? "green" : sellerOrder.status === "Pending" ? "#fea128" : "rgb(210, 65, 82)",
+            color: sellerOrder.status === "Success" ? "green" : sellerOrder.status === "Pending" ? "#ed8900" : "rgb(210, 65, 82)",
             fontSize: 16,
             fontWeight: "500"
         },
@@ -473,11 +475,11 @@ export default function SellerOrderDetail({ route, navigation }) {
             width: ScreenWidth / 2.5
         },
         sellerOrderAddressItemPhoneNumber: {
-            fontSize: 16,
+            fontSize: 14,
             color: "rgba(0, 0, 0, 0.5)"
         },
         sellerOrderAddressItemAddress: {
-            fontSize: 16,
+            fontSize: 14,
             color: "rgba(0, 0, 0, 0.5)",
             width: ScreenWidth / 1.3
         },
@@ -493,7 +495,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             justifyContent: "space-evenly"
         },
         needHelpTxt: {
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: '500',
             color: '#000000',
         },
@@ -506,7 +508,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             borderColor: "rgba(0, 0, 0, 0.5)"
         },
         sellerOrderId: {
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: "500",
             marginBottom: 5,
             width: ScreenWidth / 1.4
@@ -524,24 +526,24 @@ export default function SellerOrderDetail({ route, navigation }) {
             gap: 10
         },
         sellerOrderFooterItemTxt: {
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: "500",
             width: ScreenWidth / 1.1,
             color: "rgba(0, 0, 0, 0.5)"
         },
         sellerOrderFooterItemTxt2: {
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: "500",
-            width: ScreenWidth / 1.8,
+            width: ScreenWidth / 1.9,
             color: "rgba(0, 0, 0, 0.5)",
             textAlign: "left"
         },
         sellerOrderFooterItemTxt3: {
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: "500",
-            width: ScreenWidth / 3,
+            width: ScreenWidth / 2.8,
             color: "rgba(0, 0, 0, 0.5)",
-            textAlign: "right"
+            textAlign: "right",
         },
         sellerOrderReasonContainer: {
             width: ScreenWidth / 1.05,
@@ -556,7 +558,7 @@ export default function SellerOrderDetail({ route, navigation }) {
             gap: 10
         },
         sellerOrderReasonHeader: {
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: "500",
             marginBottom: 5,
             width: ScreenWidth / 1.4
@@ -572,8 +574,8 @@ export default function SellerOrderDetail({ route, navigation }) {
         },
         sellerOrderBtnTxt: {
             fontSize: 16,
-            fontWeight: '500',
-            color: '#000000',
+            fontWeight: '600',
+            color: '#f9f9f9',
         },
     });
 
@@ -627,6 +629,10 @@ export default function SellerOrderDetail({ route, navigation }) {
                                     index={index}
                                     totalGadgets={gadgets.length}
                                     totalAmount={sellerOrder.totalAmount}
+                                    isOpenPriceDetail={isOpenPriceDetail}
+                                    setOpenPriceDetail={setOpenPriceDetail}
+                                    discountAmount={sellerOrder.discountAmount}
+                                    beforeAppliedDiscountAmount={sellerOrder.beforeAppliedDiscountAmount}
                                 />
                             </Pressable>
                         )}
@@ -814,7 +820,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                                         handleSellerOrderConfirm();
                                     }}
                                 >
-                                    <Text style={styles.sellerOrderBtnTxt}>Xác nhận đơn hàng</Text>
+                                    <Text style={styles.sellerOrderBtnTxt}>Xác nhận</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[
@@ -829,7 +835,7 @@ export default function SellerOrderDetail({ route, navigation }) {
                                         handleSellerOrderDeny();
                                     }}
                                 >
-                                    <Text style={[styles.sellerOrderBtnTxt, { color: "white" }]}>Từ chối đơn hàng</Text>
+                                    <Text style={[styles.sellerOrderBtnTxt, { color: "white" }]}>Từ chối</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
