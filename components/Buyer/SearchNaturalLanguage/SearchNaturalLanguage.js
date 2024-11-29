@@ -1,5 +1,5 @@
-import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Keyboard } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ScreenHeight, ScreenWidth } from '@rneui/base'
 import LottieView from 'lottie-react-native';
@@ -10,11 +10,15 @@ import ErrModal from '../../CustomComponents/ErrModal';
 import SellerSearchItem from './Seller/SellerSearchItem';
 import CustomMapModal from '../../CustomComponents/CustomMapModal';
 import { Snackbar } from 'react-native-paper';
+import useAuth from '../../../utils/useAuth';
+import { AntDesign } from '@expo/vector-icons';
+import * as Location from "expo-location";
 
 export default function SearchNaturalLanguage() {
     const [hasStartedSearch, setHasStartedSearch] = useState(false);
     const [searchInput, setSearchInput] = useState("");
 
+    const [userLocation, setUserLocation] = useState(null);
     const [isOpenBigMap, setOpenBigMap] = useState(false);
 
     const [gadgets, setGadgets] = useState([]);
@@ -30,6 +34,8 @@ export default function SearchNaturalLanguage() {
 
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const { user } = useAuth();
 
     const navigation = useNavigation();
 
@@ -76,6 +82,11 @@ export default function SearchNaturalLanguage() {
         }
     };
 
+    const getCurrentPosition = async () => {
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        setUserLocation(currentLocation.coords);
+    };
+
     //Reset to default state
     useFocusEffect(
         useCallback(() => {
@@ -85,6 +96,99 @@ export default function SearchNaturalLanguage() {
             setSearchInput("");
         }, [])
     );
+
+    //Fetch current position
+    useFocusEffect(
+        useCallback(() => {
+            getCurrentPosition();
+        }, [])
+    );
+
+    useEffect(() => {
+        let locationSubscription;
+
+        const startWatchingLocation = async () => {
+            // Theo dõi vị trí thời gian thực
+            locationSubscription = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 1000, // Lấy vị trí mỗi 1 giây
+                    distanceInterval: 0.5, // Lấy vị trí khi di chuyển tối thiểu 5m
+                },
+                (location) => {
+                    setUserLocation({
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                    });
+                }
+            );
+        };
+
+        startWatchingLocation();
+
+        // Hủy theo dõi khi component unmount
+        return () => {
+            if (locationSubscription) {
+                locationSubscription.remove();
+            }
+        };
+    }, []);
+
+    if (user == null || user?.status === "Inactive") {
+        return (
+            <LinearGradient colors={['#fea92866', '#FFFFFF']}
+                style={{
+                    flex: 1,
+                    height: ScreenHeight / 1.5,
+                }}
+            >
+                {/* Back btn */}
+                <View style={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    zIndex: 10,
+                }}>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            padding: 8,
+                            borderRadius: 20,
+                        }}
+                    >
+                        <AntDesign name="arrowleft" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Error showing */}
+                <View
+                    style={{
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <LottieView
+                        source={require("../../../assets/animations/catRole.json")}
+                        style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                        autoPlay
+                        loop
+                        speed={0.8}
+                    />
+                    <Text
+                        style={{
+                            fontSize: 18,
+                            width: ScreenWidth / 1.5,
+                            textAlign: "center",
+                        }}
+                    >
+                        {isFetching ? "Đang tải dữ liệu vui lòng chờ trong giây lát" : user?.status === "Inactive" ? "Tài khoản của bạn đã bị khóa, không thể sử dụng tính năng này" : "Không tìm thấy thông tin người dùng"}
+                    </Text>
+                </View>
+            </LinearGradient>
+        );
+    }
 
     return (
         <LinearGradient colors={['#FFFFFF', '#fea92866']} style={{ flex: 1 }}>
@@ -176,6 +280,9 @@ export default function SearchNaturalLanguage() {
                                         navigation.navigate('SellerDetailScreen', { sellerId: item.id })
                                     }
                                 }
+                                style={{
+                                    marginBottom: index == sellers.length - 1 ? 40 : 0
+                                }}
                             >
                                 <SellerSearchItem
                                     {...item}
@@ -183,6 +290,7 @@ export default function SearchNaturalLanguage() {
                                     setSnackbarMessage={setSnackbarMessage}
                                     setOpenBigMap={setOpenBigMap}
                                     setSelectedLocation={setSelectedLocation}
+                                    userLocation={userLocation}
                                 />
                             </TouchableOpacity>
                         )}
@@ -236,8 +344,7 @@ export default function SearchNaturalLanguage() {
                     }}
                     multiline={true} // Allow multiple lines
                     numberOfLines={3} // Set initial number of lines
-                    onFocus={() => setOpenSearchBtn(true)} // Khi vào TextInput, hiện nút search
-                    onBlur={() => setOpenSearchBtn(false)}  // Khi mất tiêu điểm, ẩn nút searchabc
+                    onPressIn={() => setOpenSearchBtn(true)} // Khi vào TextInput, hiện nút search
                 />
 
                 {
@@ -254,6 +361,7 @@ export default function SearchNaturalLanguage() {
                         }}
                         disabled={isFetching || searchInput == ""}
                         onPress={async () => {
+                            Keyboard.dismiss();
                             await handleSearch();
                         }}
                     >
@@ -274,6 +382,7 @@ export default function SearchNaturalLanguage() {
                 isOpen={isOpenBigMap}
                 setOpen={setOpenBigMap}
                 location={selectedLocation ? selectedLocation : null}
+                userLocation={userLocation}
             />
 
             <Snackbar

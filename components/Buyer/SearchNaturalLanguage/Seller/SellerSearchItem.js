@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import { View, Text, TouchableOpacity, Image } from 'react-native'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { ScreenWidth } from '@rneui/base'
 import * as Location from "expo-location";
 import Mapbox, { MapView, Camera, PointAnnotation, Logger } from "@rnmapbox/maps";
@@ -17,6 +17,7 @@ Logger.setLogCallback(log => {
 })
 Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
+import userLocationAva from "../../../../assets/userLocationAva.png";
 
 export default function SellerSearchItem({
     id,
@@ -29,17 +30,16 @@ export default function SellerSearchItem({
     setSnackbarVisible,
     setSnackbarMessage,
     setOpenBigMap,
-    setSelectedLocation
+    setSelectedLocation,
+    userLocation
 }) {
+
     const [location, setLocation] = useState(null);
-    const [userLocation, setUserLocation] = useState(null);
     const [distance, setDistance] = useState(null);
     const [travelTime, setTravelTime] = useState(null);
+    const [timeAndDistance, setTimeAndDistance] = useState(null);
 
-    const getCurrentPosition = async () => {
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        setUserLocation(currentLocation.coords);
-    };
+    const pointAnnotationRef = useRef(null); // Tham chiếu đến PointAnnotation
 
     const geocode = async () => {
         const geocodedLocation = await Location.geocodeAsync(
@@ -96,10 +96,13 @@ export default function SellerSearchItem({
         }
     };
 
-    //Fetch current position and dish position
+    function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    //Fetch shop position
     useFocusEffect(
         useCallback(() => {
-            getCurrentPosition();
             geocode();
         }, [])
     );
@@ -117,6 +120,9 @@ export default function SellerSearchItem({
                 setDistance(dist);
                 const time = calculateTravelTime(dist);
                 setTravelTime(time);
+
+                const finalString = `${formatTime(time)} - ${dist.toFixed(2)} km`;
+                setTimeAndDistance(finalString);
             }
         }, [userLocation, location])
     );
@@ -144,7 +150,7 @@ export default function SellerSearchItem({
                 gap: 10,
                 backgroundColor: "#112A46",
                 padding: 10,
-                borderRadius: 10,
+                borderRadius: 10 + 5,
                 borderWidth: 1,
             }}>
                 <View style={{
@@ -186,7 +192,7 @@ export default function SellerSearchItem({
                             <Text
                                 style={{ color: "#ed8900", fontWeight: "500" }}
                             >
-                                {formatTime(travelTime)} - {distance.toFixed(2)} km
+                                {timeAndDistance}
                             </Text>
                         }
                         <TouchableOpacity
@@ -199,15 +205,23 @@ export default function SellerSearchItem({
                 </View>
 
                 {/* Map */}
-                <TouchableOpacity onPress={() => {
-                    setSelectedLocation(location);
-                    setOpenBigMap(true);
-                }}>
+                <TouchableOpacity
+                    style={{
+                        height: ScreenWidth / 4.5,
+                        width: (ScreenWidth - 20 - 50) / 3,
+                        borderRadius: 10,
+                        overflow: "hidden", // Ẩn phần bên ngoài View,
+                        borderColor: "rgba(0,0,0,0.2)",
+                        borderWidth: 1
+                    }}
+                    onPress={() => {
+                        setSelectedLocation(location);
+                        setOpenBigMap(true);
+                    }}
+                >
                     <MapView
                         style={{
-                            height: ScreenWidth / 4.5,
-                            width: (ScreenWidth - 20 - 50) / 3,
-                            borderRadius: 10
+                            flex: 1
                         }}
                         styleURL="mapbox://styles/mapbox/streets-v12"
                         onPress={() => {
@@ -227,9 +241,32 @@ export default function SellerSearchItem({
                         />
 
                         <PointAnnotation
-                            id="marker"
+                            id="shopAddress"
                             coordinate={[location?.longitude || 106.69592033355514, location?.latitude || 10.782684066469386]}
                         />
+
+                        <PointAnnotation
+                            id="user-position"
+                            coordinate={[userLocation?.longitude || 106.69592033355514, userLocation?.latitude || 10.782684066469386]}
+                            ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
+                        >
+                            <Image
+                                source={userLocationAva} // Đường dẫn tới file ảnh
+                                style={{
+                                    width: 35,
+                                    height: 35,
+                                    borderRadius: 30,
+                                    borderWidth: 0.5,
+                                    borderColor: "rgba(0,0,0,0.5)"
+                                }}
+                                onLoad={async () => {
+                                    if (pointAnnotationRef.current) {
+                                        await delay(500);
+                                        pointAnnotationRef.current.refresh(); // Nếu thư viện hỗ trợ, gọi refresh() tại đây
+                                    }
+                                }}
+                            />
+                        </PointAnnotation>
                     </MapView>
                 </TouchableOpacity>
             </View>
