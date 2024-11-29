@@ -6,14 +6,14 @@ import {
   Linking,
   Image,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useAuth from "../../../utils/useAuth";
 import useNotification from "../../../utils/useNotification";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { useTranslation } from "react-i18next";
 import ErrModal from "../../CustomComponents/ErrModal";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { CommonActions, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { FontAwesome6, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -43,6 +43,7 @@ export default function BuyerProfile() {
   const {
     logout,
     user,
+    fetchUser
   } = useAuth();
 
   const {
@@ -77,6 +78,13 @@ export default function BuyerProfile() {
       setShowQuote(false);
     }, 5000); // Ẩn câu nói sau 5 giây
   };
+
+  //Fetch user info for check again status
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [])
+  );
 
   return (
     <LinearGradient colors={['#fea92866', '#FFFFFF']} style={{ flex: 1 }}>
@@ -121,9 +129,36 @@ export default function BuyerProfile() {
             </Text>
           </View>
         )}
-        <Text style={{ fontSize: 20, color: "white" }}>
+        <Text
+          style={{
+            fontSize: 20,
+            color: "white",
+            overflow: "hidden",
+            width: ScreenWidth / 1.65,
+          }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {user.customer.fullName}
         </Text>
+
+        {
+          (user != null && user?.status === "Inactive") &&
+          <View style={{
+            backgroundColor: "rgb(210, 65, 82)",
+            borderRadius: 10,
+            paddingHorizontal: 15,
+            paddingVertical: 10
+          }}>
+            <Text style={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: 16
+            }}>
+              Bị Khóa
+            </Text>
+          </View>
+        }
       </View>
 
       {/* Profile function */}

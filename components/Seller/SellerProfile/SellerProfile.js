@@ -1,7 +1,7 @@
 import { View, Text, Pressable, TextInput } from "react-native";
 import React, { useCallback, useState } from "react";
 import useAuth from "../../../utils/useAuth";
-import { Avatar, Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
+import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
 import ErrModal from "../../CustomComponents/ErrModal";
@@ -41,6 +41,7 @@ export default function SellerProfile() {
   const {
     logout,
     user,
+    fetchUser
   } = useAuth();
 
   const {
@@ -62,6 +63,13 @@ export default function SellerProfile() {
       } else {
         setWalletAmount("0 ₫");
       }
+    }, [])
+  );
+
+  //Fetch user info for check again status
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
     }, [])
   );
 
@@ -109,12 +117,30 @@ export default function SellerProfile() {
           </View>
         )}
         <Text
-          style={{ fontSize: 20, color: "white", overflow: "hidden", width: ScreenWidth / 1.3 }}
+          style={{ fontSize: 20, color: "white", overflow: "hidden", width: ScreenWidth / 1.65 }}
           numberOfLines={1} // Giới hạn hiển thị trên 1 dòng
           ellipsizeMode="tail" // Thêm "..." vào cuối nếu quá dài
         >
           {user.seller !== null ? user.seller?.shopName : "Người dùng hệ thống"}
         </Text>
+
+        {
+          (user != null && user?.status === "Inactive") &&
+          <View style={{
+            backgroundColor: "rgb(210, 65, 82)",
+            borderRadius: 10,
+            paddingHorizontal: 15,
+            paddingVertical: 10
+          }}>
+            <Text style={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: 16
+            }}>
+              Bị Khóa
+            </Text>
+          </View>
+        }
       </View>
 
       {/* Profile function */}

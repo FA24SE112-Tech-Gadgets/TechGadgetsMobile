@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,11 @@ import LottieView from 'lottie-react-native';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
 import ReviewSummary from '../BuyerReview/ReviewSummary';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function GadgetDetail({ route, navigation }) {
   const [gadget, setGadget] = useState(null);
   const { gadgetId } = route.params;
-
-  const [isChangeGadget, setIsChangeGadget] = useState(false);
 
   const [activeTab, setActiveTab] = useState('specs');
   const [quantity, setQuantity] = useState(1);
@@ -51,22 +50,17 @@ export default function GadgetDetail({ route, navigation }) {
     return `${day}/${month}/${year}`;
   };
 
-  useEffect(() => {
-    fetchGadgetDetail();
-  }, [gadgetId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchGadgetDetail();
+    }, [gadgetId])
+  );
 
-  useEffect(() => {
-    setIsContentExpanded(false);
-  }, [activeTab]);
-
-  //Check coi có change gadget khác khi vô gadget detail xong vô shop r lại vô gadget detail
-  useEffect(() => {
-    if (gadget != null) {
-      setIsChangeGadget(true);
-    } else {
-      setIsChangeGadget(false);
-    }
-  }, [gadgetId]); // Theo dõi gadgetId
+  useFocusEffect(
+    useCallback(() => {
+      setIsContentExpanded(false);
+    }, [activeTab])
+  );
 
   {/* Group Specification*/ }
   const groupSpecifications = (specs) => {
@@ -85,7 +79,6 @@ export default function GadgetDetail({ route, navigation }) {
       setIsFetching(true);
       const response = await api.get(`/gadgets/${gadgetId}`);
       setIsFetching(false);
-      setIsChangeGadget(false);
 
       setGadget(response.data);
     } catch (error) {
@@ -98,7 +91,6 @@ export default function GadgetDetail({ route, navigation }) {
       );
       setIsError(true);
       setIsFetching(false);
-      setIsChangeGadget(false);
     }
   };
 
@@ -134,7 +126,7 @@ export default function GadgetDetail({ route, navigation }) {
     }
   };
 
-  if (gadget === null || gadget?.status === "Inactive" || isChangeGadget) {
+  if (gadget === null || gadget?.status === "Inactive" || gadget?.sellerStatus === "Inactive") {
     return (
       <LinearGradient colors={['#fea92866', '#FFFFFF']}
         style={{
@@ -142,6 +134,17 @@ export default function GadgetDetail({ route, navigation }) {
           height: ScreenHeight / 1.5,
         }}
       >
+        {/* Back btn */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <AntDesign name="arrowleft" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Error showing */}
         <View
           style={{
             flex: 1,
@@ -163,7 +166,7 @@ export default function GadgetDetail({ route, navigation }) {
               textAlign: "center",
             }}
           >
-            {isFetching ? "Đang tải dữ liệu sản phẩm" : gadget?.status === "Inactive" ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Không tìm thấy thông tin sản phẩm"}
+            {isFetching ? "Đang tải dữ liệu sản phẩm" : gadget?.sellerStatus === "Inactive" ? "Người bán sản phẩm này đã bị khóa do vi phạm chính sách TechGadget" : gadget?.status === "Inactive" ? "Sản phẩm đã bị khóa do vi phạm chính sách TechGadget" : "Không tìm thấy thông tin sản phẩm"}
           </Text>
         </View>
       </LinearGradient>

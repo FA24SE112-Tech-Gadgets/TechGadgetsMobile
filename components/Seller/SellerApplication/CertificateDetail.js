@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { FontAwesome, Ionicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { ScreenHeight, ScreenWidth } from '@rneui/base';
@@ -6,6 +6,20 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Pdf from 'react-native-pdf';
 import { useFocusEffect } from '@react-navigation/native';
 import RNFS from 'react-native-fs';
+import * as Location from "expo-location"
+import Mapbox, { MapView, Camera, PointAnnotation, Logger, } from "@rnmapbox/maps";
+Logger.setLogCallback(log => {
+  const { message } = log;
+  if (
+    message.match("Request failed due to a permanent error: Canceled") ||
+    message.match("Request failed due to a permanent error: Socket Closed")
+  ) {
+    return true;
+  }
+  return false;
+})
+Mapbox.setWellKnownTileServer('Mapbox');
+Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
 
 const CertificateDetail = ({
   application,
@@ -16,6 +30,17 @@ const CertificateDetail = ({
   setIsError
 }) => {
   const [fileType, setFileType] = useState("unknown");
+
+  const [location, setLocation] = useState(null);
+
+  const geocode = async () => {
+    const geocodedLocation = await Location.geocodeAsync(
+      application?.shopAddress
+        ? application.shopAddress
+        : "Ho Chi Minh"
+    ); //Default Ho Chi Minh
+    setLocation(geocodedLocation[0]);
+  };
 
   const businessModelTranslation = {
     BusinessHousehold: 'Hộ Kinh Doanh',
@@ -96,11 +121,16 @@ const CertificateDetail = ({
     }, [application?.businessRegistrationCertificateUrl])
   );
 
+  //Fetch seller application position
+  useEffect(() => {
+    geocode();
+  }, [])
+
   return (
     <View style={styles.overlay}>
       <ScrollView
         style={[styles.modalContainer, {
-          maxHeight: application.businessRegistrationCertificateUrl ? ScreenHeight / 1.3 : ScreenHeight / 1.7
+          maxHeight: ScreenHeight / 1.3
         }]}
         showsVerticalScrollIndicator={false}
       >
@@ -134,6 +164,40 @@ const CertificateDetail = ({
               >
                 Địa Chỉ Cửa Hàng: {application.shopAddress}
               </Text>
+
+              <View style={{
+                height: ScreenHeight / 7,
+                width: ScreenWidth / 1.55,
+                marginVertical: 3,
+                borderRadius: 15, // Tạo borderRadius
+                overflow: "hidden", // Ẩn phần bên ngoài View,
+                borderColor: "rgba(0,0,0,0.2)",
+                borderWidth: 1
+              }}>
+                <MapView
+                  style={{
+                    flex: 1
+                  }}
+                  styleURL="mapbox://styles/mapbox/streets-v12"
+                  zoomEnabled={false}
+                  attributionEnabled={false} //Ẩn info icon
+                  logoEnabled={false} //Ẩn logo
+                  rotateEnabled={false}
+                  scrollEnabled={false}
+                >
+                  <Camera
+                    centerCoordinate={[location?.longitude || 0, location?.latitude || 0]}
+                    zoomLevel={15}
+                    pitch={10}
+                    heading={0}
+                  />
+
+                  <PointAnnotation
+                    id="marker"
+                    coordinate={[location?.longitude || 0, location?.latitude || 0]}
+                  />
+                </MapView>
+              </View>
             </View>
           </View>
 

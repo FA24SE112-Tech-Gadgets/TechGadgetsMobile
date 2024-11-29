@@ -1,9 +1,9 @@
-import { View } from 'react-native'
-import React from 'react'
+import { Image, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import Modal from 'react-native-modal'
 import { ScreenHeight, ScreenWidth } from '@rneui/base'
 import { IconButton } from 'react-native-paper';
-import Mapbox, { MapView, Camera, PointAnnotation, Logger } from "@rnmapbox/maps";
+import Mapbox, { MapView, Camera, PointAnnotation, Logger, ShapeSource, LineLayer } from "@rnmapbox/maps";
 Logger.setLogCallback(log => {
     const { message } = log;
     if (
@@ -16,8 +16,41 @@ Logger.setLogCallback(log => {
 })
 Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
+import useAuth from '../../utils/useAuth';
+import axios from 'axios';
+const accessToken = "sk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTgzeWNyMDY5ZDJrczllYXFlNGcwayJ9.4ukbF2sMxF2Qmu0_JnlvCw"
 
-export default function CustomMapModal({ isOpen, setOpen, location }) {
+export default function CustomMapModal({ isOpen, setOpen, location, userLocation }) {
+    const pointAnnotationRef = useRef(null); // Tham chiếu đến PointAnnotation
+    const { user } = useAuth();
+
+    const [route, setRoute] = useState(null);
+
+    function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    useEffect(() => {
+        if (userLocation && location) {
+            fetchRoute();
+        }
+    }, [userLocation, location]);
+
+    const fetchRoute = async () => {
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLocation.longitude},${userLocation.latitude};${location.longitude},${location.latitude}?geometries=geojson&access_token=${accessToken}`;
+
+        try {
+            const response = await axios.get(url);
+            const data = response.data;
+
+            if (data.routes && data.routes.length > 0) {
+                setRoute(data.routes[0].geometry); // Lấy tuyến đường đầu tiên
+            }
+        } catch (error) {
+            console.error("Error fetching route:", error);
+        }
+    };
+
     return (
         <Modal
             isVisible={isOpen}
@@ -59,6 +92,20 @@ export default function CustomMapModal({ isOpen, setOpen, location }) {
                     rotateEnabled={true}
                     scrollEnabled={true}
                 >
+                    {/* Route, Hiển thị tuyến đường */}
+                    {route && (
+                        <ShapeSource id="routeSource" shape={route}>
+                            <LineLayer
+                                id="routeLine"
+                                style={{
+                                    lineColor: "#ed8900",
+                                    lineWidth: 2.5,
+                                    lineOpacity: 0.7,
+                                }}
+                            />
+                        </ShapeSource>
+                    )}
+
                     <Camera
                         centerCoordinate={[location?.longitude || 106.69592033355514, location?.latitude || 10.782684066469386]}
                         zoomLevel={15}
@@ -67,7 +114,48 @@ export default function CustomMapModal({ isOpen, setOpen, location }) {
                     />
 
                     <PointAnnotation
-                        id="marker"
+                        id="user-position"
+                        coordinate={[userLocation?.longitude || 106.69592033355514, userLocation?.latitude || 10.782684066469386]}
+                        ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
+                    >
+                        {user.customer.avatarUrl ? (
+                            <Image
+                                source={{
+                                    uri: user.customer.avatarUrl,
+                                }}
+                                style={{
+                                    height: 40,
+                                    width: 40,
+                                    backgroundColor: "black",
+                                    borderRadius: 30,
+                                }}
+                                onLoad={async () => {
+                                    if (pointAnnotationRef.current) {
+                                        await delay(500);
+                                        pointAnnotationRef.current.refresh();
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <View
+                                style={{
+                                    height: 40,
+                                    width: 40,
+                                    borderRadius: 30,
+                                    backgroundColor: "#ffecd0",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <Text style={{ fontSize: 18, fontWeight: "bold", color: "#ed8900" }}>
+                                    {user.customer.fullName.charAt(0)}
+                                </Text>
+                            </View>
+                        )}
+                    </PointAnnotation>
+
+                    <PointAnnotation
+                        id="shopAddress"
                         coordinate={[location?.longitude || 106.69592033355514, location?.latitude || 10.782684066469386]}
                     />
                 </MapView>

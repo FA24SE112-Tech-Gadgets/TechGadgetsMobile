@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Correct import for Picker
 import api from '../../Authorization/api';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,8 +7,25 @@ import LottieView from 'lottie-react-native';
 import { LinearGradient } from "expo-linear-gradient";
 import ErrModal from '../../CustomComponents/ErrModal';
 import { Snackbar } from 'react-native-paper';
-import { ScreenWidth } from '@rneui/base';
-import { AntDesign } from '@expo/vector-icons';
+import { ScreenHeight, ScreenWidth } from '@rneui/base';
+import { AntDesign, Entypo } from '@expo/vector-icons';
+import * as Location from "expo-location"
+import Mapbox, { MapView, Camera, PointAnnotation, Logger } from "@rnmapbox/maps";
+import { useFocusEffect } from '@react-navigation/native';
+import RegisterAddress from './RegisterAddress';
+Logger.setLogCallback(log => {
+  const { message } = log;
+  if (
+    message.match("Request failed due to a permanent error: Canceled") ||
+    message.match("Request failed due to a permanent error: Socket Closed")
+  ) {
+    return true;
+  }
+  return false;
+})
+Mapbox.setWellKnownTileServer('Mapbox');
+Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
+import userLocationAva from "../../../assets/userLocationAva.png";
 
 export default function BusinessRegistrationCertificate() {
   const [assets, setAssets] = useState([]);
@@ -28,11 +45,17 @@ export default function BusinessRegistrationCertificate() {
 
   const [isFetching, setIsFetching] = useState(false);
 
+  const [location, setLocation] = useState(null);
+  const [isOpenBigMap, setOpenBigMap] = useState(false);
+
   const [isShopNameValid, setIsShopNameValid] = useState(true);
   const [isShopAddressValid, setIsShopAddressValid] = useState(true);
   const [isTaxCodeValid, setIsTaxCodeValid] = useState(true);
   const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
   const [isCompanyNameValid, setIsCompanyNameValid] = useState(true); // For company name validation
+
+  const [userLocation, setUserLocation] = useState(null);
+  const pointAnnotationRef = useRef(null); // Tham chiếu đến PointAnnotation
 
   // File picker logic (for file uploads)
   const pickBusinessRegistrationCertificate = async () => {
@@ -68,6 +91,10 @@ export default function BusinessRegistrationCertificate() {
       setIsError(true);
     }
   };
+
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   const handleAddMail = () => {
     setBillingMails([...billingMails, ""]); // Thêm email trống để người dùng nhập
@@ -226,6 +253,74 @@ export default function BusinessRegistrationCertificate() {
 
   };
 
+  const getCurrentPosition = async () => {
+    try {
+      const currentLocation = await Location.getCurrentPositionAsync({})
+      setLocation(currentLocation.coords);
+      // Reverse geocode to get address
+      const reverseGeocodedAddress = await Location.reverseGeocodeAsync({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+
+      if (reverseGeocodedAddress.length > 0) {
+        const currentAddress = reverseGeocodedAddress[0];
+        const addressParts = [];
+
+        addressParts.push(currentAddress.formattedAddress);
+
+        // Join the parts with a comma and space
+        const strAddress = addressParts.join(", ");
+        setShopAddress(strAddress);
+      } else {
+        setShopAddress("")
+        setIsError(true);
+        setStringErr("Không tìm thấy địa chỉ hiện tại");
+      }
+    } catch (error) {
+      setShopAddress("");
+      setIsError(true);
+      setStringErr("Lỗi MapBox");
+    }
+  }
+
+  //Get user current position
+  useFocusEffect(
+    useCallback(() => {
+      getCurrentPosition();
+    }, [])
+  );
+
+  useEffect(() => {
+    let locationSubscription;
+
+    const startWatchingLocation = async () => {
+      // Theo dõi vị trí thời gian thực
+      locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 1000, // Lấy vị trí mỗi 1 giây
+          distanceInterval: 0.5, // Lấy vị trí khi di chuyển tối thiểu 5m
+        },
+        (location) => {
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      );
+    };
+
+    startWatchingLocation();
+
+    // Hủy theo dõi khi component unmount
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
+  }, []);
+
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -259,16 +354,78 @@ export default function BusinessRegistrationCertificate() {
         />
 
         <Text style={styles.label}>Địa chỉ</Text>
-        <TextInput
-          style={[
-            styles.input,
-            !isShopAddressValid && { borderColor: 'red' }
-          ]}
-          value={shopAddress}
-          onChangeText={setShopAddress}
-          placeholder="Nhập địa chỉ"
-          onFocus={() => setIsShopAddressValid(true)}
-        />
+        <TouchableOpacity
+          style={[styles.input]}
+          onPress={() => {
+            setOpenBigMap(true)
+          }}
+        >
+          <Text>
+            {shopAddress}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={{
+          height: ScreenHeight / 6,
+          marginVertical: 3,
+          borderRadius: 15, // Tạo borderRadius
+          overflow: "hidden", // Ẩn phần bên ngoài View,
+          borderColor: "rgba(0,0,0,0.2)",
+          borderWidth: 1
+        }}>
+          <MapView
+            style={{
+              flex: 1
+            }}
+            styleURL="mapbox://styles/mapbox/streets-v12"
+            onPress={() => {
+              setOpenBigMap(true);
+            }}
+            zoomEnabled={false}
+            attributionEnabled={false} //Ẩn info icon
+            logoEnabled={false} //Ẩn logo
+            rotateEnabled={false}
+            scrollEnabled={false}
+          >
+            <Camera
+              centerCoordinate={[location?.longitude || 0, location?.latitude || 0]}
+              zoomLevel={15}
+              pitch={10}
+              heading={0}
+            />
+
+            <PointAnnotation
+              id="marker"
+              coordinate={[location?.longitude || 0, location?.latitude || 0]}
+              onSelected={() => {
+                setOpenBigMap(true);
+              }}
+            />
+            <PointAnnotation
+              id="user-position"
+              coordinate={[userLocation?.longitude || 106.69592033355514, userLocation?.latitude || 10.782684066469386]}
+              ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
+            >
+              <Image
+                source={userLocationAva} // Đường dẫn tới file ảnh
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 30,
+                  borderWidth: 0.5,
+                  borderColor: "rgba(0,0,0,0.5)"
+                }}
+                onLoad={async () => {
+                  if (pointAnnotationRef.current) {
+                    await delay(500);
+                    pointAnnotationRef.current.refresh(); // Nếu thư viện hỗ trợ, gọi refresh() tại đây
+                  }
+                }}
+              />
+            </PointAnnotation>
+          </MapView>
+        </View>
+
         <Text style={styles.label}>Loại hình kinh doanh</Text>
         <View style={styles.pickerContainer}>
           <Picker
@@ -385,6 +542,17 @@ export default function BusinessRegistrationCertificate() {
             <ActivityIndicator color={"white"} />
           }
         </TouchableOpacity>
+
+        <RegisterAddress
+          isOpen={isOpenBigMap}
+          setOpen={setOpenBigMap}
+          location={location}
+          setLocation={setLocation}
+          address={shopAddress}
+          setShopAddress={setShopAddress}
+          setSnackbarVisible={setSnackbarVisible}
+          setSnackbarMessage={setSnackbarMessage}
+        />
 
         <ErrModal
           stringErr={stringErr}

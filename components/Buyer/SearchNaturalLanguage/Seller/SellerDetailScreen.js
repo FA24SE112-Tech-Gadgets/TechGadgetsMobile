@@ -219,6 +219,62 @@ export default function SellerDetailScreen({ route, navigation }) {
         }, [])
     );
 
+    if (seller == null || seller?.status === "Inactive") {
+        return (
+            <LinearGradient colors={['#fea92866', '#FFFFFF']}
+                style={{
+                    flex: 1,
+                    height: ScreenHeight / 1.5,
+                }}
+            >
+                {/* Back btn */}
+                <View style={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    zIndex: 10,
+                }}>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            padding: 8,
+                            borderRadius: 20,
+                        }}
+                    >
+                        <AntDesign name="arrowleft" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Error showing */}
+                <View
+                    style={{
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <LottieView
+                        source={require("../../../../assets/animations/catRole.json")}
+                        style={{ width: ScreenWidth, height: ScreenWidth / 1.5 }}
+                        autoPlay
+                        loop
+                        speed={0.8}
+                    />
+                    <Text
+                        style={{
+                            fontSize: 18,
+                            width: ScreenWidth / 1.5,
+                            textAlign: "center",
+                        }}
+                    >
+                        {isFetching ? "Đang tải dữ liệu cửa hàng" : seller?.status === "Inactive" ? "Người bán này đã bị khóa do vi phạm chính sách TechGadget" : "Không tìm thấy thông tin cửa hàng"}
+                    </Text>
+                </View>
+            </LinearGradient>
+        );
+    }
+
     return (
         <LinearGradient colors={['#fea92866', '#FFFFFF']} style={styles.container}>
             {/* Header + search + seller info */}
