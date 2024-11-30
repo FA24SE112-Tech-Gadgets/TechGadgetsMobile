@@ -175,7 +175,7 @@ export default function BuyerHome() {
 
   const fetchGadgets = async (categoryId) => {
     try {
-      const response = await api.get(`/gadgets/category/old/${categoryId}?Page=1&PageSize=20`);
+      const response = await api.get(`/gadgets/category/${categoryId}?Page=1&PageSize=20`);
       setGadgets(prev => ({
         ...prev,
         [categoryId]: response.data.items.map(item => ({
