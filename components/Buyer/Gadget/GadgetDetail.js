@@ -18,6 +18,7 @@ import { ScreenHeight, ScreenWidth } from '@rneui/base';
 import ErrModal from '../../CustomComponents/ErrModal';
 import ReviewSummary from '../BuyerReview/ReviewSummary';
 import { useFocusEffect } from '@react-navigation/native';
+import userLocationAva from "../../../assets/userLocationAva.jpg";
 
 export default function GadgetDetail({ route, navigation }) {
   const [gadget, setGadget] = useState(null);
@@ -361,22 +362,19 @@ export default function GadgetDetail({ route, navigation }) {
             gap: 10,
           }}>
             {/* Shop avatar */}
-            <View
+            <Image
+              source={userLocationAva}
               style={{
                 height: 45,
                 width: 45,
+                backgroundColor: "black",
                 borderRadius: 30,
-                backgroundColor: "#ed8900",
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "white"
+                borderColor: "rgba(0,0,0,0.3)"
               }}
-            >
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
-                {gadget.seller !== null ? gadget.seller.shopName?.charAt(0) : "G"}
-              </Text>
-            </View>
+            />
 
             <View style={{
               width: ScreenWidth / 1.5,

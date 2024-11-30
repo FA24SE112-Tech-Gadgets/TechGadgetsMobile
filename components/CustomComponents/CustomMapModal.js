@@ -18,7 +18,9 @@ Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
 import useAuth from '../../utils/useAuth';
 import axios from 'axios';
-const accessToken = "sk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTgzeWNyMDY5ZDJrczllYXFlNGcwayJ9.4ukbF2sMxF2Qmu0_JnlvCw"
+import userLocationAva from "../../assets/userLocationAva.jpg";
+
+const accessToken = "sk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTgzeWNyMDY5ZDJrczllYXFlNGcwayJ9.4ukbF2sMxF2Qmu0_JnlvCw";
 
 export default function CustomMapModal({ isOpen, setOpen, location, userLocation }) {
     const pointAnnotationRef = useRef(null); // Tham chiếu đến PointAnnotation
@@ -118,40 +120,25 @@ export default function CustomMapModal({ isOpen, setOpen, location, userLocation
                         coordinate={[userLocation?.longitude || 106.69592033355514, userLocation?.latitude || 10.782684066469386]}
                         ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
                     >
-                        {user.customer.avatarUrl ? (
-                            <Image
-                                source={{
+                        <Image
+                            source={user?.customer?.avatarUrl ?
+                                {
                                     uri: user.customer.avatarUrl,
-                                }}
-                                style={{
-                                    height: 40,
-                                    width: 40,
-                                    backgroundColor: "black",
-                                    borderRadius: 30,
-                                }}
-                                onLoad={async () => {
-                                    if (pointAnnotationRef.current) {
-                                        await delay(500);
-                                        pointAnnotationRef.current.refresh();
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <View
-                                style={{
-                                    height: 40,
-                                    width: 40,
-                                    borderRadius: 30,
-                                    backgroundColor: "#ffecd0",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <Text style={{ fontSize: 18, fontWeight: "bold", color: "#ed8900" }}>
-                                    {user.customer.fullName.charAt(0)}
-                                </Text>
-                            </View>
-                        )}
+                                } : userLocationAva
+                            }
+                            style={{
+                                height: 40,
+                                width: 40,
+                                backgroundColor: "black",
+                                borderRadius: 30,
+                            }}
+                            onLoad={async () => {
+                                if (pointAnnotationRef.current) {
+                                    await delay(500);
+                                    pointAnnotationRef.current.refresh();
+                                }
+                            }}
+                        />
                     </PointAnnotation>
 
                     <PointAnnotation

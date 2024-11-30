@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+import React, { useCallback, useState, useRef } from 'react'
 import { ScreenWidth } from '@rneui/base'
 import * as Location from "expo-location";
 import Mapbox, { MapView, Camera, PointAnnotation, Logger } from "@rnmapbox/maps";
@@ -17,7 +17,7 @@ Logger.setLogCallback(log => {
 })
 Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
-import userLocationAva from "../../../../assets/userLocationAva.png";
+import userLocationAva from "../../../../assets/userLocationAva.jpg";
 
 export default function SellerSearchItem({
     id,
@@ -31,7 +31,8 @@ export default function SellerSearchItem({
     setSnackbarMessage,
     setOpenBigMap,
     setSelectedLocation,
-    userLocation
+    userLocation,
+    user
 }) {
 
     const [location, setLocation] = useState(null);
@@ -251,18 +252,21 @@ export default function SellerSearchItem({
                             ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
                         >
                             <Image
-                                source={userLocationAva} // Đường dẫn tới file ảnh
+                                source={user?.customer?.avatarUrl ?
+                                    {
+                                        uri: user.customer.avatarUrl,
+                                    } : userLocationAva
+                                }
                                 style={{
-                                    width: 35,
-                                    height: 35,
+                                    height: 28,
+                                    width: 28,
+                                    backgroundColor: "black",
                                     borderRadius: 30,
-                                    borderWidth: 0.5,
-                                    borderColor: "rgba(0,0,0,0.5)"
                                 }}
                                 onLoad={async () => {
                                     if (pointAnnotationRef.current) {
                                         await delay(500);
-                                        pointAnnotationRef.current.refresh(); // Nếu thư viện hỗ trợ, gọi refresh() tại đây
+                                        pointAnnotationRef.current.refresh();
                                     }
                                 }}
                             />

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput } from "react-native";
+import { View, Text, Pressable, TextInput, Image } from "react-native";
 import React, { useCallback, useState } from "react";
 import useAuth from "../../../utils/useAuth";
 import { Divider, Icon, ScreenHeight, ScreenWidth } from "@rneui/base";
@@ -9,6 +9,7 @@ import { useFocusEffect, useNavigation, CommonActions } from "@react-navigation/
 import { MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import useNotification from "../../../utils/useNotification";
+import userLocationAva from "../../../assets/userLocationAva.jpg";
 
 export default function SellerProfile() {
   const [stringErr, setStringErr] = useState("");
@@ -88,34 +89,17 @@ export default function SellerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user?.imageUrl ? (
-          <Image
-            source={{
-              uri: user.imageUrl,
-            }}
-            style={{
-              height: 40,
-              width: 40,
-              backgroundColor: "black",
-              borderRadius: 30,
-            }}
-          />
-        ) : (
-          <View
-            style={{
-              height: 40,
-              width: 40,
-              borderRadius: 30,
-              backgroundColor: "#ffecd0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
-              {user.seller !== null ? user.seller?.shopName?.charAt(0) : "G"}
-            </Text>
-          </View>
-        )}
+        <Image
+          source={userLocationAva}
+          style={{
+            height: 40,
+            width: 40,
+            backgroundColor: "black",
+            borderRadius: 30,
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.3)"
+          }}
+        />
         <Text
           style={{ fontSize: 20, color: "white", overflow: "hidden", width: ScreenWidth / 1.65 }}
           numberOfLines={1} // Giới hạn hiển thị trên 1 dòng

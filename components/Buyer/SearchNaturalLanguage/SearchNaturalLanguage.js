@@ -291,6 +291,7 @@ export default function SearchNaturalLanguage() {
                                     setOpenBigMap={setOpenBigMap}
                                     setSelectedLocation={setSelectedLocation}
                                     userLocation={userLocation}
+                                    user={user}
                                 />
                             </TouchableOpacity>
                         )}

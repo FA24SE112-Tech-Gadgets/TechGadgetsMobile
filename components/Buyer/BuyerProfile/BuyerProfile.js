@@ -16,6 +16,7 @@ import ErrModal from "../../CustomComponents/ErrModal";
 import { CommonActions, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { FontAwesome6, Feather, FontAwesome, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
+import userLocationAva from "../../../assets/userLocationAva.jpg";
 
 export default function BuyerProfile() {
   const navigation = useNavigation();
@@ -101,34 +102,21 @@ export default function BuyerProfile() {
           borderBottomRightRadius: 12,
         }}
       >
-        {user.customer.avatarUrl ? (
-          <Image
-            source={{
+        <Image
+          source={user?.customer?.avatarUrl ?
+            {
               uri: user.customer.avatarUrl,
-            }}
-            style={{
-              height: 40,
-              width: 40,
-              backgroundColor: "black",
-              borderRadius: 30,
-            }}
-          />
-        ) : (
-          <View
-            style={{
-              height: 40,
-              width: 40,
-              borderRadius: 30,
-              backgroundColor: "#ffecd0",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#ed8900" }}>
-              {user.customer.fullName.charAt(0)}
-            </Text>
-          </View>
-        )}
+            } : userLocationAva
+          }
+          style={{
+            height: 40,
+            width: 40,
+            backgroundColor: "black",
+            borderRadius: 30,
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.3)"
+          }}
+        />
         <Text
           style={{
             fontSize: 20,

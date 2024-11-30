@@ -19,6 +19,7 @@ import { Picker } from '@react-native-picker/picker';
 import useAuth from '../../utils/useAuth';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import userLocationAva from "../../assets/userLocationAva.jpg";
 
 const formatDateToDisplay = (dateString) => {
   if (!dateString) return '';
@@ -299,7 +300,13 @@ export default function ChangeProfile() {
               onPress={isEditing ? pickDocument : null}  // Enable press only in edit mode
             >
               <Image
-                source={{ uri: selectedAvatar?.uri || newCustomerFields.avatarUrl || 'https://via.placeholder.com/150' }}
+                source={
+                  selectedAvatar?.uri
+                    ? { uri: selectedAvatar.uri }
+                    : newCustomerFields.avatarUrl
+                      ? { uri: newCustomerFields.avatarUrl }
+                      : userLocationAva
+                }
                 style={styles.avatar}
               />
               {isEditing && (  // Only show edit icon when in editing mode
