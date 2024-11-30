@@ -165,7 +165,7 @@ const ChangePasswordScreen = ({ route }) => {
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginTop: ScreenHeight / 8
+                    marginTop: isOpenKeyboard ? ScreenHeight / 12 : ScreenHeight / 7
                 }}
             >
                 <View
@@ -213,7 +213,7 @@ const ChangePasswordScreen = ({ route }) => {
 
             <View style={{
                 width: ScreenWidth / 1.1,
-                height: ScreenHeight / 1.85,
+                height: ScreenHeight / 1.65,
                 alignSelf: "center",
                 backgroundColor: "#f9f9f9",
                 paddingHorizontal: 30,
@@ -227,11 +227,11 @@ const ChangePasswordScreen = ({ route }) => {
                 shadowRadius: 3.84, // Bán kính mờ của bóng
                 elevation: 5,
                 marginTop: ScreenHeight / 30,
-                gap: 30
+                gap: 20
             }}>
                 <Text style={{
                     alignSelf: "center",
-                    fontSize: 30,
+                    fontSize: 24,
                     fontWeight: "bold",
                 }}>QUÊN MẬT KHẨU</Text>
 
