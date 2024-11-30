@@ -3,7 +3,6 @@ import {
     Image,
     Keyboard,
     Pressable,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -107,7 +106,7 @@ const ForgotPassword = () => {
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginTop: ScreenHeight / 6
+                    marginTop: ScreenHeight / 4.5
                 }}
             >
                 <View
@@ -155,7 +154,7 @@ const ForgotPassword = () => {
 
             <View style={{
                 width: ScreenWidth / 1.1,
-                height: ScreenHeight / 3,
+                height: ScreenHeight / 2.5,
                 alignSelf: "center",
                 backgroundColor: "#f9f9f9",
                 paddingHorizontal: 30,
@@ -169,11 +168,11 @@ const ForgotPassword = () => {
                 shadowRadius: 3.84, // Bán kính mờ của bóng
                 elevation: 5,
                 marginTop: ScreenHeight / 30,
-                gap: 30
+                gap: 20
             }}>
                 <Text style={{
                     alignSelf: "center",
-                    fontSize: 30,
+                    fontSize: 24,
                     fontWeight: "bold",
                 }}>QUÊN MẬT KHẨU</Text>
 
@@ -257,7 +256,7 @@ const ForgotPassword = () => {
                 !isOpenKeyboard &&
                 <Text style={{
                     position: "absolute",
-                    bottom: 90,
+                    bottom: 10,
                     right: 10,
                 }}>
                     {t("app-version")}
@@ -271,133 +270,5 @@ const ForgotPassword = () => {
         </LinearGradient >
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingVertical: 50,
-        paddingHorizontal: 30,
-        height: "auto",
-    },
-    background: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "85%",
-        zIndex: 0,
-        opacity: 0.4,
-    },
-    backArrow: {
-        position: "absolute",
-        top: 50,
-        left: 5,
-        zIndex: 1,
-    },
-    title: {
-        fontSize: 30,
-        fontWeight: "bold",
-        marginTop: 30,
-        marginBottom: 40,
-        width: "100%",
-        textAlign: "center",
-    },
-    inputContainer: {
-        width: "100%",
-        height: ScreenHeight / 7,
-        display: "flex",
-        justifyContent: "space-between",
-    },
-    textInput: {
-        backgroundColor: "white",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 50,
-        fontSize: 17,
-    },
-    showPasswordBtn: {
-        position: "absolute",
-        right: 20,
-        top: 14,
-    },
-    errorMessage: {
-        marginTop: 15,
-        textAlign: "left",
-        paddingHorizontal: 10,
-        fontSize: 17,
-        color: "red",
-        fontWeight: "600",
-    },
-    loginButton: {
-        alignItems: "center",
-        paddingVertical: 13,
-        paddingHorizontal: 20,
-        borderRadius: 50,
-        marginTop: 30,
-        flexDirection: "row",
-        justifyContent: "center",
-        gap: 5
-    },
-    googleButtonContainer: {
-        alignItems: 'center',
-        marginTop: 20,
-        backgroundColor: 'black',
-        borderRadius: 30,
-        overflow: 'hidden',
-    },
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'black',
-        borderRadius: 40,
-        width: 320,
-        height: 48,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        justifyContent: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        gap: 12
-    },
-    googleButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    registerButton: {
-        display: "flex",
-        alignItems: "center",
-        paddingVertical: 13,
-        paddingHorizontal: 20,
-        borderRadius: 50,
-        marginTop: 20,
-        borderWidth: 2,
-        borderColor: "black",
-    },
-    linearGradient: {
-        flex: 1,
-        paddingLeft: 15,
-        paddingRight: 15,
-    },
-    modalContent: {
-        backgroundColor: "white",
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-    },
-    modalOption: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-    },
-    modalOptionText: {
-        fontSize: 16,
-    },
-});
 
 export default ForgotPassword;
