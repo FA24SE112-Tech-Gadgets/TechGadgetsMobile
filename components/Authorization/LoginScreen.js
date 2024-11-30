@@ -163,6 +163,7 @@ const LoginScreen = () => {
       );
       setIsError(true);
       setIsRecentPushed(false);
+      await GoogleSignin.signOut();
     }
   };
 

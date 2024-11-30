@@ -193,7 +193,7 @@ const CertificateDetail = ({
                   />
 
                   <PointAnnotation
-                    id="marker"
+                    id="shopAddress"
                     coordinate={[location?.longitude || 0, location?.latitude || 0]}
                   />
                 </MapView>

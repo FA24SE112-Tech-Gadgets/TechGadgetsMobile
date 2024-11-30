@@ -16,11 +16,14 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Hyperlink from "react-native-hyperlink";
 import ErrModal from "../../CustomComponents/ErrModal";
 import { useNavigation } from "@react-navigation/native";
+import useAuth from "../../../utils/useAuth";
 
 export default function BuyerPersonal() {
   const [stringErr, setStringErr] = useState("");
   const [isError, setIsError] = useState(false);
   const navigation = useNavigation();
+
+  const { user } = useAuth();
 
   return (
     <LinearGradient
@@ -141,45 +144,48 @@ export default function BuyerPersonal() {
             paddingVertical: 5,
           }}
         >
-          {/* Mật khẩu */}
-          <Pressable
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "white",
-              padding: 10,
-              borderRadius: 10,
-              justifyContent: "space-between",
-            }}
-            onPress={() => {
-              navigation.navigate("PasswordAndSecure");
-            }}
-          >
-            <View
+          {
+            user?.loginMethod === "Default" &&
+            // Mật khẩu
+            <Pressable
               style={{
-                width: ScreenWidth / 10,
+                flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
+                backgroundColor: "white",
+                padding: 10,
+                borderRadius: 10,
+                justifyContent: "space-between",
+              }}
+              onPress={() => {
+                navigation.navigate("PasswordAndSecure");
               }}
             >
-              <Feather name="shield" size={20} color="#ed8900" />
-            </View>
-            <View
-              style={{
-                width: ScreenWidth / 1.5,
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{ fontSize: 15, overflow: "hidden" }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
+              <View
+                style={{
+                  width: ScreenWidth / 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                Mật khẩu
-              </Text>
-            </View>
-            <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
-          </Pressable>
+                <Feather name="shield" size={20} color="#ed8900" />
+              </View>
+              <View
+                style={{
+                  width: ScreenWidth / 1.5,
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ fontSize: 15, overflow: "hidden" }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  Mật khẩu
+                </Text>
+              </View>
+              <Icon type="antdesign" name="right" color={"#ed8900"} size={20} />
+            </Pressable>
+          }
 
           {/* Thông tin cá nhân */}
           <Pressable

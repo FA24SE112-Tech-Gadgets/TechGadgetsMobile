@@ -18,6 +18,7 @@ import LottieView from 'lottie-react-native';
 import { AntDesign } from '@expo/vector-icons';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Snackbar } from 'react-native-paper';
+import userLocationAva from "../../../../assets/userLocationAva.jpg";
 
 export default function SellerDetailScreen({ route, navigation }) {
     const sellerId = route.params.sellerId;
@@ -339,22 +340,25 @@ export default function SellerDetailScreen({ route, navigation }) {
                     paddingHorizontal: 10
                 }}>
                     {/* Shop avatar */}
-                    <View
+                    <Image
+                        source={userLocationAva}
                         style={{
                             height: 45,
                             width: 45,
+                            backgroundColor: "black",
                             borderRadius: 30,
-                            backgroundColor: "#ed8900",
                             alignItems: "center",
                             justifyContent: "center",
                             borderWidth: 1,
-                            borderColor: "white"
+                            borderColor: "rgba(0,0,0,0.3)"
                         }}
-                    >
-                        <Text style={{ fontSize: 25, fontWeight: "bold", color: "white" }}>
-                            {seller !== null ? seller.shopName?.charAt(0) : "G"}
-                        </Text>
-                    </View>
+                        onLoad={async () => {
+                            if (pointAnnotationRef.current) {
+                                await delay(500);
+                                pointAnnotationRef.current.refresh();
+                            }
+                        }}
+                    />
 
                     <View style={{
                         backgroundColor: "#112A46",

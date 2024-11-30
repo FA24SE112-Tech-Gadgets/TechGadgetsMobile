@@ -19,7 +19,7 @@ Logger.setLogCallback(log => {
 })
 Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
-import userLocationAva from "../../../assets/userLocationAva.png";
+import userLocationAva from "../../../assets/userLocationAva.jpg";
 
 export default function RegisterAddress({ isOpen, setOpen, location, setLocation, address, setShopAddress }) {
     const [searchString, setSearchString] = useState("");
@@ -263,6 +263,7 @@ export default function RegisterAddress({ isOpen, setOpen, location, setLocation
                         id="user-position"
                         coordinate={[userLocation?.longitude || 106.69592033355514, userLocation?.latitude || 10.782684066469386]}
                         ref={pointAnnotationRef} // Gắn ref vào PointAnnotation
+                        onSelected={handleMapPress}
                     >
                         <Image
                             source={userLocationAva} // Đường dẫn tới file ảnh

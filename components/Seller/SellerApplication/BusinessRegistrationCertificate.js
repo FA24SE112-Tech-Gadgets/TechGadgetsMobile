@@ -25,7 +25,7 @@ Logger.setLogCallback(log => {
 })
 Mapbox.setWellKnownTileServer('Mapbox');
 Mapbox.setAccessToken("pk.eyJ1IjoidGVjaGdhZGdldHMiLCJhIjoiY20wbTduZ2luMGUwOTJrcTRoZ2sxdDlxNSJ9._u75BBT2ZyNAfGwkcSgVOw");
-import userLocationAva from "../../../assets/userLocationAva.png";
+import userLocationAva from "../../../assets/userLocationAva.jpg";
 
 export default function BusinessRegistrationCertificate() {
   const [assets, setAssets] = useState([]);
@@ -360,8 +360,10 @@ export default function BusinessRegistrationCertificate() {
             setOpenBigMap(true)
           }}
         >
-          <Text>
-            {shopAddress}
+          <Text style={{
+            color: shopAddress ? undefined : "rgba(0,0,0,0.65)"
+          }}>
+            {shopAddress ? shopAddress : "Nhập địa chỉ"}
           </Text>
         </TouchableOpacity>
 
