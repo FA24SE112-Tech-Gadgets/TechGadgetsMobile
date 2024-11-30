@@ -445,7 +445,7 @@ export default function ChangeProfile() {
 
       {showDatePicker && (
         <DateTimePicker
-          value={newCustomerFields?.dateOfBirth ? newCustomerFields?.dateOfBirth : new Date()}
+          value={newCustomerFields?.dateOfBirth ? new Date(newCustomerFields?.dateOfBirth) : new Date()}
           mode="date"
           display="default"
           onChange={(event, selectedDate) => {
