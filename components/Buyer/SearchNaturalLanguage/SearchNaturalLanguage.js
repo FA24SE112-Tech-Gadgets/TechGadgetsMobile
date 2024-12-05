@@ -47,7 +47,7 @@ export default function SearchNaturalLanguage() {
             setSelectedLocation(null);
             setSellers([]);
             setIsFetching(true);
-            const res = await api.post(`/natural-languages/search`, {
+            const res = await api.post(`/natural-languages-v2/search`, {
                 input: searchInput
             });
             setIsFetching(false);
