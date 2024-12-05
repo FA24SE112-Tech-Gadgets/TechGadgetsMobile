@@ -109,7 +109,7 @@ const RefundHistory = () => {
         </View>
 
         {
-          item?.balanceBeforeChange &&
+          item?.balanceBeforeChange != null &&
           <Text style={{
             color: "rgba(0, 0, 0, 0.5)"
           }}>SD: {formatAmount(item.balanceBeforeChange + item.amount)} ₫</Text>
