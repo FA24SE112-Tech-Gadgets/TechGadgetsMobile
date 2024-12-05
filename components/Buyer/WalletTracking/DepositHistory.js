@@ -139,10 +139,12 @@ const DepositHistory = () => {
         </View>
 
         {
-          (item.status !== 'Pending' && item?.balanceBeforeChange) &&
+          (item.status !== 'Pending' && item?.balanceBeforeChange != null) &&
           <Text style={{
             color: "rgba(0, 0, 0, 0.5)"
-          }}>SD: {formatAmount(item.balanceBeforeChange + (item.status === 'Success' ? item.amount : 0))} ₫</Text>
+          }}>
+            SD: {formatAmount(item.balanceBeforeChange + (item.status === 'Success' ? item.amount : 0))} ₫
+          </Text>
         }
 
         {item.status === 'Pending' && (
