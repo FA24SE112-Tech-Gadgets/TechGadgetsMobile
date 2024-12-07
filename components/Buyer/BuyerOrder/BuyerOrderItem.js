@@ -181,6 +181,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 3,
+    overflow: "hidden",
+    width: ScreenWidth / 1.65,
   },
   statusContainer: {
     paddingHorizontal: 8,
