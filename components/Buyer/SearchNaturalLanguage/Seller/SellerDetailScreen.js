@@ -352,12 +352,6 @@ export default function SellerDetailScreen({ route, navigation }) {
                             borderWidth: 1,
                             borderColor: "rgba(0,0,0,0.3)"
                         }}
-                        onLoad={async () => {
-                            if (pointAnnotationRef.current) {
-                                await delay(500);
-                                pointAnnotationRef.current.refresh();
-                            }
-                        }}
                     />
 
                     <View style={{

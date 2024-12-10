@@ -463,7 +463,7 @@ export default function GadgetsByCategory({ navigation, route }) {
                                 renderItem={({ item, index }) => (
                                     <Pressable
                                         onPress={() =>
-                                            navigation.navigate('GadgetSellerDetail', { gadgetId: item.id })
+                                            navigation.navigate('GadgetDetail', { gadgetId: item.id })
                                         }
                                         style={{
                                             marginBottom: 10, // Tạo khoảng cách dưới mỗi item
