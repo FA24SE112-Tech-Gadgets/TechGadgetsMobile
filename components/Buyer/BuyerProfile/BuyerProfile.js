@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Linking,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import useAuth from "../../../utils/useAuth";
@@ -40,6 +41,8 @@ export default function BuyerProfile() {
   const [currentQuote, setCurrentQuote] = useState("");
   const [showQuote, setShowQuote] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const [isLoadAva, setLoadAva] = useState(false);
 
   const {
     logout,
@@ -106,17 +109,55 @@ export default function BuyerProfile() {
           source={user?.customer?.avatarUrl ?
             {
               uri: user.customer.avatarUrl,
-            } : userLocationAva
-          }
+            } : userLocationAva}
           style={{
             height: 40,
             width: 40,
-            backgroundColor: "black",
+            borderRadius: 30,
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.3)",
+            display: isLoadAva ? "none" : undefined
+          }}
+          onLoadStart={() => {
+            setLoadAva(true)
+          }}
+          onLoadEnd={() => {
+            setLoadAva(false)
+          }}
+        />
+        {
+          isLoadAva &&
+          <View style={{
+            height: 40,
+            width: 40,
             borderRadius: 30,
             borderWidth: 1,
             borderColor: "rgba(0,0,0,0.3)"
-          }}
-        />
+          }}>
+            <Image
+              source={userLocationAva}
+              style={{
+                height: 40,
+                width: 40,
+                borderRadius: 30,
+                borderWidth: 1,
+                borderColor: "rgba(0,0,0,0.3)",
+                opacity: 0.7
+              }}
+            />
+            <ActivityIndicator
+              color={"rgba(0,0,0,0.3)"}
+              style={{
+                position: "absolute",
+                right: 0,
+                left: 0,
+                top: 0,
+                bottom: 0
+              }}
+              size={26}
+            />
+          </View>
+        }
         <Text
           style={{
             fontSize: 20,
