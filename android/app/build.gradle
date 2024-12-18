@@ -97,8 +97,8 @@ packagingOptions {
         applicationId 'com.kietpt2003.WhatEat'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 171
-        versionName "1.3.4"
+        versionCode 172
+        versionName "1.3.5"
 
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
     }

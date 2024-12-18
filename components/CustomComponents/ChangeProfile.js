@@ -25,7 +25,15 @@ const formatDateToDisplay = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('vi-VN');
+
+  // Định dạng ngày tháng năm với Intl.DateTimeFormat
+  const formatter = new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+
+  return formatter.format(date);
 };
 
 export default function ChangeProfile() {
@@ -96,6 +104,19 @@ export default function ChangeProfile() {
       }
     }, [user])
   );
+
+  function convertDate(isoDate) {
+    // Tạo đối tượng Date từ chuỗi ISO
+    const date = new Date(isoDate);
+
+    // Lấy ngày, tháng và năm
+    const day = String(date.getDate()).padStart(2, '0'); // Thêm số 0 nếu cần
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng tính từ 0-11
+    const year = date.getFullYear();
+
+    // Trả về chuỗi định dạng YYYY/MM/DD
+    return `${year}/${month}/${day}`;
+  }
 
   const handleChange = (field, value) => {
     if (user.role === "Customer") {
@@ -189,7 +210,9 @@ export default function ChangeProfile() {
       const formData = new FormData();
       Object.keys(changedFields).forEach(key => {
         if (key === 'dateOfBirth') {
-          formData.append(key, changedFields[key].toISOString());
+          console.log("check ", convertDate(changedFields[key].toISOString()));
+
+          formData.append(key, convertDate(changedFields[key].toISOString()));
         } else {
           formData.append(key, changedFields[key]);
         }
